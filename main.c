@@ -1,6 +1,12 @@
 #include "tsp.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+double random01()
+{
+	return ((double)rand() / RAND_MAX);
+}
 
 int load_instance_file(struct tsp* tsp)
 {
@@ -9,6 +15,15 @@ int load_instance_file(struct tsp* tsp)
 
 int load_instance_random(struct tsp* tsp)
 {
+	srand(tsp->seed);
+
+	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
+
+	for (int i = 0; i < tsp->nnodes; i++) {
+		tsp->coords[i].x = random01() * RANDOM_MAX_X;
+		tsp->coords[i].y = random01() * RANDOM_MAX_Y;
+	}
+
 	return 0;
 }
 
@@ -77,6 +92,8 @@ int main(int argc, char** argv)
 {
 	struct tsp tsp;
 
+	tsp_init(&tsp);
+
 	if (parse_arguments(argc, argv, &tsp)) {
 		return -1;
 	}
@@ -89,5 +106,8 @@ int main(int argc, char** argv)
 		load_instance_file(&tsp);
 	}
 
+	debug_print_coords(&tsp);
+
+	tsp_free(&tsp);
 	return 0;
 }
