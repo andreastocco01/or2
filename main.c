@@ -1,5 +1,6 @@
 #include "tsp.h"
 #include "util.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,46 @@ void plot_instance(struct tsp* tsp)
 
 int load_instance_file(struct tsp* tsp)
 {
+	FILE* file = fopen(tsp->input_file, "r");
+	if (file == NULL)
+		return -1;
+	char* buffer = malloc(64);
+
+	size_t n = 64;
+	size_t read;
+
+	int dim = 0;
+
+	while ((read = getline(&buffer, &n, file)) != -1) {
+		buffer[read - 1] = 0; // remove the newline
+		if (strstr(buffer, ":") != NULL) {
+			// this is a property
+			char* name = strtok(buffer, " : ");
+			char* value = strtok(NULL, " : ");
+
+			if (!strcmp(name, "DIMENSION")) {
+				dim = atoi(value);
+				tsp->nnodes = dim;
+				tsp_allocate_buffers(tsp);
+			}
+		} else {
+			if (!strcmp(buffer, "NODE_COORD_SECTION")) {
+				// start reading coordinates
+				for (int i = 0; i < dim; i++) {
+					int index;
+					double x;
+					double y;
+					fscanf(file, "%d %lf %lf\n", &index, &x,
+					       &y);
+					assert(index == i + 1);
+					tsp->coords[i].x = x;
+					tsp->coords[i].y = y;
+				}
+			}
+		}
+	}
+
+	free(buffer);
 	return 0;
 }
 
@@ -73,6 +114,8 @@ int main(int argc, char** argv)
 	debug_print_coords(&tsp);
 	if (configPlot)
 		plot_instance(&tsp);
+
+	debug_print(&tsp);
 
 	tsp_free(&tsp);
 	return 0;

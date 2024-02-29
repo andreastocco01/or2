@@ -26,6 +26,7 @@ struct tsp {
 };
 
 void tsp_init(struct tsp* tsp);
+void tsp_allocate_buffers(struct tsp* tsp);
 void tsp_free(struct tsp* tsp);
 int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp);
 void debug_print(struct tsp* tsp);
