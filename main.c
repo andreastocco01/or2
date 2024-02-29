@@ -1,11 +1,21 @@
 #include "tsp.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-double random01()
+int configPlot = 0;
+
+void plot_instance(struct tsp* tsp)
 {
-	return ((double)rand() / RAND_MAX);
+	FILE* gpprocess = popen("gnuplot --persist", "w");
+	fprintf(gpprocess, "plot '-' using 1:2 title \"\" pt 7 ps 2 with "
+			   "points \n");
+	for (int i = 0; i < tsp->nnodes; i++) {
+		fprintf(gpprocess, "%lf %lf\n", tsp->coords[i].x,
+			tsp->coords[i].y);
+	}
+	fclose(gpprocess);
 }
 
 int load_instance_file(struct tsp* tsp)
@@ -28,64 +38,16 @@ int load_instance_random(struct tsp* tsp)
 }
 
 /*
- * Parses command line arguments
- * returns:
- * -1 if parse fails
- * 0 otherwise
+ * Parses command line arguments for configuring the
+ * execution
  * */
-int parse_arguments(int argc, char** argv, struct tsp* tsp)
+void parse_arguments(int argc, char** argv)
 {
-	int modelSource = -1; // 0 random, 1 file load
-	int userSetSeed = 0;
-	int userSetNnodes = 0;
 	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-random")) {
-			printf("Generating a random model\n");
-			if (modelSource != -1) {
-				perror("Can't use more than 1 mode\n");
-				return -1;
-			}
-			modelSource = 0;
-		} else if (!strcmp(argv[i], "-seed")) {
-			printf("Setting seed for random model\n");
-			tsp->seed = atoi(argv[++i]);
-			userSetSeed = 1;
-		} else if (!strcmp(argv[i], "-nnodes")) {
-			printf("Setting number of nodes for random model\n");
-			tsp->nnodes = atoi(argv[++i]);
-			userSetNnodes = 1;
-		} else if (!strcmp(argv[i], "-inputfile")) {
-			printf("Setting input file for instance\n");
-			tsp->input_file = argv[++i];
-			if (modelSource != -1) {
-				perror("Can't use more than 1 mode\n");
-				return -1;
-			}
-			modelSource = 1;
+		if (!strcmp(argv[i], "-plot")) {
+			configPlot = 1;
 		}
 	}
-
-	if (modelSource == 0) {
-		if (userSetSeed == 0 | userSetNnodes == 0) {
-			perror(
-			    "Set seed and nnodes to user random generation\n");
-			return -1;
-		}
-		tsp->model_source = 1;
-	}
-
-	else if (modelSource == 1) {
-		if (tsp->input_file == NULL) {
-			perror("Set an input file to use model loading\n");
-			return -1;
-		}
-		tsp->model_source = 2;
-	} else if (modelSource == -1) {
-		perror("Please specify a mode to load the file\n");
-		return -1;
-	}
-
-	return 0;
 }
 
 int main(int argc, char** argv)
@@ -94,9 +56,11 @@ int main(int argc, char** argv)
 
 	tsp_init(&tsp);
 
-	if (parse_arguments(argc, argv, &tsp)) {
+	if (tsp_parse_arguments(argc, argv, &tsp)) {
 		return -1;
 	}
+
+	parse_arguments(argc, argv);
 
 	debug_print(&tsp);
 
@@ -107,6 +71,8 @@ int main(int argc, char** argv)
 	}
 
 	debug_print_coords(&tsp);
+	if (configPlot)
+		plot_instance(&tsp);
 
 	tsp_free(&tsp);
 	return 0;
