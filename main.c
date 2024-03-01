@@ -44,7 +44,7 @@ int load_instance_file(struct tsp* tsp)
 				tsp_allocate_buffers(tsp);
 			} else if (!strcmp(name, "EDGE_WEIGHT_TYPE")) {
 				tsp->edge_weight_type = (char*)malloc(
-				    sizeof(char) * strlen(value));
+				    sizeof(char) * strlen(value) + 1);
 				strcpy(tsp->edge_weight_type, value);
 			} else if (!strcmp(name, "TYPE") &&
 				   strcmp(value, "TSP")) {
