@@ -13,6 +13,7 @@ void tsp_free(struct tsp* tsp)
 
 void tsp_init(struct tsp* tsp)
 {
+	memset(tsp, 0, sizeof(struct tsp));
 	tsp->input_file = NULL;
 	tsp->model_source = 0;
 	tsp->coords = NULL;
