@@ -3,6 +3,9 @@ CFLAGS=-g
 
 all: main
 
+format:
+	find . -iname "*.h" -o -iname "*.c" | xargs clang-format -i
+
 tsp.o: tsp.h tsp.c
 	$(CC) $(CFLAGS) -c tsp.c -o tsp.o
 
