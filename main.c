@@ -42,6 +42,14 @@ int load_instance_file(struct tsp* tsp)
 				dim = atoi(value);
 				tsp->nnodes = dim;
 				tsp_allocate_buffers(tsp);
+			} else if (!strcmp(name, "EDGE_WEIGHT_TYPE")) {
+				tsp->edge_weight_type = (char*)malloc(
+				    sizeof(char) * strlen(value));
+				strcpy(tsp->edge_weight_type, value);
+			} else if (!strcmp(name, "TYPE") &&
+				   strcmp(value, "TSP")) {
+				perror("Wrong format\n");
+				return -1;
 			}
 		} else {
 			if (!strcmp(buffer, "NODE_COORD_SECTION")) {
@@ -108,7 +116,8 @@ int main(int argc, char** argv)
 	if (tsp.model_source == 1) {
 		load_instance_random(&tsp);
 	} else if (tsp.model_source == 2) {
-		load_instance_file(&tsp);
+		if (load_instance_file(&tsp) == -1)
+			return -1;
 	}
 
 	debug_print_coords(&tsp);

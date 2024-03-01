@@ -23,6 +23,8 @@ struct tsp {
 
 	// input file data
 	char* input_file;
+
+	char* edge_weight_type;
 };
 
 void tsp_init(struct tsp* tsp);
