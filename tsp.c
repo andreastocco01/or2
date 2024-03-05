@@ -22,6 +22,8 @@ void tsp_init(struct tsp* tsp)
 
 void tsp_allocate_buffers(struct tsp* tsp)
 {
+	if(tsp->coords)
+		free(tsp->coords);
 	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
 }
 

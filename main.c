@@ -76,7 +76,7 @@ int load_instance_random(struct tsp* tsp)
 {
 	srand(tsp->seed);
 
-	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
+	tsp_allocate_buffers(tsp);
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 		tsp->coords[i].x = random01() * RANDOM_MAX_X;
