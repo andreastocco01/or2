@@ -184,11 +184,7 @@ int tsp_solve_greedy(struct tsp* tsp,
 		     int* output_solution,
 		     double* output_value)
 {
-	if (tsp_allocate_costs(tsp))
-		return -1;
 	if (starting_node < 0 || starting_node >= tsp->nnodes)
-		return -1;
-	if (tsp_compute_costs(tsp))
 		return -1;
 
 	if (output_solution == NULL || output_value == NULL)
@@ -247,6 +243,9 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double best_dist = 10e30;
 
 	for (int i = 0; i < tsp->nnodes; i++) {
+#ifdef DEBUG
+		printf("Solving %d/%d\n", i + 1, tsp->nnodes);
+#endif
 		tsp_solve_greedy(tsp, i, current, &current_dist);
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
@@ -266,6 +265,10 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 int tsp_solve_multigreedy_save(struct tsp* tsp)
 {
 	if (tsp_allocate_solution(tsp))
+		return -1;
+	if (tsp_allocate_costs(tsp))
+		return -1;
+	if (tsp_compute_costs(tsp))
 		return -1;
 
 	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation,
