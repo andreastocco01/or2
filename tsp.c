@@ -247,6 +247,10 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 		printf("Solving %d/%d\n", i + 1, tsp->nnodes);
 #endif
 		tsp_solve_greedy(tsp, i, current, &current_dist);
+		int check;
+		double pre2opt = current_dist;
+		tsp_2opt_solution(tsp, current, &current_dist);
+
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
@@ -276,4 +280,92 @@ int tsp_solve_multigreedy_save(struct tsp* tsp)
 		return -1;
 
 	return 0;
+}
+
+int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
+{
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+start:
+	for (int i = 0; i < tsp->nnodes - 2; i++) {
+		for (int j = i + 2; j < tsp->nnodes; j++) {
+			double distance_prev = tsp->cost_matrix[flatten_coords(
+						   solution[i], solution[i + 1],
+						   tsp->nnodes)] +
+					       tsp->cost_matrix[flatten_coords(
+						   solution[j], solution[j + 1],
+						   tsp->nnodes)];
+			double
+			    distance_next = tsp->cost_matrix[flatten_coords(
+						solution[i + 1],
+						solution[j + 1], tsp->nnodes)] +
+					    tsp->cost_matrix[flatten_coords(
+						solution[i], solution[j],
+						tsp->nnodes)];
+
+			double delta = distance_prev - distance_next;
+
+			if (delta > 0) {
+				int left = i + 1;
+				int right = j;
+				while (left < right) {
+					int temp = solution[left];
+					solution[left] = solution[right];
+					solution[right] = temp;
+					left++;
+					right--;
+				}
+
+				printf("=================\nOutput value: %lf\n",
+				       *output_value);
+				printf("Delta: %lf\n", delta);
+				/* *output_value -= delta; */
+				*output_value = tsp_recompute_solution_arg(
+				    tsp, solution);
+				printf("Output value: %lf\n", *output_value);
+				goto start;
+			}
+		}
+	}
+	return 0;
+}
+
+double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
+{
+	double current_solution = 0;
+	for (int i = 0; i < tsp->nnodes - 1; i++) {
+		current_solution += tsp->cost_matrix[flatten_coords(
+		    solution[i], solution[i + 1], tsp->nnodes)];
+	}
+	current_solution += tsp->cost_matrix[flatten_coords(
+	    solution[0], solution[tsp->nnodes - 1], tsp->nnodes)];
+
+	return current_solution;
+}
+
+double tsp_recompute_solution(struct tsp* tsp)
+{
+	return tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+}
+
+/**
+ * 1 if correct
+ * 0 otherwise
+ *
+ * if computed is set, return the correct solution
+ * */
+int tsp_check_solution(struct tsp* tsp, double* computed)
+{
+	double computedsol = tsp_recompute_solution(tsp);
+
+	if (computed)
+		*computed = computedsol;
+
+	if (fabs(computedsol - tsp->solution_value) >= EPSILON) {
+		return 0;
+	}
+	return 1;
 }
