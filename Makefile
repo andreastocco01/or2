@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-g -DDEBUG -lm
+CFLAGS=-g -DDEBUG
+LINK=-lm
 # CFLAGS= -lm
 
 all: main
@@ -14,4 +15,7 @@ util.o: util.h util.c
 	$(CC) $(CFLAGS) -c util.c -o util.o
 
 main: main.c tsp.h tsp.o util.h util.o
-	$(CC) $(CFLAGS) tsp.o util.o main.c -o main
+	$(CC) $(CFLAGS) tsp.o util.o main.c $(LINK) -o main
+
+clean:
+	rm -f tsp.o util.o main
