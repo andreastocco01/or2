@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-g -DDEBUG
-# CFLAGS=
+CFLAGS=-g -DDEBUG -lm
+# CFLAGS= -lm
 
 all: main
 

@@ -10,12 +10,34 @@ int configPlot = 0;
 void plot_instance(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
-	fprintf(gpprocess, "plot '-' using 1:2 title \"\" pt 7 ps 2 with "
-			   "points \n");
-	for (int i = 0; i < tsp->nnodes; i++) {
-		fprintf(gpprocess, "%lf %lf\n", tsp->coords[i].x,
-			tsp->coords[i].y);
+
+	fprintf(gpprocess, "$data << EOD\n");
+
+	if (tsp->solution_permutation) {
+		for (int i = 0; i < tsp->nnodes; i++) {
+			fprintf(gpprocess, "%lf %lf\n",
+				tsp->coords[tsp->solution_permutation[i]].x,
+				tsp->coords[tsp->solution_permutation[i]].y);
+		}
+		fprintf(gpprocess, "%lf %lf\n",
+			tsp->coords[tsp->solution_permutation[0]].x,
+			tsp->coords[tsp->solution_permutation[0]].y);
+
+		fprintf(gpprocess, "EOD\n");
+		fprintf(
+		    gpprocess,
+		    "plot $data using 1:2 title \"dataset\" pt 7 ps 2 with "
+		    "points, $data using 1:2 title \"solution\" with lines\n");
+	} else {
+		for (int i = 0; i < tsp->nnodes; i++) {
+			fprintf(gpprocess, "%lf %lf\n", tsp->coords[i].x,
+				tsp->coords[i].y);
+		}
+		fprintf(gpprocess, "EOD\n");
+		fprintf(gpprocess,
+			"plot $data using 1:2 pt 7 ps 2 with points\n");
 	}
+
 	fclose(gpprocess);
 }
 
@@ -41,7 +63,9 @@ int load_instance_file(struct tsp* tsp)
 			if (!strcmp(name, "DIMENSION")) {
 				dim = atoi(value);
 				tsp->nnodes = dim;
-				tsp_allocate_buffers(tsp);
+				if (tsp_allocate_buffers(tsp) != 0) {
+					return -1;
+				}
 			} else if (!strcmp(name, "EDGE_WEIGHT_TYPE")) {
 				tsp->edge_weight_type = (char*)malloc(
 				    sizeof(char) * strlen(value) + 1);
@@ -76,7 +100,8 @@ int load_instance_random(struct tsp* tsp)
 {
 	srand(tsp->seed);
 
-	tsp_allocate_buffers(tsp);
+	if (tsp_allocate_buffers(tsp) != 0)
+		return -1;
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 		tsp->coords[i].x = random01() * RANDOM_MAX_X;
@@ -121,12 +146,17 @@ int main(int argc, char** argv)
 #ifdef DEBUG
 	debug_print_coords(&tsp);
 #endif
-	if (configPlot)
-		plot_instance(&tsp);
+
+	if (tsp_solve_multigreedy_save(&tsp)) {
+		perror("Can't solve greedy\n");
+	}
 
 #ifdef DEBUG
 	debug_print(&tsp);
 #endif
+
+	if (configPlot)
+		plot_instance(&tsp);
 
 	tsp_free(&tsp);
 	return 0;

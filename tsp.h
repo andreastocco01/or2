@@ -25,13 +25,31 @@ struct tsp {
 	char* input_file;
 
 	char* edge_weight_type;
+
+	double* cost_matrix;
+
+	int* solution_permutation;
+	double solution_value;
 };
 
 void tsp_init(struct tsp* tsp);
-void tsp_allocate_buffers(struct tsp* tsp);
+int tsp_allocate_buffers(struct tsp* tsp);
+int tsp_allocate_solution(struct tsp* tsp);
+int tsp_allocate_costs(struct tsp* tsp);
 void tsp_free(struct tsp* tsp);
 int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp);
 void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
+
+int tsp_compute_costs(struct tsp* tsp);
+int tsp_solve_greedy(struct tsp* tsp,
+		     int starting_node,
+		     int* output_solution,
+		     double* output_value);
+int tsp_solve_multigreedy(struct tsp* tsp,
+			  int* output_solution,
+			  double* output_value);
+
+int tsp_solve_multigreedy_save(struct tsp* tsp);
 
 #endif // TSP_H_

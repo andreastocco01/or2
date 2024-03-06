@@ -1,4 +1,5 @@
 #include "tsp.h"
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -9,6 +10,12 @@ void tsp_free(struct tsp* tsp)
 
 	if (tsp->edge_weight_type)
 		free(tsp->edge_weight_type);
+
+	if (tsp->cost_matrix)
+		free(tsp->cost_matrix);
+
+	if (tsp->solution_permutation)
+		free(tsp->solution_permutation);
 }
 
 void tsp_init(struct tsp* tsp)
@@ -18,13 +25,20 @@ void tsp_init(struct tsp* tsp)
 	tsp->model_source = 0;
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
+	tsp->nnodes = 0;
 }
 
-void tsp_allocate_buffers(struct tsp* tsp)
+int tsp_allocate_buffers(struct tsp* tsp)
 {
-	if(tsp->coords)
+	if (tsp->coords)
 		free(tsp->coords);
+
+	if (tsp->nnodes <= 0)
+		return -1;
+
 	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
+
+	return 0;
 }
 
 /*
@@ -99,6 +113,13 @@ void debug_print(struct tsp* tsp)
 	printf("seed: %d\n", tsp->seed);
 	printf("input_file: %s\n", tsp->input_file);
 	printf("edge weight type: %s\n", tsp->edge_weight_type);
+
+	if (tsp->solution_permutation) {
+		for (int i = 0; i < tsp->nnodes; i++) {
+			printf("%d->", tsp->solution_permutation[i]);
+		}
+		printf("\nBEST SOLUTION: %lf\n", tsp->solution_value);
+	}
 }
 
 void debug_print_coords(struct tsp* tsp)
@@ -108,4 +129,148 @@ void debug_print_coords(struct tsp* tsp)
 		printf("%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x,
 		       tsp->coords[i].y);
 	}
+}
+
+int tsp_allocate_costs(struct tsp* tsp)
+{
+	if (tsp->nnodes <= 0)
+		return -1;
+
+	if (tsp->cost_matrix)
+		free(tsp->cost_matrix);
+
+	tsp->cost_matrix = (double*)malloc(sizeof(double) * tsp->nnodes *
+					   tsp->nnodes);
+	return 0;
+}
+
+int tsp_allocate_solution(struct tsp* tsp)
+{
+	if (tsp->nnodes <= 0)
+		return -1;
+
+	if (tsp->solution_permutation)
+		free(tsp->solution_permutation);
+
+	tsp->solution_permutation = (int*)malloc(sizeof(int) * tsp->nnodes);
+
+	return 0;
+}
+
+#define flatten_coords(x, y, N) x* N + y
+int tsp_compute_costs(struct tsp* tsp)
+{
+	if (tsp->cost_matrix == NULL || tsp->coords == NULL)
+		return -1;
+
+	for (int i = 0; i < tsp->nnodes; i++) {
+		for (int j = 0; j < tsp->nnodes; j++) {
+			double deltax = (tsp->coords[i].x - tsp->coords[j].x);
+			double deltay = (tsp->coords[i].y - tsp->coords[j].y);
+			double sqdist = deltax * deltax + deltay * deltay;
+
+			tsp->cost_matrix[flatten_coords(
+			    i, j, tsp->nnodes)] = sqrt(sqdist);
+		}
+	}
+	return 0;
+}
+
+/**
+ * Output buffers have to be preallocated
+ * */
+int tsp_solve_greedy(struct tsp* tsp,
+		     int starting_node,
+		     int* output_solution,
+		     double* output_value)
+{
+	if (tsp_allocate_costs(tsp))
+		return -1;
+	if (starting_node < 0 || starting_node >= tsp->nnodes)
+		return -1;
+	if (tsp_compute_costs(tsp))
+		return -1;
+
+	if (output_solution == NULL || output_value == NULL)
+		return -1;
+
+	int* current_solution = malloc(sizeof(int) * tsp->nnodes);
+
+	for (int i = 1; i < tsp->nnodes; i++)
+		current_solution[i] = i;
+
+	current_solution[0] = starting_node;
+	current_solution[starting_node] = 0;
+
+	double cumulative_dist = 0;
+
+	for (int i = 0; i < tsp->nnodes - 1; i++) {
+		double min_dist = tsp->cost_matrix[flatten_coords(i, i + 1,
+								  tsp->nnodes)];
+		int min_index = i + 1;
+		for (int j = i + 2; j < tsp->nnodes; j++) {
+			double dist = tsp->cost_matrix[flatten_coords(
+			    i, j, tsp->nnodes)];
+			if (dist < min_dist) {
+				min_dist = dist;
+				min_index = j;
+			}
+		}
+
+		int temp = current_solution[i + 1];
+		current_solution[i + 1] = current_solution[min_index];
+		current_solution[min_index] = temp;
+
+		cumulative_dist += min_dist;
+	}
+
+	cumulative_dist += tsp->cost_matrix[flatten_coords(
+	    current_solution[tsp->nnodes - 1], starting_node, tsp->nnodes)];
+
+	memcpy(output_solution, current_solution, sizeof(int) * tsp->nnodes);
+	*output_value = cumulative_dist;
+
+	free(current_solution);
+	return 0;
+}
+
+int tsp_solve_multigreedy(struct tsp* tsp,
+			  int* output_solution,
+			  double* output_value)
+{
+	if (tsp->nnodes <= 0)
+		return -1;
+
+	int* best = malloc(sizeof(int) * tsp->nnodes);
+	int* current = malloc(sizeof(int) * tsp->nnodes);
+	double current_dist = 10e30;
+	double best_dist = 10e30;
+
+	for (int i = 0; i < tsp->nnodes; i++) {
+		tsp_solve_greedy(tsp, i, current, &current_dist);
+		if (current_dist < best_dist) {
+			best_dist = current_dist;
+			memcpy(best, current, sizeof(int) * tsp->nnodes);
+		}
+	}
+
+	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);
+	*output_value = best_dist;
+
+	free(best);
+	free(current);
+
+	return 0;
+}
+
+int tsp_solve_multigreedy_save(struct tsp* tsp)
+{
+	if (tsp_allocate_solution(tsp))
+		return -1;
+
+	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation,
+				  &tsp->solution_value))
+		return -1;
+
+	return 0;
 }
