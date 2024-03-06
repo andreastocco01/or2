@@ -111,8 +111,6 @@ int main(int argc, char** argv)
 
 	parse_arguments(argc, argv);
 
-	debug_print(&tsp);
-
 	if (tsp.model_source == 1) {
 		load_instance_random(&tsp);
 	} else if (tsp.model_source == 2) {
@@ -120,11 +118,15 @@ int main(int argc, char** argv)
 			return -1;
 	}
 
+#ifdef DEBUG
 	debug_print_coords(&tsp);
+#endif
 	if (configPlot)
 		plot_instance(&tsp);
 
+#ifdef DEBUG
 	debug_print(&tsp);
+#endif
 
 	tsp_free(&tsp);
 	return 0;
