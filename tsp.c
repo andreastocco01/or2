@@ -174,14 +174,6 @@ int tsp_compute_costs(struct tsp* tsp)
 		}
 	}
 
-	for (int i = 0; i < tsp->nnodes; i++) {
-		for (int j = 0; j < tsp->nnodes; j++) {
-			printf("%lf\t", tsp->cost_matrix[flatten_coords(
-					    i, j, tsp->nnodes)]);
-		}
-		printf("\n");
-	}
-
 	return 0;
 }
 
@@ -327,17 +319,20 @@ int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 		return -1;
 start:
 	for (int i = 0; i < tsp->nnodes - 2; i++) {
-		for (int j = i + 2; j < tsp->nnodes - 1; j++) {
-			double distance_prev = tsp->cost_matrix[flatten_coords(
-						   solution[i], solution[i + 1],
-						   tsp->nnodes)] +
-					       tsp->cost_matrix[flatten_coords(
-						   solution[j], solution[j + 1],
-						   tsp->nnodes)];
+		for (int j = i + 2; j < tsp->nnodes; j++) {
+			double
+			    distance_prev = tsp->cost_matrix[flatten_coords(
+						solution[i], solution[i + 1],
+						tsp->nnodes)] +
+					    tsp->cost_matrix[flatten_coords(
+						solution[j],
+						solution[(j + 1) % tsp->nnodes],
+						tsp->nnodes)];
 			double
 			    distance_next = tsp->cost_matrix[flatten_coords(
 						solution[i + 1],
-						solution[j + 1], tsp->nnodes)] +
+						solution[(j + 1) % tsp->nnodes],
+						tsp->nnodes)] +
 					    tsp->cost_matrix[flatten_coords(
 						solution[i], solution[j],
 						tsp->nnodes)];
@@ -375,8 +370,6 @@ start:
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
 {
-	printf("Running solution: ");
-	print_array(solution, tsp->nnodes);
 	double current_solution = 0;
 	for (int i = 0; i < tsp->nnodes - 1; i++) {
 		current_solution += tsp->cost_matrix[flatten_coords(
