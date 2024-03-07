@@ -151,6 +151,8 @@ int main(int argc, char** argv)
 		perror("Can't solve greedy\n");
 	}
 
+	printf("Total cost: %lf\n", tsp.solution_value);
+
 #ifdef DEBUG
 	debug_print(&tsp);
 #endif

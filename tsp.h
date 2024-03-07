@@ -53,6 +53,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
 
+int tsp_solve_greedy_save(struct tsp* tsp, int starting_node);
 int tsp_solve_multigreedy_save(struct tsp* tsp);
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
