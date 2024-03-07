@@ -7,9 +7,11 @@
 
 int configPlot = 0;
 
-void plot_instance(struct tsp* tsp)
+int plot_instance(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
+	if(gpprocess == NULL)
+		return -1;
 
 	fprintf(gpprocess, "$data << EOD\n");
 
@@ -39,6 +41,7 @@ void plot_instance(struct tsp* tsp)
 	}
 
 	fclose(gpprocess);
+	return 0;
 }
 
 int load_instance_file(struct tsp* tsp)
@@ -157,8 +160,12 @@ int main(int argc, char** argv)
 	debug_print(&tsp);
 #endif
 
-	if (configPlot)
-		plot_instance(&tsp);
+	if (configPlot) {
+		if(plot_instance(&tsp)) {
+			perror("Can't plot solution\n");
+		}
+	}
+
 
 	tsp_free(&tsp);
 	return 0;
