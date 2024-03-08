@@ -235,15 +235,6 @@ int tsp_solve_greedy(struct tsp* tsp,
 	return 0;
 }
 
-// TODO move to util
-void print_array(int* arr, int size)
-{
-	for (int i = 0; i < size; i++) {
-		printf("%d->", arr[i]);
-	}
-	printf("\n");
-}
-
 int tsp_solve_multigreedy(struct tsp* tsp,
 			  int* output_solution,
 			  double* output_value)
