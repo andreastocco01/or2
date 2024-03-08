@@ -181,10 +181,13 @@ int tsp_compute_costs(struct tsp* tsp)
  * Output buffers have to be preallocated
  * */
 int tsp_solve_greedy(struct tsp* tsp,
-		     int starting_node,
 		     int* output_solution,
-		     double* output_value)
+		     double* output_value,
+		     struct solver_parameters solver_parameters,
+		     struct solver_stack* solver_stack)
 {
+	int starting_node = solver_parameters.starting_node;
+
 	if (starting_node < 0 || starting_node >= tsp->nnodes)
 		return -1;
 
@@ -244,79 +247,21 @@ void print_array(int* arr, int size)
 	printf("\n");
 }
 
-int tsp_solve_multigreedy(struct tsp* tsp,
-			  int* output_solution,
-			  double* output_value)
-{
-	if (tsp->nnodes <= 0)
-		return -1;
-
-	int* best = malloc(sizeof(int) * tsp->nnodes);
-	int* current = malloc(sizeof(int) * tsp->nnodes);
-	double current_dist = 10e30;
-	double best_dist = 10e30;
-
-	for (int i = 0; i < tsp->nnodes; i++) {
-#ifdef DEBUG
-		printf("Solving %d/%d\n", i + 1, tsp->nnodes);
-#endif
-		tsp_solve_greedy(tsp, i, current, &current_dist);
-		tsp_2opt_solution(tsp, current, &current_dist);
-
-		if (current_dist < best_dist) {
-			best_dist = current_dist;
-			memcpy(best, current, sizeof(int) * tsp->nnodes);
-		}
-	}
-
-	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);
-	*output_value = best_dist;
-
-	free(best);
-	free(current);
-
-	return 0;
-}
-
-int tsp_solve_multigreedy_save(struct tsp* tsp)
-{
-	if (tsp_allocate_solution(tsp))
-		return -1;
-	if (tsp_allocate_costs(tsp))
-		return -1;
-	if (tsp_compute_costs(tsp))
-		return -1;
-
-	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation,
-				  &tsp->solution_value))
-		return -1;
-
-	return 0;
-}
-
-int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
-{
-	if (tsp_allocate_solution(tsp))
-		return -1;
-	if (tsp_allocate_costs(tsp))
-		return -1;
-	if (tsp_compute_costs(tsp))
-		return -1;
-
-	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
-			     &tsp->solution_value))
-		return -1;
-
-	return 0;
-}
-
-int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
+int tsp_solve_2opt(struct tsp* tsp,
+		   int* solution,
+		   double* output_value,
+		   struct solver_parameters solver_parameters,
+		   struct solver_stack* solver_stack)
 {
 	if (!tsp->cost_matrix)
 		return -1;
 
 	if (!tsp->nnodes)
 		return -1;
+
+	solver_stack->solver(tsp, solution, output_value, solver_parameters,
+			     solver_stack->next);
+
 start:
 	for (int i = 0; i < tsp->nnodes - 2; i++) {
 		for (int j = i + 2; j < tsp->nnodes; j++) {
@@ -352,15 +297,6 @@ start:
 
 				double old_value = *output_value;
 				*output_value -= delta;
-				/* *output_value = tsp_recompute_solution_arg(
-				 */
-				/*     tsp, solution); */
-
-				/* if (fabs((old_value - *output_value) - delta)
-				 * >= */
-				/*     EPSILON) { */
-				/* 	printf("inconsistent!!!!!!\n"); */
-				/* } */
 				goto start;
 			}
 		}
@@ -403,4 +339,54 @@ int tsp_check_solution(struct tsp* tsp, double* computed)
 		return 0;
 	}
 	return 1;
+}
+
+int tsp_solve_allstartingnodes(struct tsp* tsp,
+			       int* output_solution,
+			       double* output_value,
+			       struct solver_parameters solver_parameters,
+			       struct solver_stack* solver_stack)
+{
+	if (tsp->nnodes <= 0)
+		return -1;
+
+	int* best = malloc(sizeof(int) * tsp->nnodes);
+	int* current = malloc(sizeof(int) * tsp->nnodes);
+	double current_dist = 10e30;
+	double best_dist = 10e30;
+
+	for (int i = 0; i < tsp->nnodes; i++) {
+#ifdef DEBUG
+		printf("Solving %d/%d\n", i + 1, tsp->nnodes);
+#endif
+
+		solver_parameters.starting_node = i;
+		solver_stack->solver(tsp, current, &current_dist,
+				     solver_parameters, solver_stack->next);
+
+		if (current_dist < best_dist) {
+			best_dist = current_dist;
+			memcpy(best, current, sizeof(int) * tsp->nnodes);
+		}
+	}
+
+	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);
+	*output_value = best_dist;
+
+	free(best);
+	free(current);
+
+	return 0;
+}
+
+int tsp_solve_save(struct tsp* tsp,
+		   struct solver_parameters solver_parameters,
+		   struct solver_stack* solver_stack)
+{
+	tsp_allocate_solution(tsp);
+	tsp_allocate_costs(tsp);
+	tsp_compute_costs(tsp);
+
+	tsp_solve_2opt(tsp, tsp->solution_permutation, &tsp->solution_value,
+		       solver_parameters, solver_stack);
 }

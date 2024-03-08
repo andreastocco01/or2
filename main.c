@@ -10,7 +10,7 @@ int configPlot = 0;
 int plot_instance(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
-	if(gpprocess == NULL)
+	if (gpprocess == NULL)
 		return -1;
 
 	fprintf(gpprocess, "$data << EOD\n");
@@ -150,22 +150,31 @@ int main(int argc, char** argv)
 	debug_print_coords(&tsp);
 #endif
 
-	if (tsp_solve_multigreedy_save(&tsp)) {
-		perror("Can't solve greedy\n");
-	}
+	struct solver_parameters params = {};
+	struct solver_stack greedy = {
+	    .solver = tsp_solve_greedy,
+	    .next = NULL,
+	};
+	struct solver_stack opt = {
+	    .solver = tsp_solve_2opt,
+	    .next = &greedy,
+	};
+	struct solver_stack multi = {
+	    .solver = tsp_solve_allstartingnodes,
+	    .next = &opt,
+	};
 
-	printf("Total cost: %lf\n", tsp.solution_value);
+	tsp_solve_save(&tsp, params, &multi);
 
 #ifdef DEBUG
 	debug_print(&tsp);
 #endif
 
 	if (configPlot) {
-		if(plot_instance(&tsp)) {
+		if (plot_instance(&tsp)) {
 			perror("Can't plot solution\n");
 		}
 	}
-
 
 	tsp_free(&tsp);
 	return 0;

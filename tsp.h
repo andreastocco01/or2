@@ -33,6 +33,22 @@ struct tsp {
 	double solution_value;
 };
 
+struct solver_parameters {
+	int starting_node;
+};
+struct solver_stack;
+
+typedef int(tsp_solver)(struct tsp* tsp,
+			int* output_solution,
+			double* output_value,
+			struct solver_parameters solver_parameters,
+			struct solver_stack* solver_stack);
+
+struct solver_stack {
+	struct solver_stack* next;
+	tsp_solver* solver;
+};
+
 void tsp_init(struct tsp* tsp);
 int tsp_allocate_buffers(struct tsp* tsp);
 int tsp_allocate_solution(struct tsp* tsp);
@@ -43,18 +59,27 @@ void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
 
 int tsp_compute_costs(struct tsp* tsp);
+
+// SOLVERS
 int tsp_solve_greedy(struct tsp* tsp,
-		     int starting_node,
 		     int* output_solution,
-		     double* output_value);
-int tsp_solve_multigreedy(struct tsp* tsp,
-			  int* output_solution,
-			  double* output_value);
+		     double* output_value,
+		     struct solver_parameters solver_parameters,
+		     struct solver_stack* solver_stack);
+int tsp_solve_allstartingnodes(struct tsp* tsp,
+			       int* output_solution,
+			       double* output_value,
+			       struct solver_parameters solver_parameters,
+			       struct solver_stack* solver_stack);
+int tsp_solve_2opt(struct tsp* tsp,
+		   int* output_solution,
+		   double* output_value,
+		   struct solver_parameters solver_parameters,
+		   struct solver_stack* solver_stack);
 
-int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
-
-int tsp_solve_greedy_save(struct tsp* tsp, int starting_node);
-int tsp_solve_multigreedy_save(struct tsp* tsp);
+int tsp_solve_save(struct tsp* tsp,
+		   struct solver_parameters solver_parameters,
+		   struct solver_stack* solver_stack);
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);
