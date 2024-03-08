@@ -1,6 +1,7 @@
 #include "tsp.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void tsp_free(struct tsp* tsp)

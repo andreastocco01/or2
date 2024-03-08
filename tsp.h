@@ -1,8 +1,6 @@
 #ifndef TSP_H_
 #define TSP_H_
 
-#include <stdlib.h>
-
 #define RANDOM_MAX_X 10000
 #define RANDOM_MAX_Y 10000
 #define EPSILON      1e-7
