@@ -1,4 +1,5 @@
 #include "tsp.h"
+#include "tsp_greedy.h"
 #include "util.h"
 #include <assert.h>
 #include <stdio.h>
@@ -10,7 +11,7 @@ int configPlot = 0;
 int plot_instance(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
-	if(gpprocess == NULL)
+	if (gpprocess == NULL)
 		return -1;
 
 	fprintf(gpprocess, "$data << EOD\n");
@@ -161,11 +162,10 @@ int main(int argc, char** argv)
 #endif
 
 	if (configPlot) {
-		if(plot_instance(&tsp)) {
+		if (plot_instance(&tsp)) {
 			perror("Can't plot solution\n");
 		}
 	}
-
 
 	tsp_free(&tsp);
 	return 0;

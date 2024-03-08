@@ -6,6 +6,7 @@
 #define RANDOM_MAX_X 10000
 #define RANDOM_MAX_Y 10000
 #define EPSILON      1e-7
+#define flatten_coords(x, y, N) x* N + y
 
 struct point {
 	double x;
@@ -43,18 +44,8 @@ void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
 
 int tsp_compute_costs(struct tsp* tsp);
-int tsp_solve_greedy(struct tsp* tsp,
-		     int starting_node,
-		     int* output_solution,
-		     double* output_value);
-int tsp_solve_multigreedy(struct tsp* tsp,
-			  int* output_solution,
-			  double* output_value);
 
 int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
-
-int tsp_solve_greedy_save(struct tsp* tsp, int starting_node);
-int tsp_solve_multigreedy_save(struct tsp* tsp);
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);
