@@ -387,6 +387,7 @@ int tsp_solve_save(struct tsp* tsp,
 	tsp_allocate_costs(tsp);
 	tsp_compute_costs(tsp);
 
-	tsp_solve_2opt(tsp, tsp->solution_permutation, &tsp->solution_value,
-		       solver_parameters, solver_stack);
+	return solver_stack->solver(tsp, tsp->solution_permutation,
+				    &tsp->solution_value, solver_parameters,
+				    solver_stack->next);
 }
