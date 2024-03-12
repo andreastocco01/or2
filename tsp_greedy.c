@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /**
  * Output buffers have to be preallocated
@@ -73,11 +74,22 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double current_dist = 10e30;
 	double best_dist = 10e30;
 
+	int* drawn = calloc(tsp->nnodes, sizeof(int));
+	srand(time(NULL));
+
 	for (int i = 0; i < tsp->nnodes; i++) {
+		int r;
+		while (1) {
+			r = rand() % tsp->nnodes;
+			if (drawn[r] == 0) {
+				drawn[r] = 1;
+				break;
+			}
+		}
 #ifdef DEBUG
-		printf("Starting node %d/%d\n", i + 1, tsp->nnodes);
+		printf("Starting node %d/%d\n", r + 1, tsp->nnodes);
 #endif
-		tsp_solve_greedy(tsp, i, current, &current_dist);
+		tsp_solve_greedy(tsp, r, current, &current_dist);
 		tsp_2opt_solution(tsp, current, &current_dist);
 
 		if (current_dist < best_dist) {
@@ -91,6 +103,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 	free(best);
 	free(current);
+	free(drawn);
 
 	return 0;
 }
