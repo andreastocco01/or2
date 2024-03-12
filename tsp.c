@@ -180,6 +180,22 @@ int tsp_compute_costs(struct tsp* tsp)
 	return 0;
 }
 
+double compute_delta(struct tsp* tsp, int* solution, int i, int j)
+{
+	double distance_prev = tsp->cost_matrix[flatten_coords(
+				   solution[i], solution[i + 1], tsp->nnodes)] +
+			       tsp->cost_matrix[flatten_coords(
+				   solution[j], solution[(j + 1) % tsp->nnodes],
+				   tsp->nnodes)];
+	double
+	    distance_next = tsp->cost_matrix[flatten_coords(
+				solution[i + 1],
+				solution[(j + 1) % tsp->nnodes], tsp->nnodes)] +
+			    tsp->cost_matrix[flatten_coords(
+				solution[i], solution[j], tsp->nnodes)];
+	return distance_prev - distance_next;
+}
+
 int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 {
 	if (!tsp->cost_matrix)
@@ -192,24 +208,7 @@ start:
 		double best_delta = -10e30;
 		int v1, v2;
 		for (int j = i + 2; j < tsp->nnodes; j++) {
-			double
-			    distance_prev = tsp->cost_matrix[flatten_coords(
-						solution[i], solution[i + 1],
-						tsp->nnodes)] +
-					    tsp->cost_matrix[flatten_coords(
-						solution[j],
-						solution[(j + 1) % tsp->nnodes],
-						tsp->nnodes)];
-			double
-			    distance_next = tsp->cost_matrix[flatten_coords(
-						solution[i + 1],
-						solution[(j + 1) % tsp->nnodes],
-						tsp->nnodes)] +
-					    tsp->cost_matrix[flatten_coords(
-						solution[i], solution[j],
-						tsp->nnodes)];
-
-			double delta = distance_prev - distance_next;
+			double delta = compute_delta(tsp, solution, i, j);
 			if (delta > best_delta) {
 				best_delta = delta;
 				v1 = i;
