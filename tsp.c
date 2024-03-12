@@ -101,6 +101,7 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 
 void debug_print(struct tsp* tsp)
 {
+	printf("----------INSTANCE-----------\n");
 	printf("nnodes: %d\n", tsp->nnodes);
 
 	printf("model_source: ");
@@ -121,15 +122,17 @@ void debug_print(struct tsp* tsp)
 		}
 		printf("\nBEST SOLUTION: %lf\n", tsp->solution_value);
 	}
+	printf("-----------------------------\n");
 }
 
 void debug_print_coords(struct tsp* tsp)
 {
-	printf("%d nodes:\n", tsp->nnodes);
+	printf("------------NODES------------\n");
 	for (int i = 0; i < tsp->nnodes; i++) {
 		printf("%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x,
 		       tsp->coords[i].y);
 	}
+	printf("-----------------------------\n");
 }
 
 int tsp_allocate_costs(struct tsp* tsp)
@@ -186,6 +189,8 @@ int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 		return -1;
 start:
 	for (int i = 0; i < tsp->nnodes - 2; i++) {
+		double best_delta = -10e30;
+		int v1, v2;
 		for (int j = i + 2; j < tsp->nnodes; j++) {
 			double
 			    distance_prev = tsp->cost_matrix[flatten_coords(
@@ -205,31 +210,24 @@ start:
 						tsp->nnodes)];
 
 			double delta = distance_prev - distance_next;
-
-			if (delta > 0) {
-				int left = i + 1;
-				int right = j;
-				while (left < right) {
-					int temp = solution[left];
-					solution[left] = solution[right];
-					solution[right] = temp;
-					left++;
-					right--;
-				}
-
-				double old_value = *output_value;
-				*output_value -= delta;
-				/* *output_value = tsp_recompute_solution_arg(
-				 */
-				/*     tsp, solution); */
-
-				/* if (fabs((old_value - *output_value) - delta)
-				 * >= */
-				/*     EPSILON) { */
-				/* 	printf("inconsistent!!!!!!\n"); */
-				/* } */
-				goto start;
+			if (delta > best_delta) {
+				best_delta = delta;
+				v1 = i;
+				v2 = j;
 			}
+		}
+		if (best_delta > 0) {
+			int left = v1 + 1;
+			int right = v2;
+			while (left < right) {
+				int temp = solution[left];
+				solution[left] = solution[right];
+				solution[right] = temp;
+				left++;
+				right--;
+			}
+			*output_value -= best_delta;
+			goto start;
 		}
 	}
 	return 0;

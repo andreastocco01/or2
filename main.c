@@ -148,14 +148,15 @@ int main(int argc, char** argv)
 	}
 
 #ifdef DEBUG
+	debug_print(&tsp);
 	debug_print_coords(&tsp);
 #endif
 
+	printf("------------GREEDY-----------\n");
 	if (tsp_solve_multigreedy_save(&tsp)) {
 		perror("Can't solve greedy\n");
 	}
-
-	printf("Total cost: %lf\n", tsp.solution_value);
+	printf("-----------------------------\n");
 
 #ifdef DEBUG
 	debug_print(&tsp);

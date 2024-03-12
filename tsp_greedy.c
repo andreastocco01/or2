@@ -75,7 +75,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 #ifdef DEBUG
-		printf("Solving %d/%d\n", i + 1, tsp->nnodes);
+		printf("Starting node %d/%d\n", i + 1, tsp->nnodes);
 #endif
 		tsp_solve_greedy(tsp, i, current, &current_dist);
 		tsp_2opt_solution(tsp, current, &current_dist);
