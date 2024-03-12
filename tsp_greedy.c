@@ -76,6 +76,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 	int* drawn = calloc(tsp->nnodes, sizeof(int));
 	srand(time(NULL));
+	time_t start = time(NULL);
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 		int r;
@@ -95,6 +96,12 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
+		}
+
+		if (tsp->time_limit != 0 &&
+		    start + tsp->time_limit < time(NULL)) {
+			printf("Time limit exceeded\n");
+			break;
 		}
 	}
 

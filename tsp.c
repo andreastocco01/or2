@@ -27,6 +27,7 @@ void tsp_init(struct tsp* tsp)
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
 	tsp->nnodes = 0;
+	tsp->time_limit = 0;
 }
 
 int tsp_allocate_buffers(struct tsp* tsp)
@@ -73,6 +74,12 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 				return -1;
 			}
 			modelSource = 1;
+		} else if (!strcmp(argv[i], "-timelimit")) {
+			tsp->time_limit = atoi(argv[++i]);
+			if (tsp->time_limit < 0) {
+				perror("Invalid time limit\n");
+				return -1;
+			}
 		}
 	}
 

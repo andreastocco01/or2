@@ -26,6 +26,8 @@ struct tsp {
 
 	char* edge_weight_type;
 
+	int time_limit;
+
 	double* cost_matrix;
 
 	int* solution_permutation;
