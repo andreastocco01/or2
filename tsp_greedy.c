@@ -81,19 +81,26 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double current_dist = 10e30;
 	double best_dist = 10e30;
 
-	int* drawn = calloc(tsp->nnodes, sizeof(int));
 	srand(time(NULL));
 	time_t start = time(NULL);
 
 	for (int i = 0; i < tsp->nnodes; i++) {
-		int r;
-		while (1) {
-			r = rand() % tsp->nnodes;
-			if (drawn[r] == 0) {
-				drawn[r] = 1;
-				break;
-			}
-		}
+		// TODO I don't care whether I have already visited this node.
+		// On big instances, this is not a problem since the probability of
+		// visiting the same node more than once is negligible.
+		//
+		// One possible way to extract new numbers (which is essentialy the same
+		// thing as obtaining a permutation of the vertices) would be:
+		//
+		// create a vector with the ordered indices of all the starting nodes.
+		// at iteration t (starting from 0):
+		// - we extract an index i in the range [0, nnodes-t).
+		// - we use the value of the element at position i as the starting node
+		// - we swap the element at position i with the nnodes-t-1 element ( so
+		//   that it won't be extracted in the next iterations)
+		//
+		// I'm not sure about the indices, doublecheck this.
+		int r = rand() % tsp->nnodes;
 #ifdef DEBUG
 		printf("Starting node %d/%d\n", r + 1, tsp->nnodes);
 #endif
@@ -119,7 +126,6 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 	free(best);
 	free(current);
-	free(drawn);
 
 	return 0;
 }
