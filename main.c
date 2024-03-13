@@ -122,7 +122,7 @@ int load_instance_random(struct tsp* tsp)
 void parse_arguments(int argc, char** argv)
 {
 	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-plot")) {
+		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
 			configPlot = 1;
 		}
 	}

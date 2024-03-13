@@ -55,26 +55,30 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 	int userSetSeed = 0;
 	int userSetNnodes = 0;
 	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-random")) {
+		if (!strcmp(argv[i], "--random") || !strcmp(argv[i], "-r")) {
 			if (modelSource != -1) {
 				perror("Can't use more than 1 mode\n");
 				return -1;
 			}
 			modelSource = 0;
-		} else if (!strcmp(argv[i], "-seed")) {
+		} else if (!strcmp(argv[i], "--seed") ||
+			   !strcmp(argv[i], "-s")) {
 			tsp->seed = atoi(argv[++i]);
 			userSetSeed = 1;
-		} else if (!strcmp(argv[i], "-nnodes")) {
+		} else if (!strcmp(argv[i], "--nnodes") ||
+			   !strcmp(argv[i], "-n")) {
 			tsp->nnodes = atoi(argv[++i]);
 			userSetNnodes = 1;
-		} else if (!strcmp(argv[i], "-inputfile")) {
+		} else if (!strcmp(argv[i], "--inputfile") ||
+			   !strcmp(argv[i], "-i")) {
 			tsp->input_file = argv[++i];
 			if (modelSource != -1) {
 				perror("Can't use more than 1 mode\n");
 				return -1;
 			}
 			modelSource = 1;
-		} else if (!strcmp(argv[i], "-timelimit")) {
+		} else if (!strcmp(argv[i], "--timelimit") ||
+			   !strcmp(argv[i], "-t")) {
 			tsp->time_limit = atoi(argv[++i]);
 			if (tsp->time_limit < 0) {
 				perror("Invalid time limit\n");
