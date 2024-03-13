@@ -2,11 +2,13 @@
 #define TSP_GREEDY_C
 
 #include "tsp.h"
+#include <time.h>
 
 int tsp_solve_greedy(struct tsp* tsp,
 		     int starting_node,
 		     int* output_solution,
-		     double* output_value);
+		     double* output_value,
+         time_t start);
 
 
 int tsp_solve_multigreedy(struct tsp* tsp,

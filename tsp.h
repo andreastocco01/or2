@@ -6,6 +6,8 @@
 #define EPSILON      1e-7
 #define flatten_coords(x, y, N) x* N + y
 
+#include <time.h>
+
 struct point {
 	double x;
 	double y;
@@ -45,7 +47,7 @@ void debug_print_coords(struct tsp* tsp);
 
 int tsp_compute_costs(struct tsp* tsp);
 
-int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
+int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value, time_t start);
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);

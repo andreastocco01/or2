@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 /**
  * Output buffers have to be preallocated
@@ -10,7 +9,8 @@
 int tsp_solve_greedy(struct tsp* tsp,
 		     int starting_node,
 		     int* output_solution,
-		     double* output_value)
+		     double* output_value,
+		     time_t start)
 {
 	if (starting_node < 0 || starting_node >= tsp->nnodes)
 		return -1;
@@ -47,6 +47,13 @@ int tsp_solve_greedy(struct tsp* tsp,
 		current_solution[min_index] = temp;
 
 		cumulative_dist += min_dist;
+		if (tsp->time_limit != 0 &&
+		    start + tsp->time_limit < time(NULL)) {
+			memcpy(output_solution, current_solution,
+			       sizeof(int) * tsp->nnodes);
+			*output_value = cumulative_dist;
+			return 1;
+		}
 	}
 
 	double backarc = tsp->cost_matrix[flatten_coords(
@@ -90,18 +97,20 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 #ifdef DEBUG
 		printf("Starting node %d/%d\n", r + 1, tsp->nnodes);
 #endif
-		tsp_solve_greedy(tsp, r, current, &current_dist);
-		tsp_2opt_solution(tsp, current, &current_dist);
+		if (tsp_solve_greedy(tsp, r, current, &current_dist, start) ==
+		    1) {
+			printf("Time limit exceeded in greedy\n");
+			break;
+		}
+		if (tsp_2opt_solution(tsp, current, &current_dist, start) ==
+		    1) {
+			printf("Time limit exceeded in 2opt\n");
+			break;
+		}
 
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
-		}
-
-		if (tsp->time_limit != 0 &&
-		    start + tsp->time_limit < time(NULL)) {
-			printf("Time limit exceeded\n");
-			break;
 		}
 	}
 
@@ -141,7 +150,7 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 		return -1;
 
 	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
-			     &tsp->solution_value))
+			     &tsp->solution_value, time(NULL)))
 		return -1;
 
 	return 0;
