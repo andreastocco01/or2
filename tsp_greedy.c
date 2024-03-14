@@ -81,7 +81,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double best_dist = 10e30;
 
 	srand(time(NULL));
-	int to_extract[tsp->nnodes];
+	int* to_extract = malloc(sizeof(int) * tsp->nnodes);
 	for (int i = 0; i < tsp->nnodes; i++) {
 		to_extract[i] = i;
 	}
@@ -120,6 +120,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 
 	free(best);
 	free(current);
+	free(to_extract);
 
 	return 0;
 }
