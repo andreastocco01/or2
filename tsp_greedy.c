@@ -9,8 +9,7 @@
 int tsp_solve_greedy(struct tsp* tsp,
 		     int starting_node,
 		     int* output_solution,
-		     double* output_value,
-		     time_t start)
+		     double* output_value)
 {
 	if (starting_node < 0 || starting_node >= tsp->nnodes)
 		return -1;
@@ -48,7 +47,7 @@ int tsp_solve_greedy(struct tsp* tsp,
 
 		cumulative_dist += min_dist;
 		if (tsp->time_limit != 0 &&
-		    start + tsp->time_limit < time(NULL)) {
+		    tsp->starting_time + tsp->time_limit < time(NULL)) {
 			memcpy(output_solution, current_solution,
 			       sizeof(int) * tsp->nnodes);
 			*output_value = cumulative_dist;
@@ -82,35 +81,30 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double best_dist = 10e30;
 
 	srand(time(NULL));
-	time_t start = time(NULL);
+	int to_extract[tsp->nnodes];
+	for (int i = 0; i < tsp->nnodes; i++) {
+		to_extract[i] = i;
+	}
+	int t = 0;
+
+	tsp->starting_time = time(NULL);
 
 	for (int i = 0; i < tsp->nnodes; i++) {
-		// TODO I don't care whether I have already visited this node.
-		// On big instances, this is not a problem since the probability of
-		// visiting the same node more than once is negligible.
-		//
-		// One possible way to extract new numbers (which is essentialy the same
-		// thing as obtaining a permutation of the vertices) would be:
-		//
-		// create a vector with the ordered indices of all the starting nodes.
-		// at iteration t (starting from 0):
-		// - we extract an index i in the range [0, nnodes-t).
-		// - we use the value of the element at position i as the starting node
-		// - we swap the element at position i with the nnodes-t-1 element ( so
-		//   that it won't be extracted in the next iterations)
-		//
-		// I'm not sure about the indices, doublecheck this.
-		int r = rand() % tsp->nnodes;
+		// compute starting node
+		int r = rand() % (tsp->nnodes - t);
+		int starting_node = to_extract[r];
+		to_extract[r] = to_extract[tsp->nnodes - t - 1];
+		to_extract[tsp->nnodes - t - 1] = starting_node;
+		t++;
 #ifdef DEBUG
-		printf("Starting node %d/%d\n", r + 1, tsp->nnodes);
+		printf("Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
 #endif
-		if (tsp_solve_greedy(tsp, r, current, &current_dist, start) ==
-		    1) {
+		if (tsp_solve_greedy(tsp, starting_node, current,
+				     &current_dist) == 1) {
 			printf("Time limit exceeded in greedy\n");
 			break;
 		}
-		if (tsp_2opt_solution(tsp, current, &current_dist, start) ==
-		    1) {
+		if (tsp_2opt_solution(tsp, current, &current_dist) == 1) {
 			printf("Time limit exceeded in 2opt\n");
 			break;
 		}
@@ -156,7 +150,7 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 		return -1;
 
 	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
-			     &tsp->solution_value, time(NULL)))
+			     &tsp->solution_value))
 		return -1;
 
 	return 0;

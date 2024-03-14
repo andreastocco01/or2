@@ -28,6 +28,7 @@ struct tsp {
 
 	char* edge_weight_type;
 
+	time_t starting_time;
 	int time_limit;
 
 	double* cost_matrix;
@@ -47,7 +48,7 @@ void debug_print_coords(struct tsp* tsp);
 
 int tsp_compute_costs(struct tsp* tsp);
 
-int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value, time_t start);
+int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);

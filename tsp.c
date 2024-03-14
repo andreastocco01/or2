@@ -207,10 +207,7 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 	return distance_prev - distance_next;
 }
 
-int tsp_2opt_solution(struct tsp* tsp,
-		      int* solution,
-		      double* output_value,
-		      time_t start)
+int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 {
 	if (!tsp->cost_matrix)
 		return -1;
@@ -242,7 +239,7 @@ start:
 			*output_value -= best_delta;
 
 			if (tsp->time_limit != 0 &&
-			    start + tsp->time_limit < time(NULL)) {
+			    tsp->starting_time + tsp->time_limit < time(NULL)) {
 				return 1;
 			}
 
