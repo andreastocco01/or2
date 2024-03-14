@@ -217,18 +217,18 @@ int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 start:
 	for (int i = 0; i < tsp->nnodes - 2; i++) {
 		double best_delta = -10e30;
-		int v1, v2;
+		int best_i, best_j;
 		for (int j = i + 2; j < tsp->nnodes; j++) {
 			double delta = compute_delta(tsp, solution, i, j);
 			if (delta > best_delta) {
 				best_delta = delta;
-				v1 = i;
-				v2 = j;
+				best_i = i;
+				best_j = j;
 			}
 		}
 		if (best_delta > 0) {
-			int left = v1 + 1;
-			int right = v2;
+			int left = best_i + 1;
+			int right = best_j;
 			while (left < right) {
 				int temp = solution[left];
 				solution[left] = solution[right];
