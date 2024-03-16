@@ -54,6 +54,7 @@ void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
 void tsp_add_incumbent(struct tsp* tsp, double value);
 void tsp_add_current(struct tsp* tsp, double value);
+double compute_delta(struct tsp* tsp, int* solution, int i, int j);
 
 int tsp_compute_costs(struct tsp* tsp);
 

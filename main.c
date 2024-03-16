@@ -200,9 +200,13 @@ void main_compute(int argc, char** argv)
 	debug_print_coords(&tsp);
 #endif
 
-	printf("------------GREEDY-----------\n");
-	if (tsp_solve_multigreedy_init(&tsp)) {
-		perror("Can't solve greedy\n");
+	/* printf("------------GREEDY-----------\n"); */
+	/* if (tsp_solve_multigreedy_init(&tsp)) { */
+	/* 	perror("Can't solve greedy\n"); */
+	/* } */
+	printf("------------TABU-----------\n");
+	if (tsp_solve_tabu(&tsp)) {
+		perror("Can't solve tabu search\n");
 	}
 	summary_and_exit(-1);
 }
@@ -229,7 +233,7 @@ void summary_and_exit(int signal)
 		if (plot_incumbents(&tsp)) {
 			perror("Can't plot incumbents\n");
 		}
-		if (plot_current_solutions(&tsp)) {
+		if (plot_current == 1 && plot_current_solutions(&tsp)) {
 			perror("Can't plot incumbents\n");
 		}
 	}

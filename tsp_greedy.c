@@ -77,7 +77,6 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	double current_dist = 10e30;
 	double best_dist = 10e30;
 
-	srand(time(NULL));
 	int* to_extract = malloc(sizeof(int) * tsp->nnodes);
 	for (int i = 0; i < tsp->nnodes; i++) {
 		to_extract[i] = i;
@@ -156,5 +155,113 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 			     &tsp->solution_value))
 		return -1;
 
+	return 0;
+}
+
+void tsp_2opt_swap(int left, int right, int* solution)
+{
+	while (left < right) {
+		int temp = solution[left];
+		solution[left] = solution[right];
+		solution[right] = temp;
+		left++;
+		right--;
+	}
+}
+
+int tsp_solve_tabu(struct tsp* tsp)
+{
+	if (tsp_allocate_solution(tsp))
+		return -1;
+
+	if (tsp_allocate_costs(tsp))
+		return -1;
+
+	if (tsp_compute_costs(tsp))
+		return -1;
+
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+
+	/* int tenure = tsp->nnodes / 10; */
+	int tenure = 100;
+
+	int* tabu_iteration = (int*)malloc(tsp->nnodes * sizeof(int));
+	for (int i = 0; i < tsp->nnodes; i++)
+		tabu_iteration[i] = -1;
+
+	// starting solution is solved with a greedy approach
+	int starting_node = rand() % tsp->nnodes;
+
+	printf("starting from node %d\n", starting_node);
+	tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
+			 &tsp->solution_value);
+
+	int* current_solution = malloc(tsp->nnodes * sizeof(int));
+	double current_solution_value = tsp->solution_value;
+
+	memcpy(current_solution, tsp->solution_permutation,
+	       sizeof(int) * tsp->nnodes);
+	tsp_add_current(tsp, current_solution_value);
+	tsp_add_incumbent(tsp, current_solution_value);
+
+	int current_iteration = 0;
+
+	while (1) {
+		for (int i = 0; i < tsp->nnodes - 2; i++) {
+			double best_delta = -10e30;
+			int best_i, best_j;
+			for (int j = i + 2; j < tsp->nnodes; j++) {
+				double delta = compute_delta(
+				    tsp, current_solution, i, j);
+				if (delta > best_delta) {
+					best_delta = delta;
+					best_i = i;
+					best_j = j;
+				}
+			}
+			if (best_delta > 0) {
+				// normal 2-opt
+				int left = best_i + 1;
+				int right = best_j;
+				tsp_2opt_swap(left, right, current_solution);
+				current_solution_value -= best_delta;
+				tsp_add_current(tsp, current_solution_value);
+				if (current_solution_value <
+				    tsp->solution_value) {
+					tsp->solution_value =
+					    current_solution_value;
+					tsp_add_incumbent(tsp,
+							  tsp->solution_value);
+
+					memcpy(tsp->solution_permutation,
+					       current_solution,
+					       sizeof(int) * tsp->nnodes);
+				}
+			} else {
+				if (tabu_iteration[i] != -1 &&
+				    (current_iteration - tabu_iteration[i]) <
+					tenure) {
+					// the node is tabu. We need to skip
+					continue;
+				}
+				// execute swap
+				int left = best_i + 1;
+				int right = best_j;
+				tsp_2opt_swap(left, right, current_solution);
+				current_solution_value -= best_delta;
+				// add to tabu list
+				tabu_iteration[i] = current_iteration;
+				tsp_add_current(tsp, current_solution_value);
+			}
+		}
+		current_iteration++;
+	}
+
+	free(tabu_iteration);
+	free(current_solution);
 	return 0;
 }
