@@ -113,6 +113,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 			// saving the solution at every iteration
 			tsp_save_signal_safe(tsp, current, best_dist);
 		}
+		tsp_add_current(tsp, current_dist);
 	}
 
 	// TODO can we remove this?

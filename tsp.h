@@ -1,11 +1,12 @@
 #ifndef TSP_H_
 #define TSP_H_
 
-#define RANDOM_MAX_X            10000
-#define RANDOM_MAX_Y            10000
-#define EPSILON                 1e-7
-#define STARTING_INCUMBENTS     1
-#define flatten_coords(x, y, N) x* N + y
+#define RANDOM_MAX_X               10000
+#define RANDOM_MAX_Y               10000
+#define EPSILON                    1e-7
+#define STARTING_INCUMBENTS        4096
+#define STARTING_CURRENT_SOLUTIONS 4096
+#define flatten_coords(x, y, N)    x* N + y
 
 #include <time.h>
 
@@ -37,6 +38,10 @@ struct tsp {
 	double* incumbents;
 	int incumbent_length;
 	int incumbent_next_index;
+
+	double* current_solutions;
+	int current_solution_length;
+	int current_solution_next_index;
 };
 
 void tsp_init(struct tsp* tsp);
@@ -48,6 +53,7 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp);
 void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
 void tsp_add_incumbent(struct tsp* tsp, double value);
+void tsp_add_current(struct tsp* tsp, double value);
 
 int tsp_compute_costs(struct tsp* tsp);
 

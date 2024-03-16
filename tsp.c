@@ -43,9 +43,17 @@ int tsp_allocate_buffers(struct tsp* tsp)
 	if (tsp->incumbents)
 		free(tsp->incumbents);
 
-	tsp->incumbents = (double*) malloc(sizeof(double) * STARTING_INCUMBENTS);
+	tsp->incumbents = (double*)malloc(sizeof(double) * STARTING_INCUMBENTS);
 	tsp->incumbent_next_index = 0;
 	tsp->incumbent_length = STARTING_INCUMBENTS;
+
+	if (tsp->current_solutions)
+		free(tsp->current_solutions);
+
+	tsp->current_solutions = (double*)malloc(sizeof(double) *
+						 STARTING_CURRENT_SOLUTIONS);
+	tsp->current_solution_next_index = 0;
+	tsp->current_solution_length = STARTING_CURRENT_SOLUTIONS;
 
 	return 0;
 }
@@ -303,15 +311,32 @@ void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
 
 void tsp_add_incumbent(struct tsp* tsp, double value)
 {
-	if(tsp->incumbent_next_index == tsp->incumbent_length) {
-		printf("Resizing!\n");
+	if (tsp->incumbent_next_index == tsp->incumbent_length) {
 		// we need to resize
-		double* new_area = malloc(sizeof(double) * tsp->incumbent_length * 2);
-		memcpy(new_area, tsp->incumbents, tsp->incumbent_length * sizeof(double));
+		double* new_area = malloc(sizeof(double) *
+					  tsp->incumbent_length * 2);
+		memcpy(new_area, tsp->incumbents,
+		       tsp->incumbent_length * sizeof(double));
 		free(tsp->incumbents);
 		tsp->incumbents = new_area;
 		tsp->incumbent_length *= 2;
 	}
 
 	tsp->incumbents[tsp->incumbent_next_index++] = value;
+}
+
+void tsp_add_current(struct tsp* tsp, double value)
+{
+	if (tsp->current_solution_next_index == tsp->current_solution_length) {
+		// we need to resize
+		double* new_area = malloc(sizeof(double) *
+					  tsp->current_solution_length * 2);
+		memcpy(new_area, tsp->current_solutions,
+		       tsp->current_solution_length * sizeof(double));
+		free(tsp->current_solutions);
+		tsp->current_solutions = new_area;
+		tsp->current_solution_length *= 2;
+	}
+
+	tsp->current_solutions[tsp->current_solution_next_index++] = value;
 }

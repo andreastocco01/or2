@@ -68,8 +68,29 @@ int plot_incumbents(struct tsp* tsp)
 	}
 
 	fprintf(gpprocess, "EOD\n");
-	fprintf(gpprocess,
-		"plot $data using 1:2 title \"incumbents\" pt 7 ps 2 with lines\n");
+	fprintf(
+	    gpprocess,
+	    "plot $data using 1:2 title \"incumbents\" pt 7 ps 2 with lines\n");
+
+	fclose(gpprocess);
+	return 0;
+}
+
+int plot_current_solutions(struct tsp* tsp)
+{
+	FILE* gpprocess = popen("gnuplot --persist", "w");
+	if (gpprocess == NULL)
+		return -1;
+
+	fprintf(gpprocess, "$data << EOD\n");
+
+	for (int i = 0; i < tsp->current_solution_next_index; i++) {
+		fprintf(gpprocess, "%d %lf\n", i, tsp->current_solutions[i]);
+	}
+
+	fprintf(gpprocess, "EOD\n");
+	fprintf(gpprocess, "plot $data using 1:2 title \"current solutions\" "
+			   "pt 7 ps 2 with lines\n");
 
 	fclose(gpprocess);
 	return 0;
@@ -208,6 +229,9 @@ void summary_and_exit(int signal)
 			perror("Can't plot solution\n");
 		}
 		if (plot_incumbents(&tsp)) {
+			perror("Can't plot incumbents\n");
+		}
+		if (plot_current_solutions(&tsp)) {
 			perror("Can't plot incumbents\n");
 		}
 	}
