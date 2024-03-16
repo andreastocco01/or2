@@ -40,6 +40,13 @@ int tsp_allocate_buffers(struct tsp* tsp)
 
 	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
 
+	if (tsp->incumbents)
+		free(tsp->incumbents);
+
+	tsp->incumbents = (double*) malloc(sizeof(double) * STARTING_INCUMBENTS);
+	tsp->incumbent_next_index = 0;
+	tsp->incumbent_length = STARTING_INCUMBENTS;
+
 	return 0;
 }
 
@@ -292,4 +299,19 @@ void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
 
 	// restore old mask
 	sigprocmask(SIG_SETMASK, &old, NULL);
+}
+
+void tsp_add_incumbent(struct tsp* tsp, double value)
+{
+	if(tsp->incumbent_next_index == tsp->incumbent_length) {
+		printf("Resizing!\n");
+		// we need to resize
+		double* new_area = malloc(sizeof(double) * tsp->incumbent_length * 2);
+		memcpy(new_area, tsp->incumbents, tsp->incumbent_length * sizeof(double));
+		free(tsp->incumbents);
+		tsp->incumbents = new_area;
+		tsp->incumbent_length *= 2;
+	}
+
+	tsp->incumbents[tsp->incumbent_next_index++] = value;
 }

@@ -55,6 +55,26 @@ int plot_instance(struct tsp* tsp)
 	return 0;
 }
 
+int plot_incumbents(struct tsp* tsp)
+{
+	FILE* gpprocess = popen("gnuplot --persist", "w");
+	if (gpprocess == NULL)
+		return -1;
+
+	fprintf(gpprocess, "$data << EOD\n");
+
+	for (int i = 0; i < tsp->incumbent_next_index; i++) {
+		fprintf(gpprocess, "%d %lf\n", i, tsp->incumbents[i]);
+	}
+
+	fprintf(gpprocess, "EOD\n");
+	fprintf(gpprocess,
+		"plot $data using 1:2 title \"incumbents\" pt 7 ps 2 with lines\n");
+
+	fclose(gpprocess);
+	return 0;
+}
+
 int load_instance_file(struct tsp* tsp)
 {
 	FILE* file = fopen(tsp->input_file, "r");
@@ -186,6 +206,9 @@ void summary_and_exit(int signal)
 	if (configPlot) {
 		if (plot_instance(&tsp)) {
 			perror("Can't plot solution\n");
+		}
+		if (plot_incumbents(&tsp)) {
+			perror("Can't plot incumbents\n");
 		}
 	}
 	exit(0);

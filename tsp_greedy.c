@@ -109,11 +109,13 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
 
+			tsp_add_incumbent(tsp, best_dist);
 			// saving the solution at every iteration
 			tsp_save_signal_safe(tsp, current, best_dist);
 		}
 	}
 
+	// TODO can we remove this?
 	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);
 	*output_value = best_dist;
 
