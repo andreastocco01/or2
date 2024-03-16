@@ -317,34 +317,36 @@ void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
 	sigprocmask(SIG_SETMASK, &old, NULL);
 }
 
-void tsp_add_incumbent(struct tsp* tsp, double value)
+void insert_resize(double** array,
+		   int* next_index,
+		   int* length,
+		   int factor,
+		   double value)
 {
-	if (tsp->incumbent_next_index == tsp->incumbent_length) {
+	if (*next_index == *length) {
 		// we need to resize
-		double* new_area = malloc(sizeof(double) *
-					  tsp->incumbent_length * 2);
-		memcpy(new_area, tsp->incumbents,
-		       tsp->incumbent_length * sizeof(double));
-		free(tsp->incumbents);
-		tsp->incumbents = new_area;
-		tsp->incumbent_length *= 2;
+		double* new_area = malloc(sizeof(double) * (*length) * factor);
+
+		memcpy(new_area, *array, *length * sizeof(double));
+
+		free(*array);
+		*array = new_area;
+		*length *= factor;
 	}
 
-	tsp->incumbents[tsp->incumbent_next_index++] = value;
+	(*array)[*next_index] = value;
+	*next_index = *next_index + 1;
+}
+
+void tsp_add_incumbent(struct tsp* tsp, double value)
+{
+	insert_resize(&tsp->incumbents, &tsp->incumbent_next_index,
+		      &tsp->incumbent_length, 2, value);
 }
 
 void tsp_add_current(struct tsp* tsp, double value)
 {
-	if (tsp->current_solution_next_index == tsp->current_solution_length) {
-		// we need to resize
-		double* new_area = malloc(sizeof(double) *
-					  tsp->current_solution_length * 2);
-		memcpy(new_area, tsp->current_solutions,
-		       tsp->current_solution_length * sizeof(double));
-		free(tsp->current_solutions);
-		tsp->current_solutions = new_area;
-		tsp->current_solution_length *= 2;
-	}
-
-	tsp->current_solutions[tsp->current_solution_next_index++] = value;
+	insert_resize(&tsp->current_solutions,
+		      &tsp->current_solution_next_index,
+		      &tsp->current_solution_length, 2, value);
 }
