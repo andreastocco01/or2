@@ -18,6 +18,12 @@ void tsp_free(struct tsp* tsp)
 
 	if (tsp->solution_permutation)
 		free(tsp->solution_permutation);
+
+	if (tsp->incumbents)
+		free(tsp->incumbents);
+
+	if (tsp->current_solutions)
+		free(tsp->current_solutions);
 }
 
 void tsp_init(struct tsp* tsp)
@@ -28,6 +34,8 @@ void tsp_init(struct tsp* tsp)
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
 	tsp->nnodes = 0;
+	tsp->incumbents = NULL;
+	tsp->current_solutions = NULL;
 }
 
 int tsp_allocate_buffers(struct tsp* tsp)
