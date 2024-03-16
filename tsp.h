@@ -1,9 +1,9 @@
 #ifndef TSP_H_
 #define TSP_H_
 
-#define RANDOM_MAX_X 10000
-#define RANDOM_MAX_Y 10000
-#define EPSILON      1e-7
+#define RANDOM_MAX_X            10000
+#define RANDOM_MAX_Y            10000
+#define EPSILON                 1e-7
 #define flatten_coords(x, y, N) x* N + y
 
 #include <time.h>
@@ -28,9 +28,6 @@ struct tsp {
 
 	char* edge_weight_type;
 
-	time_t starting_time;
-	int time_limit;
-
 	double* cost_matrix;
 
 	int* solution_permutation;
@@ -53,5 +50,7 @@ int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);
 int tsp_check_solution(struct tsp* tsp, double* computed);
+
+void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value);
 
 #endif // TSP_H_

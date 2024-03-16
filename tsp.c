@@ -1,5 +1,6 @@
 #include "tsp.h"
 #include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +28,6 @@ void tsp_init(struct tsp* tsp)
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
 	tsp->nnodes = 0;
-	tsp->time_limit = 0;
 }
 
 int tsp_allocate_buffers(struct tsp* tsp)
@@ -77,13 +77,6 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 				return -1;
 			}
 			modelSource = 1;
-		} else if (!strcmp(argv[i], "--timelimit") ||
-			   !strcmp(argv[i], "-t")) {
-			tsp->time_limit = atoi(argv[++i]);
-			if (tsp->time_limit < 0) {
-				perror("Invalid time limit\n");
-				return -1;
-			}
 		}
 	}
 
@@ -238,11 +231,6 @@ start:
 			}
 			*output_value -= best_delta;
 
-			if (tsp->time_limit != 0 &&
-			    tsp->starting_time + tsp->time_limit < time(NULL)) {
-				return 1;
-			}
-
 			goto start;
 		}
 	}
@@ -284,4 +272,24 @@ int tsp_check_solution(struct tsp* tsp, double* computed)
 		return 0;
 	}
 	return 1;
+}
+
+void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
+{
+	// mask the signal while we are saving to the tsp
+	// instance
+	sigset_t sigset;
+	sigset_t old;
+
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGUSR1);
+	sigaddset(&sigset, SIGINT);
+	sigprocmask(SIG_BLOCK, &sigset, &old);
+
+	// save to the instance
+	memcpy(tsp->solution_permutation, solution, sizeof(int) * tsp->nnodes);
+	tsp->solution_value = value;
+
+	// restore old mask
+	sigprocmask(SIG_SETMASK, &old, NULL);
 }

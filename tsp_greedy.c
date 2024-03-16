@@ -1,7 +1,11 @@
 #include "tsp_greedy.h"
+#include "tsp.h"
+#include <bits/types/sigset_t.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /**
  * Output buffers have to be preallocated
@@ -46,13 +50,6 @@ int tsp_solve_greedy(struct tsp* tsp,
 		current_solution[min_index] = temp;
 
 		cumulative_dist += min_dist;
-		if (tsp->time_limit != 0 &&
-		    tsp->starting_time + tsp->time_limit < time(NULL)) {
-			memcpy(output_solution, current_solution,
-			       sizeof(int) * tsp->nnodes);
-			*output_value = cumulative_dist;
-			return 1;
-		}
 	}
 
 	double backarc = tsp->cost_matrix[flatten_coords(
@@ -87,8 +84,6 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	}
 	int t = 0;
 
-	tsp->starting_time = time(NULL);
-
 	for (int i = 0; i < tsp->nnodes; i++) {
 		// compute starting node
 		int r = rand() % (tsp->nnodes - t);
@@ -99,19 +94,23 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 #ifdef DEBUG
 		printf("Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
 #endif
+
 		if (tsp_solve_greedy(tsp, starting_node, current,
-				     &current_dist) == 1) {
-			printf("Time limit exceeded in greedy\n");
-			break;
+				     &current_dist)) {
+			printf("Can't solve greedy!\n");
+			return -1;
 		}
-		if (tsp_2opt_solution(tsp, current, &current_dist) == 1) {
-			printf("Time limit exceeded in 2opt\n");
-			break;
+		if (tsp_2opt_solution(tsp, current, &current_dist)) {
+			printf("Can't solve 2opt\n");
+			return -1;
 		}
 
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
+
+			// saving the solution at every iteration
+			tsp_save_signal_safe(tsp, current, best_dist);
 		}
 	}
 
@@ -125,7 +124,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 	return 0;
 }
 
-int tsp_solve_multigreedy_save(struct tsp* tsp)
+int tsp_solve_multigreedy_init(struct tsp* tsp)
 {
 	if (tsp_allocate_solution(tsp))
 		return -1;

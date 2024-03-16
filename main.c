@@ -2,11 +2,21 @@
 #include "tsp_greedy.h"
 #include "util.h"
 #include <assert.h>
+#include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+void summary_and_exit(int signal);
 
 int configPlot = 0;
+int timeLimit = 0;
+int childpid;
+struct tsp tsp;
 
 int plot_instance(struct tsp* tsp)
 {
@@ -124,27 +134,26 @@ void parse_arguments(int argc, char** argv)
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
 			configPlot = 1;
+		} else if (!strcmp(argv[i], "--timelimit") ||
+			   !strcmp(argv[i], "-t")) {
+			timeLimit = atoi(argv[++i]);
 		}
 	}
 }
 
-int main(int argc, char** argv)
+void main_compute(int argc, char** argv)
 {
-	struct tsp tsp;
-
 	tsp_init(&tsp);
 
 	if (tsp_parse_arguments(argc, argv, &tsp)) {
-		return -1;
+		exit(-1);
 	}
-
-	parse_arguments(argc, argv);
 
 	if (tsp.model_source == 1) {
 		load_instance_random(&tsp);
 	} else if (tsp.model_source == 2) {
 		if (load_instance_file(&tsp) == -1)
-			return -1;
+			exit(-1);
 	}
 
 #ifdef DEBUG
@@ -153,10 +162,22 @@ int main(int argc, char** argv)
 #endif
 
 	printf("------------GREEDY-----------\n");
-	if (tsp_solve_multigreedy_save(&tsp)) {
+	if (tsp_solve_multigreedy_init(&tsp)) {
 		perror("Can't solve greedy\n");
 	}
-	printf("-----------------------------\n");
+	summary_and_exit(-1);
+}
+
+void summary_and_exit(int signal)
+{
+	if (signal == -1) {
+		kill(getppid(), SIGINT);
+		printf("Execution terminated\n");
+	} else if (signal == SIGUSR1) {
+		printf("Timelimit reached\n");
+	} else if (signal == SIGKILL) {
+		printf("Execution terminated by the user\n");
+	}
 
 #ifdef DEBUG
 	debug_print(&tsp);
@@ -167,7 +188,35 @@ int main(int argc, char** argv)
 			perror("Can't plot solution\n");
 		}
 	}
+	exit(0);
+}
 
-	tsp_free(&tsp);
+void redirect_to_child(int signal)
+{
+	kill(childpid, signal);
+}
+
+int main(int argc, char** argv)
+{
+	parse_arguments(argc, argv);
+
+	childpid = fork();
+	printf("childpid = %d\n", childpid);
+	if (!childpid) {
+		// ===== CHILD
+		// signal for terminating with timelimit
+		signal(SIGUSR1, summary_and_exit);
+		// signal for terminating with ctrl+c
+		signal(SIGINT, summary_and_exit);
+		main_compute(argc, argv);
+	} else {
+		// ===== PARENT
+		signal(SIGINT, redirect_to_child);
+		if (timeLimit != 0) {
+			sleep(timeLimit);
+			int res = kill(childpid, SIGUSR1);
+		}
+		wait(NULL);
+	}
 	return 0;
 }
