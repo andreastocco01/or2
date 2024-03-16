@@ -15,6 +15,7 @@ void summary_and_exit(int signal);
 
 int configPlot = 0;
 int timeLimit = 0;
+int plot_current = 0;
 int childpid;
 struct tsp tsp;
 
@@ -55,37 +56,39 @@ int plot_instance(struct tsp* tsp)
 	return 0;
 }
 
-int plot_array(double* array, int size, const char* title)
+int plot_array(double* array, int size, const char* title, FILE* file)
 {
-	FILE* gpprocess = popen("gnuplot --persist", "w");
-	if (gpprocess == NULL)
+	if (file == NULL)
 		return -1;
 
-	fprintf(gpprocess, "$data << EOD\n");
+	fprintf(file, "$data << EOD\n");
 
 	for (int i = 0; i < size; i++) {
-		fprintf(gpprocess, "%d %lf\n", i, array[i]);
+		fprintf(file, "%d %lf\n", i, array[i]);
 	}
 
-	fprintf(gpprocess, "EOD\n");
-	fprintf(gpprocess,
+	fprintf(file, "EOD\n");
+	fprintf(file,
 		"plot $data using 1:2 title \"%s\" pt 7 ps 2 with lines\n",
 		title);
 
-	fclose(gpprocess);
+	fclose(file);
 	return 0;
 }
 
 int plot_incumbents(struct tsp* tsp)
 {
+	FILE* gpprocess = popen("gnuplot --persist", "w");
 	return plot_array(tsp->incumbents, tsp->incumbent_next_index,
-			  "incumbent");
+			  "incumbent", gpprocess);
 }
 
 int plot_current_solutions(struct tsp* tsp)
 {
+	FILE* gpprocess = popen("gnuplot --persist", "w");
 	return plot_array(tsp->current_solutions,
-			  tsp->current_solution_next_index, "current solution");
+			  tsp->current_solution_next_index, "current solution",
+			  gpprocess);
 }
 
 int load_instance_file(struct tsp* tsp)
@@ -170,6 +173,9 @@ void parse_arguments(int argc, char** argv)
 		} else if (!strcmp(argv[i], "--timelimit") ||
 			   !strcmp(argv[i], "-t")) {
 			timeLimit = atoi(argv[++i]);
+		} else if (!strcmp(argv[i], "--plotcurrent") ||
+			   !strcmp(argv[i], "-c")) {
+			plot_current = 1;
 		}
 	}
 }
