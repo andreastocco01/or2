@@ -10,10 +10,7 @@
 /**
  * Output buffers have to be preallocated
  * */
-int tsp_solve_greedy(struct tsp* tsp,
-		     int starting_node,
-		     int* output_solution,
-		     double* output_value)
+int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, double* output_value)
 {
 	if (starting_node < 0 || starting_node >= tsp->nnodes)
 		return -1;
@@ -36,9 +33,8 @@ int tsp_solve_greedy(struct tsp* tsp,
 		int min_index = -1;
 
 		for (int j = i + 1; j < tsp->nnodes; j++) {
-			double dist = tsp->cost_matrix[flatten_coords(
-			    current_solution[i], current_solution[j],
-			    tsp->nnodes)];
+			double dist = tsp->cost_matrix[flatten_coords(current_solution[i], current_solution[j],
+								      tsp->nnodes)];
 			if (dist < min_dist) {
 				min_dist = dist;
 				min_index = j;
@@ -52,9 +48,8 @@ int tsp_solve_greedy(struct tsp* tsp,
 		cumulative_dist += min_dist;
 	}
 
-	double backarc = tsp->cost_matrix[flatten_coords(
-	    current_solution[tsp->nnodes - 1], current_solution[0],
-	    tsp->nnodes)];
+	double backarc = tsp->cost_matrix[flatten_coords(current_solution[tsp->nnodes - 1], current_solution[0],
+							 tsp->nnodes)];
 
 	cumulative_dist += backarc;
 
@@ -65,9 +60,7 @@ int tsp_solve_greedy(struct tsp* tsp,
 	return 0;
 }
 
-int tsp_solve_multigreedy(struct tsp* tsp,
-			  int* output_solution,
-			  double* output_value)
+int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_value)
 {
 	if (tsp->nnodes <= 0)
 		return -1;
@@ -94,8 +87,7 @@ int tsp_solve_multigreedy(struct tsp* tsp,
 		printf("Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
 #endif
 
-		if (tsp_solve_greedy(tsp, starting_node, current,
-				     &current_dist)) {
+		if (tsp_solve_greedy(tsp, starting_node, current, &current_dist)) {
 			printf("Can't solve greedy!\n");
 			return -1;
 		}
@@ -135,8 +127,7 @@ int tsp_solve_multigreedy_init(struct tsp* tsp)
 	if (tsp_compute_costs(tsp))
 		return -1;
 
-	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation,
-				  &tsp->solution_value))
+	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation, &tsp->solution_value))
 		return -1;
 
 	return 0;
@@ -151,8 +142,7 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 	if (tsp_compute_costs(tsp))
 		return -1;
 
-	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
-			     &tsp->solution_value))
+	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value))
 		return -1;
 
 	return 0;
@@ -197,14 +187,12 @@ int tsp_solve_tabu(struct tsp* tsp)
 	int starting_node = rand() % tsp->nnodes;
 
 	printf("starting from node %d\n", starting_node);
-	tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation,
-			 &tsp->solution_value);
+	tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value);
 
 	int* current_solution = malloc(tsp->nnodes * sizeof(int));
 	double current_solution_value = tsp->solution_value;
 
-	memcpy(current_solution, tsp->solution_permutation,
-	       sizeof(int) * tsp->nnodes);
+	memcpy(current_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
 	tsp_add_current(tsp, current_solution_value);
 	tsp_add_incumbent(tsp, current_solution_value);
 
@@ -215,8 +203,7 @@ int tsp_solve_tabu(struct tsp* tsp)
 			double best_delta = -10e30;
 			int best_i, best_j;
 			for (int j = i + 2; j < tsp->nnodes; j++) {
-				double delta = compute_delta(
-				    tsp, current_solution, i, j);
+				double delta = compute_delta(tsp, current_solution, i, j);
 				if (delta > best_delta) {
 					best_delta = delta;
 					best_i = i;
@@ -230,21 +217,14 @@ int tsp_solve_tabu(struct tsp* tsp)
 				tsp_2opt_swap(left, right, current_solution);
 				current_solution_value -= best_delta;
 				tsp_add_current(tsp, current_solution_value);
-				if (current_solution_value <
-				    tsp->solution_value) {
-					tsp->solution_value =
-					    current_solution_value;
-					tsp_add_incumbent(tsp,
-							  tsp->solution_value);
+				if (current_solution_value < tsp->solution_value) {
+					tsp->solution_value = current_solution_value;
+					tsp_add_incumbent(tsp, tsp->solution_value);
 
-					memcpy(tsp->solution_permutation,
-					       current_solution,
-					       sizeof(int) * tsp->nnodes);
+					memcpy(tsp->solution_permutation, current_solution, sizeof(int) * tsp->nnodes);
 				}
 			} else {
-				if (tabu_iteration[i] != -1 &&
-				    (current_iteration - tabu_iteration[i]) <
-					tenure) {
+				if (tabu_iteration[i] != -1 && (current_iteration - tabu_iteration[i]) < tenure) {
 					// the node is tabu. We need to skip
 					continue;
 				}

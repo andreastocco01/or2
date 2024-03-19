@@ -29,27 +29,21 @@ int plot_instance(struct tsp* tsp)
 
 	if (tsp->solution_permutation) {
 		for (int i = 0; i < tsp->nnodes; i++) {
-			fprintf(gpprocess, "%lf %lf\n",
-				tsp->coords[tsp->solution_permutation[i]].x,
+			fprintf(gpprocess, "%lf %lf\n", tsp->coords[tsp->solution_permutation[i]].x,
 				tsp->coords[tsp->solution_permutation[i]].y);
 		}
-		fprintf(gpprocess, "%lf %lf\n",
-			tsp->coords[tsp->solution_permutation[0]].x,
+		fprintf(gpprocess, "%lf %lf\n", tsp->coords[tsp->solution_permutation[0]].x,
 			tsp->coords[tsp->solution_permutation[0]].y);
 
 		fprintf(gpprocess, "EOD\n");
-		fprintf(
-		    gpprocess,
-		    "plot $data using 1:2 title \"dataset\" pt 7 ps 2 with "
-		    "points, $data using 1:2 title \"solution\" with lines\n");
+		fprintf(gpprocess, "plot $data using 1:2 title \"dataset\" pt 7 ps 2 with "
+				   "points, $data using 1:2 title \"solution\" with lines\n");
 	} else {
 		for (int i = 0; i < tsp->nnodes; i++) {
-			fprintf(gpprocess, "%lf %lf\n", tsp->coords[i].x,
-				tsp->coords[i].y);
+			fprintf(gpprocess, "%lf %lf\n", tsp->coords[i].x, tsp->coords[i].y);
 		}
 		fprintf(gpprocess, "EOD\n");
-		fprintf(gpprocess,
-			"plot $data using 1:2 pt 7 ps 2 with points\n");
+		fprintf(gpprocess, "plot $data using 1:2 pt 7 ps 2 with points\n");
 	}
 
 	fclose(gpprocess);
@@ -68,9 +62,7 @@ int plot_array(double* array, int size, const char* title, FILE* file)
 	}
 
 	fprintf(file, "EOD\n");
-	fprintf(file,
-		"plot $data using 1:2 title \"%s\" pt 7 ps 2 with lines\n",
-		title);
+	fprintf(file, "plot $data using 1:2 title \"%s\" pt 7 ps 2 with lines\n", title);
 
 	fclose(file);
 	return 0;
@@ -79,16 +71,13 @@ int plot_array(double* array, int size, const char* title, FILE* file)
 int plot_incumbents(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
-	return plot_array(tsp->incumbents, tsp->incumbent_next_index,
-			  "incumbent", gpprocess);
+	return plot_array(tsp->incumbents, tsp->incumbent_next_index, "incumbent", gpprocess);
 }
 
 int plot_current_solutions(struct tsp* tsp)
 {
 	FILE* gpprocess = popen("gnuplot --persist", "w");
-	return plot_array(tsp->current_solutions,
-			  tsp->current_solution_next_index, "current solution",
-			  gpprocess);
+	return plot_array(tsp->current_solutions, tsp->current_solution_next_index, "current solution", gpprocess);
 }
 
 int load_instance_file(struct tsp* tsp)
@@ -117,11 +106,9 @@ int load_instance_file(struct tsp* tsp)
 					return -1;
 				}
 			} else if (!strcmp(name, "EDGE_WEIGHT_TYPE")) {
-				tsp->edge_weight_type = (char*)malloc(
-				    sizeof(char) * strlen(value) + 1);
+				tsp->edge_weight_type = (char*)malloc(sizeof(char) * strlen(value) + 1);
 				strcpy(tsp->edge_weight_type, value);
-			} else if (!strcmp(name, "TYPE") &&
-				   strcmp(value, "TSP")) {
+			} else if (!strcmp(name, "TYPE") && strcmp(value, "TSP")) {
 				perror("Wrong format\n");
 				return -1;
 			}
@@ -132,8 +119,7 @@ int load_instance_file(struct tsp* tsp)
 					int index;
 					double x;
 					double y;
-					fscanf(file, "%d %lf %lf\n", &index, &x,
-					       &y);
+					fscanf(file, "%d %lf %lf\n", &index, &x, &y);
 					assert(index == i + 1);
 					tsp->coords[i].x = x;
 					tsp->coords[i].y = y;
@@ -170,11 +156,9 @@ void parse_arguments(int argc, char** argv)
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
 			configPlot = 1;
-		} else if (!strcmp(argv[i], "--timelimit") ||
-			   !strcmp(argv[i], "-t")) {
+		} else if (!strcmp(argv[i], "--timelimit") || !strcmp(argv[i], "-t")) {
 			timeLimit = atoi(argv[++i]);
-		} else if (!strcmp(argv[i], "--plotcurrent") ||
-			   !strcmp(argv[i], "-c")) {
+		} else if (!strcmp(argv[i], "--plotcurrent") || !strcmp(argv[i], "-c")) {
 			plot_current = 1;
 		}
 	}

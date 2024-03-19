@@ -19,3 +19,4 @@ IndentAccessModifiers: false
 AccessModifierOffset: -8
 PackConstructorInitializers: Never
 BreakInheritanceList: BeforeColon
+ColumnLimit: 120

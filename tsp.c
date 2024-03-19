@@ -58,8 +58,7 @@ int tsp_allocate_buffers(struct tsp* tsp)
 	if (tsp->current_solutions)
 		free(tsp->current_solutions);
 
-	tsp->current_solutions = (double*)malloc(sizeof(double) *
-						 STARTING_CURRENT_SOLUTIONS);
+	tsp->current_solutions = (double*)malloc(sizeof(double) * STARTING_CURRENT_SOLUTIONS);
 	tsp->current_solution_next_index = 0;
 	tsp->current_solution_length = STARTING_CURRENT_SOLUTIONS;
 
@@ -84,16 +83,13 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 				return -1;
 			}
 			modelSource = 0;
-		} else if (!strcmp(argv[i], "--seed") ||
-			   !strcmp(argv[i], "-s")) {
+		} else if (!strcmp(argv[i], "--seed") || !strcmp(argv[i], "-s")) {
 			tsp->seed = atoi(argv[++i]);
 			userSetSeed = 1;
-		} else if (!strcmp(argv[i], "--nnodes") ||
-			   !strcmp(argv[i], "-n")) {
+		} else if (!strcmp(argv[i], "--nnodes") || !strcmp(argv[i], "-n")) {
 			tsp->nnodes = atoi(argv[++i]);
 			userSetNnodes = 1;
-		} else if (!strcmp(argv[i], "--inputfile") ||
-			   !strcmp(argv[i], "-i")) {
+		} else if (!strcmp(argv[i], "--inputfile") || !strcmp(argv[i], "-i")) {
 			tsp->input_file = argv[++i];
 			if (modelSource != -1) {
 				perror("Can't use more than 1 mode\n");
@@ -105,8 +101,7 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 
 	if (modelSource == 0) {
 		if (userSetSeed == 0 | userSetNnodes == 0) {
-			perror(
-			    "Set seed and nnodes to user random generation\n");
+			perror("Set seed and nnodes to user random generation\n");
 			return -1;
 		}
 		tsp->model_source = 1;
@@ -156,8 +151,7 @@ void debug_print_coords(struct tsp* tsp)
 {
 	printf("------------NODES------------\n");
 	for (int i = 0; i < tsp->nnodes; i++) {
-		printf("%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x,
-		       tsp->coords[i].y);
+		printf("%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x, tsp->coords[i].y);
 	}
 	printf("-----------------------------\n");
 }
@@ -170,8 +164,7 @@ int tsp_allocate_costs(struct tsp* tsp)
 	if (tsp->cost_matrix)
 		free(tsp->cost_matrix);
 
-	tsp->cost_matrix = (double*)malloc(sizeof(double) * tsp->nnodes *
-					   tsp->nnodes);
+	tsp->cost_matrix = (double*)malloc(sizeof(double) * tsp->nnodes * tsp->nnodes);
 	return 0;
 }
 
@@ -199,8 +192,7 @@ int tsp_compute_costs(struct tsp* tsp)
 			double deltay = (tsp->coords[i].y - tsp->coords[j].y);
 			double sqdist = deltax * deltax + deltay * deltay;
 
-			tsp->cost_matrix[flatten_coords(
-			    i, j, tsp->nnodes)] = sqrt(sqdist);
+			tsp->cost_matrix[flatten_coords(i, j, tsp->nnodes)] = sqrt(sqdist);
 		}
 	}
 
@@ -209,17 +201,12 @@ int tsp_compute_costs(struct tsp* tsp)
 
 double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 {
-	double distance_prev = tsp->cost_matrix[flatten_coords(
-				   solution[i], solution[i + 1], tsp->nnodes)] +
-			       tsp->cost_matrix[flatten_coords(
-				   solution[j], solution[(j + 1) % tsp->nnodes],
-				   tsp->nnodes)];
 	double
-	    distance_next = tsp->cost_matrix[flatten_coords(
-				solution[i + 1],
-				solution[(j + 1) % tsp->nnodes], tsp->nnodes)] +
-			    tsp->cost_matrix[flatten_coords(
-				solution[i], solution[j], tsp->nnodes)];
+	    distance_prev = tsp->cost_matrix[flatten_coords(solution[i], solution[i + 1], tsp->nnodes)] +
+			    tsp->cost_matrix[flatten_coords(solution[j], solution[(j + 1) % tsp->nnodes], tsp->nnodes)];
+	double distance_next = tsp->cost_matrix[flatten_coords(solution[i + 1], solution[(j + 1) % tsp->nnodes],
+							       tsp->nnodes)] +
+			       tsp->cost_matrix[flatten_coords(solution[i], solution[j], tsp->nnodes)];
 	return distance_prev - distance_next;
 }
 
@@ -264,11 +251,9 @@ double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
 {
 	double current_solution = 0;
 	for (int i = 0; i < tsp->nnodes - 1; i++) {
-		current_solution += tsp->cost_matrix[flatten_coords(
-		    solution[i], solution[i + 1], tsp->nnodes)];
+		current_solution += tsp->cost_matrix[flatten_coords(solution[i], solution[i + 1], tsp->nnodes)];
 	}
-	current_solution += tsp->cost_matrix[flatten_coords(
-	    solution[0], solution[tsp->nnodes - 1], tsp->nnodes)];
+	current_solution += tsp->cost_matrix[flatten_coords(solution[0], solution[tsp->nnodes - 1], tsp->nnodes)];
 
 	return current_solution;
 }
@@ -317,11 +302,7 @@ void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
 	sigprocmask(SIG_SETMASK, &old, NULL);
 }
 
-void insert_resize(double** array,
-		   int* next_index,
-		   int* length,
-		   int factor,
-		   double value)
+void insert_resize(double** array, int* next_index, int* length, int factor, double value)
 {
 	if (*next_index == *length) {
 		// we need to resize
@@ -340,13 +321,11 @@ void insert_resize(double** array,
 
 void tsp_add_incumbent(struct tsp* tsp, double value)
 {
-	insert_resize(&tsp->incumbents, &tsp->incumbent_next_index,
-		      &tsp->incumbent_length, 2, value);
+	insert_resize(&tsp->incumbents, &tsp->incumbent_next_index, &tsp->incumbent_length, 2, value);
 }
 
 void tsp_add_current(struct tsp* tsp, double value)
 {
-	insert_resize(&tsp->current_solutions,
-		      &tsp->current_solution_next_index,
-		      &tsp->current_solution_length, 2, value);
+	insert_resize(&tsp->current_solutions, &tsp->current_solution_next_index, &tsp->current_solution_length, 2,
+		      value);
 }
