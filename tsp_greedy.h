@@ -1,5 +1,5 @@
-#ifndef TSP_GREEDY_C
-#define TSP_GREEDY_C
+#ifndef TSP_GREEDY_
+#define TSP_GREEDY_
 
 #include "tsp.h"
 #include <time.h>
@@ -10,8 +10,6 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 
 int tsp_solve_multigreedy_init(struct tsp* tsp);
 
-int tsp_solve_greedy_save(struct tsp* tsp, int starting_node);
-
-int tsp_solve_tabu(struct tsp* tsp);
+void tsp_2opt_swap(int left, int right, int* solution);
 
 #endif

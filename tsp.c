@@ -183,6 +183,9 @@ int tsp_allocate_solution(struct tsp* tsp)
 
 int tsp_compute_costs(struct tsp* tsp)
 {
+	if (tsp->cost_matrix == NULL)
+		tsp_allocate_costs(tsp);
+
 	if (tsp->cost_matrix == NULL || tsp->coords == NULL)
 		return -1;
 
