@@ -19,7 +19,7 @@ int parseFriendly = 0;
 int configPlot = 0;
 int timeLimit = 0;
 int plotCurrent = 0;
-int runConfig;
+int runConfig = -1;
 int childpid;
 struct tsp tsp;
 
