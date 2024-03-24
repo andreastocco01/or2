@@ -84,11 +84,11 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 		to_extract[tsp->nnodes - t - 1] = starting_node;
 		t++;
 #ifdef DEBUG
-		printf("Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
+		fprintf(stderr, "Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
 #endif
 
 		if (tsp_solve_greedy(tsp, starting_node, current, &current_dist)) {
-			printf("Can't solve greedy!\n");
+			fprintf(stderr, "Can't solve greedy!\n");
 			return -1;
 		}
 		if (tsp_2opt_solution(tsp, current, &current_dist)) {

@@ -43,7 +43,9 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	// starting solution is solved with a greedy approach
 	int starting_node = rand() % tsp->nnodes;
 
-	printf("starting from node %d\n", starting_node);
+#ifdef DEBUG
+	fprintf(stderr, "starting from node %d\n", starting_node);
+#endif
 	tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value);
 
 	int* current_solution = malloc(tsp->nnodes * sizeof(int));

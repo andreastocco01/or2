@@ -4,7 +4,6 @@
 #include "tsp_vns.h"
 #include "util.h"
 #include <assert.h>
-#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,9 +14,12 @@
 
 void summary_and_exit(int signal);
 
+time_t startTime;
+int parseFriendly = 0;
 int configPlot = 0;
 int timeLimit = 0;
-int plot_current = 0;
+int plotCurrent = 0;
+int runConfig;
 int childpid;
 struct tsp tsp;
 
@@ -161,7 +163,11 @@ void parse_arguments(int argc, char** argv)
 		} else if (!strcmp(argv[i], "--timelimit") || !strcmp(argv[i], "-t")) {
 			timeLimit = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "--plotcurrent") || !strcmp(argv[i], "-c")) {
-			plot_current = 1;
+			plotCurrent = 1;
+		} else if (!strcmp(argv[i], "--parsefriendly")) {
+			parseFriendly = 1;
+		} else if (!strcmp(argv[i], "--config")) {
+			runConfig = atoi(argv[++i]);
 		}
 	}
 }
@@ -186,23 +192,35 @@ void main_compute(int argc, char** argv)
 	debug_print_coords(&tsp);
 #endif
 
-	/* printf("------------GREEDY-----------\n"); */
-	/* if (tsp_solve_multigreedy_init(&tsp)) { */
-	/* 	perror("Can't solve greedy\n"); */
-	/* } */
-	// printf("------------TABU-----------\n");
-	// if (tsp_solve_tabu(&tsp, tenure_sin)) {
-	// 	perror("Can't solve tabu search\n");
-	// }
-	printf("------------VNS-----------\n");
-	if (tsp_solve_vns(&tsp)) {
-		perror("Can't solve tabu search\n");
+	if (runConfig == 0) {
+		if (tsp_solve_vns(&tsp)) {
+			perror("Can't solve greedy\n");
+		}
 	}
+	if (runConfig == 1) {
+		if (tsp_solve_tabu(&tsp, tenure_fixed)) {
+			perror("Can't solve tabu\n");
+		}
+	}
+
 	summary_and_exit(-1);
+}
+
+void parse_friendly_output()
+{
+	time_t currentTime = clock();
+	double totalTime = (double)(currentTime - startTime) / CLOCKS_PER_SEC;
+
+	printf("%lf;%lf\n", totalTime, tsp.solution_value);
 }
 
 void summary_and_exit(int signal)
 {
+	if (parseFriendly) {
+		parse_friendly_output();
+		goto summary_finish;
+	}
+
 	if (signal == -1) {
 		kill(getppid(), SIGINT);
 		printf("Execution terminated\n");
@@ -223,10 +241,11 @@ void summary_and_exit(int signal)
 		if (plot_incumbents(&tsp)) {
 			perror("Can't plot incumbents\n");
 		}
-		if (plot_current == 1 && plot_current_solutions(&tsp)) {
+		if (plotCurrent == 1 && plot_current_solutions(&tsp)) {
 			perror("Can't plot incumbents\n");
 		}
 	}
+summary_finish:
 	exit(0);
 }
 
@@ -239,8 +258,9 @@ int main(int argc, char** argv)
 {
 	parse_arguments(argc, argv);
 
+	startTime = clock();
 	childpid = fork();
-	printf("childpid = %d\n", childpid);
+	fprintf(stderr, "childpid = %d\n", childpid);
 	if (!childpid) {
 		// ===== CHILD
 		// signal for terminating with timelimit
@@ -257,7 +277,8 @@ int main(int argc, char** argv)
 		}
 		int res;
 		wait(&res);
-		printf("Child returned %s\n", strerror(res));
+		if (!parseFriendly)
+			printf("Child returned %s\n", strerror(res));
 	}
 	return 0;
 }

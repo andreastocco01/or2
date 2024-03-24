@@ -123,37 +123,39 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 
 void debug_print(struct tsp* tsp)
 {
-	printf("----------INSTANCE-----------\n");
-	printf("nnodes: %d\n", tsp->nnodes);
+	FILE* where = stderr;
+	fprintf(where, "----------INSTANCE-----------\n");
+	fprintf(where, "nnodes: %d\n", tsp->nnodes);
 
-	printf("model_source: ");
+	fprintf(where, "model_source: ");
 	if (tsp->model_source == 1)
-		printf("random\n");
+		fprintf(where, "random\n");
 	else if (tsp->model_source == 2)
-		printf("input_file\n");
+		fprintf(where, "input_file\n");
 	else
-		printf("NOT SET\n");
+		fprintf(where, "NOT SET\n");
 
-	printf("seed: %d\n", tsp->seed);
-	printf("input_file: %s\n", tsp->input_file);
-	printf("edge weight type: %s\n", tsp->edge_weight_type);
+	fprintf(where, "seed: %d\n", tsp->seed);
+	fprintf(where, "input_file: %s\n", tsp->input_file);
+	fprintf(where, "edge weight type: %s\n", tsp->edge_weight_type);
 
 	if (tsp->solution_permutation) {
 		for (int i = 0; i < tsp->nnodes; i++) {
-			printf("%d->", tsp->solution_permutation[i]);
+			fprintf(where, "%d->", tsp->solution_permutation[i]);
 		}
-		printf("\nBEST SOLUTION: %lf\n", tsp->solution_value);
+		fprintf(where, "\nBEST SOLUTION: %lf\n", tsp->solution_value);
 	}
-	printf("-----------------------------\n");
+	fprintf(where, "-----------------------------\n");
 }
 
 void debug_print_coords(struct tsp* tsp)
 {
-	printf("------------NODES------------\n");
+	FILE* where = stderr;
+	fprintf(where, "------------NODES------------\n");
 	for (int i = 0; i < tsp->nnodes; i++) {
-		printf("%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x, tsp->coords[i].y);
+		fprintf(where, "%d: (%lf, %lf)\n", i + 1, tsp->coords[i].x, tsp->coords[i].y);
 	}
-	printf("-----------------------------\n");
+	fprintf(where, "-----------------------------\n");
 }
 
 int tsp_allocate_costs(struct tsp* tsp)
