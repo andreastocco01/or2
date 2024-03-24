@@ -78,7 +78,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 					tsp->solution_value = current_solution_value;
 					tsp_add_incumbent(tsp, tsp->solution_value);
 
-					memcpy(tsp->solution_permutation, current_solution, sizeof(int) * tsp->nnodes);
+					tsp_save_signal_safe(tsp, current_solution, current_solution_value);
 				}
 			} else {
 				if (tabu_iteration[i] != -1 &&

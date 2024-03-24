@@ -109,7 +109,7 @@ int tsp_solve_vns(struct tsp* tsp)
 					tsp->solution_value = current_solution_value;
 					tsp_add_incumbent(tsp, tsp->solution_value);
 
-					memcpy(tsp->solution_permutation, current_solution, sizeof(int) * tsp->nnodes);
+					tsp_save_signal_safe(tsp, current_solution, current_solution_value);
 				}
 			} else {
 				int positions[3];
