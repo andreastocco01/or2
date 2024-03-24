@@ -63,6 +63,8 @@ int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
 double tsp_recompute_solution(struct tsp* tsp);
 int tsp_check_solution(struct tsp* tsp, double* computed);
+int tsp_is_solution_arg(int* solution, int nnodes);
+int tsp_is_solution(struct tsp* tsp);
 
 void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value);
 

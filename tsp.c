@@ -334,3 +334,31 @@ void tsp_add_current(struct tsp* tsp, double value)
 	insert_resize(&tsp->current_solutions, &tsp->current_solution_next_index, &tsp->current_solution_length, 2,
 		      value);
 }
+
+int tsp_is_solution_arg(int* solution, int nnodes)
+{
+	if (solution == NULL)
+		return 0;
+	char* found = calloc(nnodes, sizeof(char));
+
+	int res = 1;
+
+	for (int i = 0; i < nnodes; i++) {
+		found[solution[i]]++;
+	}
+
+	for (int i = 0; i < nnodes; i++) {
+		if (found[i] != 1) {
+			res = 0;
+			break;
+		}
+	}
+
+	free(found);
+	return res;
+}
+
+int tsp_is_solution(struct tsp* tsp)
+{
+	return tsp_is_solution_arg(tsp->solution_permutation, tsp->nnodes);
+}
