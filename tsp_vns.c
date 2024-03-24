@@ -75,7 +75,7 @@ int tsp_solve_vns(struct tsp* tsp)
 	// starting solution is solved with a greedy approach
 	int starting_node = rand() % tsp->nnodes;
 
-	printf("starting from node %d\n", starting_node);
+	fprintf(stderr, "starting from node %d\n", starting_node);
 	tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value);
 
 	int* current_solution = malloc(tsp->nnodes * sizeof(int));
