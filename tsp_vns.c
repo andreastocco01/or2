@@ -120,9 +120,9 @@ int tsp_solve_vns(struct tsp* tsp)
 					tsp_3opt_swap(positions[0], positions[1], positions[2], current_solution,
 						      new_solution, tsp->nnodes);
 					memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);
-					current_solution_value = compute_solution_value(tsp, current_solution);
-					tsp_add_current(tsp, current_solution_value);
 				}
+				current_solution_value = compute_solution_value(tsp, current_solution);
+				tsp_add_current(tsp, current_solution_value);
 			}
 		}
 		current_iteration++;
