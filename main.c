@@ -1,6 +1,7 @@
 #include "tsp.h"
 #include "tsp_greedy.h"
 #include "tsp_tabu.h"
+#include "tsp_vns.h"
 #include "util.h"
 #include <assert.h>
 #include <errno.h>
@@ -189,8 +190,12 @@ void main_compute(int argc, char** argv)
 	/* if (tsp_solve_multigreedy_init(&tsp)) { */
 	/* 	perror("Can't solve greedy\n"); */
 	/* } */
-	printf("------------TABU-----------\n");
-	if (tsp_solve_tabu(&tsp, tenure_sin)) {
+	// printf("------------TABU-----------\n");
+	// if (tsp_solve_tabu(&tsp, tenure_sin)) {
+	// 	perror("Can't solve tabu search\n");
+	// }
+	printf("------------VNS-----------\n");
+	if (tsp_solve_vns(&tsp)) {
 		perror("Can't solve tabu search\n");
 	}
 	summary_and_exit(-1);
