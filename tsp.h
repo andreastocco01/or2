@@ -44,40 +44,114 @@ struct tsp {
 	int current_solution_next_index;
 };
 
+/**
+ * Initialize a tsp structure
+ * */
 void tsp_init(struct tsp* tsp);
-int tsp_allocate_buffers(struct tsp* tsp);
-int tsp_allocate_solution(struct tsp* tsp);
-int tsp_allocate_costs(struct tsp* tsp);
-void tsp_free(struct tsp* tsp);
-int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp);
-void debug_print(struct tsp* tsp);
-void debug_print_coords(struct tsp* tsp);
-void tsp_add_incumbent(struct tsp* tsp, double value);
-void tsp_add_current(struct tsp* tsp, double value);
-double compute_delta(struct tsp* tsp, int* solution, int i, int j);
 
+/**
+ * Allocate buffers of a tsp structure.
+ *
+ * IMPORTANT: nnodes must be set
+ * */
+int tsp_allocate_buffers(struct tsp* tsp);
+
+/**
+ * Allocate the data structure used to store the solution
+ * */
+int tsp_allocate_solution(struct tsp* tsp);
+
+/**
+ * Allocate the data structure used to save the costs
+ * */
+int tsp_allocate_costs(struct tsp* tsp);
+
+/**
+ * Fills the matrix of costs
+ * */
 int tsp_compute_costs(struct tsp* tsp);
 
-/*
+/**
+ * Free memory allocated by a tsp struct
+ * */
+void tsp_free(struct tsp* tsp);
+
+/**
+ * Parse the standard argument passed as line arguments
+ * */
+int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp);
+
+void debug_print(struct tsp* tsp);
+void debug_print_coords(struct tsp* tsp);
+
+/**
+ * Add an incumbent to the list of incumbents
+ * */
+void tsp_add_incumbent(struct tsp* tsp, double value);
+
+/**
+ * Add a solution to the list of current solutions
+ * */
+void tsp_add_current(struct tsp* tsp, double value);
+
+/**
+ * Compute the delta that would be obtained by applying
+ * the 2opt procedure on the given indices
+ * */
+double compute_delta(struct tsp* tsp, int* solution, int i, int j);
+
+/**
  * Optimize the provided solution until local minimum is found
  * */
 int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value);
 
-/*
+/**
  * Finds the best 2opt swap nodes
  *
  * returns the value of the delta
  * */
 double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* best_j);
 
+/**
+ * Execute the 2opt swap operation on a solution
+ * */
 void tsp_2opt_swap(int left, int right, int* solution);
 
+/**
+ * Compute the cost of a solution passed as argument
+ * */
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
+
+/**
+ * Compute the cost of the solution inside the struct
+ * */
 double tsp_recompute_solution(struct tsp* tsp);
+
+/**
+ * Compute the cost of the solution again and check if it corresponds
+ * with the one saved inside the struct.
+ *
+ * computed: output of the value
+ * */
 int tsp_check_solution(struct tsp* tsp, double* computed);
+
+/**
+ * Check whether the solution passed as argument is a valid cycle
+ *
+ * returns 1 if it is, 0 otherwise
+ * */
 int tsp_is_solution_arg(int* solution, int nnodes);
+
+/**
+ * Check whether the solution in the tsp struct is valid cycle
+ *
+ * returns 1 if it is, 0 otherwise
+ * */
 int tsp_is_solution(struct tsp* tsp);
 
+/**
+ * Save a new solution inside the tsp struct in a signal-safe way
+ * */
 void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value);
 
 #endif // TSP_H_

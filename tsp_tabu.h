@@ -15,6 +15,10 @@ int tenure_fixed(int nnodes, int iteration);
 #define TENURE_SIN_SCALE   50
 int tenure_sin(int nnodes, int iteration);
 
+/**
+ * Solve a tsp instance using the tabu method
+ * This function runs forever.
+ * */
 int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure);
 
 #endif
