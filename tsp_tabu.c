@@ -58,42 +58,35 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	int current_iteration = 0;
 
 	while (1) {
-		for (int i = 0; i < tsp->nnodes - 2; i++) {
-			double best_delta = -10e30;
+		// Intensification phase
+		while (1) {
 			int best_i, best_j;
-			for (int j = i + 2; j < tsp->nnodes; j++) {
-				double delta = compute_delta(tsp, current_solution, i, j);
-				if (delta > best_delta) {
-					best_delta = delta;
-					best_i = i;
-					best_j = j;
-				}
-			}
+			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
+
 			if (best_delta > 0) {
-				// normal 2-opt
 				tsp_2opt_swap(best_i + 1, best_j, current_solution);
 				current_solution_value -= best_delta;
 				tsp_add_current(tsp, current_solution_value);
 				if (current_solution_value < tsp->solution_value) {
 					tsp->solution_value = current_solution_value;
 					tsp_add_incumbent(tsp, tsp->solution_value);
-
 					tsp_save_signal_safe(tsp, current_solution, current_solution_value);
 				}
+
 			} else {
-				if (tabu_iteration[i] != -1 &&
-				    (current_iteration - tabu_iteration[i]) < tenure(tsp->nnodes, current_iteration)) {
+				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
+									tenure(tsp->nnodes, current_iteration)) {
 					// the node is tabu. We need to skip
 					continue;
 				}
+
 				tsp_2opt_swap(best_i + 1, best_j, current_solution);
 				current_solution_value -= best_delta;
 				// add to tabu list
-				tabu_iteration[i] = current_iteration;
+				tabu_iteration[best_i] = current_iteration;
 				tsp_add_current(tsp, current_solution_value);
 			}
 		}
-		current_iteration++;
 	}
 
 	free(tabu_iteration);
