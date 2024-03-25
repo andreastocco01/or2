@@ -91,12 +91,15 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 			fprintf(stderr, "Can't solve greedy!\n");
 			return -1;
 		}
-		// TODO now the the code in tsp_2opt_solution is different
-		// if (tsp_2opt_solution(tsp, current, &current_dist)) {
-		// 	printf("Can't solve 2opt\n");
-		// 	return -1;
-		// }
-
+		while (1) {
+			int best_i, best_j;
+			double best_delta = tsp_2opt_findbestswap(tsp, current, &best_i, &best_j);
+			if (best_delta <= 0) {
+				break;
+			}
+			tsp_2opt_swap(best_i + 1, best_j, current);
+			current_dist -= best_delta;
+		}
 		if (current_dist < best_dist) {
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
