@@ -147,14 +147,3 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 
 	return 0;
 }
-
-void tsp_2opt_swap(int left, int right, int* solution)
-{
-	while (left < right) {
-		int temp = solution[left];
-		solution[left] = solution[right];
-		solution[right] = temp;
-		left++;
-		right--;
-	}
-}

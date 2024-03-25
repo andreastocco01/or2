@@ -10,6 +10,4 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 
 int tsp_solve_multigreedy_init(struct tsp* tsp);
 
-void tsp_2opt_swap(int left, int right, int* solution);
-
 #endif

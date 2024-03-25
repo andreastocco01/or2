@@ -217,38 +217,9 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 
 int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
 {
-	if (!tsp->cost_matrix)
-		return -1;
-
-	if (!tsp->nnodes)
-		return -1;
-start:
-	for (int i = 0; i < tsp->nnodes - 2; i++) {
-		double best_delta = -10e30;
-		int best_i, best_j;
-		for (int j = i + 2; j < tsp->nnodes; j++) {
-			double delta = compute_delta(tsp, solution, i, j);
-			if (delta > best_delta) {
-				best_delta = delta;
-				best_i = i;
-				best_j = j;
-			}
-		}
-		if (best_delta > 0) {
-			int left = best_i + 1;
-			int right = best_j;
-			while (left < right) {
-				int temp = solution[left];
-				solution[left] = solution[right];
-				solution[right] = temp;
-				left++;
-				right--;
-			}
-			*output_value -= best_delta;
-
-			goto start;
-		}
-	}
+	// This should run the 2opt on the solution
+	fprintf(stderr, "Not implemented!\n");
+	exit(0);
 	return 0;
 }
 
@@ -361,4 +332,31 @@ int tsp_is_solution_arg(int* solution, int nnodes)
 int tsp_is_solution(struct tsp* tsp)
 {
 	return tsp_is_solution_arg(tsp->solution_permutation, tsp->nnodes);
+}
+
+double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* best_j)
+{
+	double best_delta = -10e30;
+	for (int i = 0; i < tsp->nnodes - 2; i++) {
+		for (int j = i + 2; j < tsp->nnodes; j++) {
+			double delta = compute_delta(tsp, solution, i, j);
+			if (delta > best_delta) {
+				best_delta = delta;
+				*best_i = i;
+				*best_j = j;
+			}
+		}
+	}
+	return best_delta;
+}
+
+void tsp_2opt_swap(int left, int right, int* solution)
+{
+	while (left < right) {
+		int temp = solution[left];
+		solution[left] = solution[right];
+		solution[right] = temp;
+		left++;
+		right--;
+	}
 }

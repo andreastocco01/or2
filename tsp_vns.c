@@ -89,43 +89,36 @@ int tsp_solve_vns(struct tsp* tsp)
 	int* new_solution = (int*)malloc(tsp->nnodes * sizeof(int));
 
 	while (1) {
-		for (int i = 0; i < tsp->nnodes - 2; i++) {
-			double best_delta = -10e30;
+		// Intensification phase
+		while (1) {
 			int best_i, best_j;
-			for (int j = i + 2; j < tsp->nnodes; j++) {
-				double delta = compute_delta(tsp, current_solution, i, j);
-				if (delta > best_delta) {
-					best_delta = delta;
-					best_i = i;
-					best_j = j;
-				}
-			}
-			if (best_delta > 0) {
-				// normal 2-opt
-				tsp_2opt_swap(best_i + 1, best_j, current_solution);
-				current_solution_value -= best_delta;
-				tsp_add_current(tsp, current_solution_value);
-				if (current_solution_value < tsp->solution_value) {
-					tsp->solution_value = current_solution_value;
-					tsp_add_incumbent(tsp, tsp->solution_value);
+			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
-					tsp_save_signal_safe(tsp, current_solution, current_solution_value);
-				}
-			} else {
-				int positions[3];
-				int r = (rand() % (UPPER - LOWER + 1)) + LOWER;
-				// do 3opt [UPPER, LOWER] times
-				for (int i = 0; i < r; i++) {
-					generate_3opt_positions(tsp, positions, 3); // i -> j -> k
-					tsp_3opt_swap(positions[0], positions[1], positions[2], current_solution,
-						      new_solution, tsp->nnodes);
-					memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);
-				}
-				current_solution_value = compute_solution_value(tsp, current_solution);
-				tsp_add_current(tsp, current_solution_value);
+			if (best_delta <= 0)
+				break; // local minimum
+
+			tsp_2opt_swap(best_i + 1, best_j, current_solution);
+			current_solution_value -= best_delta;
+			tsp_add_current(tsp, current_solution_value);
+			if (current_solution_value < tsp->solution_value) {
+				tsp->solution_value = current_solution_value;
+				tsp_add_incumbent(tsp, tsp->solution_value);
+				tsp_save_signal_safe(tsp, current_solution, current_solution_value);
 			}
 		}
-		current_iteration++;
+
+		// Generalization phase
+		int positions[3];
+		int r = (rand() % (UPPER - LOWER + 1)) + LOWER;
+		// do 3opt [UPPER, LOWER] times
+		for (int i = 0; i < r; i++) {
+			generate_3opt_positions(tsp, positions, 3); // i -> j -> k
+			tsp_3opt_swap(positions[0], positions[1], positions[2], current_solution, new_solution,
+				      tsp->nnodes);
+			memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);
+		}
+		current_solution_value = compute_solution_value(tsp, current_solution);
+		tsp_add_current(tsp, current_solution_value);
 	}
 	free(new_solution);
 	free(current_solution);
