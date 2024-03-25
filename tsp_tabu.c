@@ -64,15 +64,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
 			if (best_delta > 0) {
-				tsp_2opt_swap(best_i + 1, best_j, current_solution);
-				current_solution_value -= best_delta;
-				tsp_add_current(tsp, current_solution_value);
-				if (current_solution_value < tsp->solution_value) {
-					tsp->solution_value = current_solution_value;
-					tsp_add_incumbent(tsp, tsp->solution_value);
-					tsp_save_signal_safe(tsp, current_solution, current_solution_value);
-				}
-
+				tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
+						  best_delta);
 			} else {
 				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
 									tenure(tsp->nnodes, current_iteration)) {

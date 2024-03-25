@@ -91,10 +91,11 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 			fprintf(stderr, "Can't solve greedy!\n");
 			return -1;
 		}
-		if (tsp_2opt_solution(tsp, current, &current_dist)) {
-			printf("Can't solve 2opt\n");
-			return -1;
-		}
+		// TODO now the the code in tsp_2opt_solution is different
+		// if (tsp_2opt_solution(tsp, current, &current_dist)) {
+		// 	printf("Can't solve 2opt\n");
+		// 	return -1;
+		// }
 
 		if (current_dist < best_dist) {
 			best_dist = current_dist;

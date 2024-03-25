@@ -215,12 +215,21 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 	return distance_prev - distance_next;
 }
 
-int tsp_2opt_solution(struct tsp* tsp, int* solution, double* output_value)
+void tsp_2opt_solution(struct tsp* tsp,
+		       int* current_solution,
+		       double* current_solution_value,
+		       int best_i,
+		       int best_j,
+		       double best_delta)
 {
-	// This should run the 2opt on the solution
-	fprintf(stderr, "Not implemented!\n");
-	exit(0);
-	return 0;
+	tsp_2opt_swap(best_i + 1, best_j, current_solution);
+	*current_solution_value -= best_delta;
+	tsp_add_current(tsp, *current_solution_value);
+	if (*current_solution_value < tsp->solution_value) {
+		tsp->solution_value = *current_solution_value;
+		tsp_add_incumbent(tsp, tsp->solution_value);
+		tsp_save_signal_safe(tsp, current_solution, *current_solution_value);
+	}
 }
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)

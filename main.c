@@ -202,6 +202,11 @@ void main_compute(int argc, char** argv)
 			perror("Can't solve tabu\n");
 		}
 	}
+	if (runConfig == 2) {
+		if (tsp_solve_multigreedy_init(&tsp)) {
+			perror("Can't solve tabu\n");
+		}
+	}
 
 	summary_and_exit(-1);
 }
