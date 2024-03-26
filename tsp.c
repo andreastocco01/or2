@@ -359,6 +359,33 @@ double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* b
 	return best_delta;
 }
 
+double tsp_2opt_findbestswap_no_tabu(struct tsp* tsp,
+				     int* solution,
+				     int* best_i,
+				     int* best_j,
+				     int* tabu_iteration,
+				     int tenure,
+				     int current_iteration)
+{
+	double best_delta = -10e30;
+	for (int i = 0; i < tsp->nnodes - 2; i++) {
+		for (int j = i + 2; j < tsp->nnodes; j++) {
+			double delta = compute_delta(tsp, solution, i, j);
+			if (delta > best_delta) {
+				// i have to choose the best nodes that aren't tabu!!!
+				if (tabu_iteration[i] != -1 && ((current_iteration - tabu_iteration[i]) < tenure) ||
+				    tabu_iteration[j] != -1 && ((current_iteration - tabu_iteration[j]) < tenure)) {
+					continue;
+				}
+				best_delta = delta;
+				*best_i = i;
+				*best_j = j;
+			}
+		}
+	}
+	return best_delta;
+}
+
 void tsp_2opt_swap(int left, int right, int* solution)
 {
 	while (left < right) {

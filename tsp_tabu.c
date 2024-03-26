@@ -55,6 +55,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	tsp_add_incumbent(tsp, current_solution_value);
 
 	int current_iteration = 0;
+	int ten;
 
 	while (1) {
 		// Intensification phase
@@ -62,8 +63,9 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 		double best_delta;
 		while (1) {
 			current_iteration++;
-			best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
-
+			ten = tenure(tsp->nnodes, current_iteration);
+			best_delta = tsp_2opt_findbestswap_no_tabu(tsp, current_solution, &best_i, &best_j,
+								   tabu_iteration, ten, current_iteration);
 			if (best_delta <= 0)
 				break; // local minimum
 
@@ -71,7 +73,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 		}
 
 		// Diversification phase
-		int ten = tenure(tsp->nnodes, current_iteration);
+		ten = tenure(tsp->nnodes, current_iteration);
 		/* printf("tenure(%d) = %d\n", current_iteration, ten); */
 		if (tabu_iteration[best_i] != -1 && ((current_iteration - tabu_iteration[best_i]) < ten)) {
 			// the node is tabu. We need to skip

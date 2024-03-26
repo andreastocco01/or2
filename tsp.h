@@ -116,6 +116,7 @@ void tsp_2opt_solution(struct tsp* tsp,
  * returns the value of the delta
  * */
 double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* best_j);
+double tsp_2opt_findbestswap_no_tabu(struct tsp* tsp, int* solution, int* best_i, int* best_j, int* tabu_iteration, int tenure, int current_iteration);
 
 /**
  * Execute the 2opt swap operation on a solution
