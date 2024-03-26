@@ -58,29 +58,30 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 
 	while (1) {
 		// Intensification phase
+		int best_i, best_j;
+		double best_delta;
 		while (1) {
-			current_iteration++;
-			int best_i, best_j;
-			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
+			best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
-			if (best_delta > 0) {
-				tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
-						  best_delta);
-			} else {
-				int ten = tenure(tsp->nnodes, current_iteration);
-				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
-									tenure(tsp->nnodes, current_iteration)) {
-					// the node is tabu. We need to skip
-					continue;
-				}
+			if (best_delta <= 0)
+				break; // local minimum
 
-				tsp_2opt_swap(best_i + 1, best_j, current_solution);
-				current_solution_value -= best_delta;
-				// add to tabu list
-				tabu_iteration[best_i] = current_iteration;
-				tsp_add_current(tsp, current_solution_value);
-			}
+			tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j, best_delta);
 		}
+
+		// Diversification phase
+		int ten = tenure(tsp->nnodes, current_iteration);
+		if (tabu_iteration[best_i] != -1 &&
+		    (current_iteration - tabu_iteration[best_i]) < tenure(tsp->nnodes, current_iteration)) {
+			// the node is tabu. We need to skip
+			continue;
+		}
+
+		tsp_2opt_swap(best_i + 1, best_j, current_solution);
+		current_solution_value -= best_delta;
+		// add to tabu list
+		tabu_iteration[best_i] = current_iteration;
+		tsp_add_current(tsp, current_solution_value);
 	}
 
 	free(tabu_iteration);

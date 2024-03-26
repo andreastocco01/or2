@@ -100,7 +100,7 @@ int tsp_solve_vns(struct tsp* tsp)
 			tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j, best_delta);
 		}
 
-		// Generalization phase
+		// Diversification phase
 		int positions[3];
 		int r = (rand() % (UPPER - LOWER + 1)) + LOWER;
 		// do 3opt [UPPER, LOWER] times
