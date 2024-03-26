@@ -68,7 +68,6 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 						  best_delta);
 			} else {
 				int ten = tenure(tsp->nnodes, current_iteration);
-				printf("tenure(%d) = %d\n", current_iteration, ten);
 				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
 									tenure(tsp->nnodes, current_iteration)) {
 					// the node is tabu. We need to skip
