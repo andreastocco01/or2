@@ -30,23 +30,23 @@ void generate_3opt_positions(struct tsp* tsp, int* positions)
 	}
 }
 
-void tsp_3opt_swap(int i, int j, int k, int* current_solution, int* new_solution, int size)
+void tsp_3opt_swap(int* positions, int* current_solution, int* new_solution, int size)
 {
-	memcpy(new_solution, current_solution, sizeof(int) * (i + 1)); // elements from 0 to i
+	memcpy(new_solution, current_solution, sizeof(int) * (positions[0] + 1)); // elements from 0 to i
 
-	int pos = i + 1;
-	int z = j;
+	int pos = positions[0] + 1;
+	int z = positions[1];
 	// elements from j to i + 1
-	while (z >= i + 1) {
+	while (z >= positions[0] + 1) {
 		new_solution[pos++] = current_solution[z--];
 	}
 
-	z = k;
-	while (z >= j + 1) {
+	z = positions[2];
+	while (z >= positions[1] + 1) {
 		new_solution[pos++] = current_solution[z--];
 	}
 
-	memcpy(new_solution + pos, current_solution + k + 1, sizeof(int) * (size - k - 1));
+	memcpy(new_solution + pos, current_solution + positions[2] + 1, sizeof(int) * (size - positions[2] - 1));
 }
 
 double compute_solution_value(struct tsp* tsp, int* solution)
@@ -106,8 +106,7 @@ int tsp_solve_vns(struct tsp* tsp)
 		// do 3opt [UPPER, LOWER] times
 		for (int i = 0; i < r; i++) {
 			generate_3opt_positions(tsp, positions); // i -> j -> k
-			tsp_3opt_swap(positions[0], positions[1], positions[2], current_solution, new_solution,
-				      tsp->nnodes);
+			tsp_3opt_swap(positions, current_solution, new_solution, tsp->nnodes);
 			memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);
 		}
 		current_solution_value = compute_solution_value(tsp, current_solution);
