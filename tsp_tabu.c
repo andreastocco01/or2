@@ -61,6 +61,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 		int best_i, best_j;
 		double best_delta;
 		while (1) {
+			current_iteration++;
 			best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
 			if (best_delta <= 0)
@@ -71,8 +72,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 
 		// Diversification phase
 		int ten = tenure(tsp->nnodes, current_iteration);
-		if (tabu_iteration[best_i] != -1 &&
-		    (current_iteration - tabu_iteration[best_i]) < tenure(tsp->nnodes, current_iteration)) {
+		/* printf("tenure(%d) = %d\n", current_iteration, ten); */
+		if (tabu_iteration[best_i] != -1 && ((current_iteration - tabu_iteration[best_i]) < ten)) {
 			// the node is tabu. We need to skip
 			continue;
 		}
