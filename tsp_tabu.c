@@ -17,7 +17,7 @@ int tenure_fixed(int nnodes, int iteration)
 
 int tenure_sin(int nnodes, int iteration)
 {
-	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE;
+	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE + TENURE_SIN_SCALE;
 	return computed > TENURE_MIN ? computed : TENURE_MIN;
 }
 
@@ -68,7 +68,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 						  best_delta);
 			} else {
 				int ten = tenure(tsp->nnodes, current_iteration);
-				/* printf("tenure(%d) = %d\n", current_iteration, ten); */
+				printf("tenure(%d) = %d\n", current_iteration, ten);
 				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
 									tenure(tsp->nnodes, current_iteration)) {
 					// the node is tabu. We need to skip
