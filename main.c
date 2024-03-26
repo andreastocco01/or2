@@ -203,7 +203,7 @@ void main_compute(int argc, char** argv)
 		}
 	}
 	if (runConfig == 2) {
-		if (tsp_solve_multigreedy_init(&tsp)) {
+		if (tsp_solve_tabu(&tsp, tenure_sin)) {
 			perror("Can't solve tabu\n");
 		}
 	}

@@ -4,7 +4,6 @@
 #include "tsp_greedy.h"
 #include <bits/types/sigset_t.h>
 #include <math.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +17,7 @@ int tenure_fixed(int nnodes, int iteration)
 
 int tenure_sin(int nnodes, int iteration)
 {
-	int computed = sin(iteration * TENURE_SIN_SCALE) / TENURE_SIN_DIVISOR;
+	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE;
 	return computed > TENURE_MIN ? computed : TENURE_MIN;
 }
 
@@ -60,6 +59,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	while (1) {
 		// Intensification phase
 		while (1) {
+			current_iteration++;
 			int best_i, best_j;
 			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
@@ -67,6 +67,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 				tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
 						  best_delta);
 			} else {
+				int ten = tenure(tsp->nnodes, current_iteration);
+				/* printf("tenure(%d) = %d\n", current_iteration, ten); */
 				if (tabu_iteration[best_i] != -1 && (current_iteration - tabu_iteration[best_i]) <
 									tenure(tsp->nnodes, current_iteration)) {
 					// the node is tabu. We need to skip
