@@ -14,8 +14,9 @@ int compar(const void* a, const void* b)
 	return *((int*)a) - *((int*)b);
 }
 
-void generate_3opt_positions(struct tsp* tsp, int* positions, int size)
+void generate_3opt_positions(struct tsp* tsp, int* positions)
 {
+	int size = 3;
 	while (1) {
 		for (int i = 0; i < size; i++)
 			positions[i] = rand() % tsp->nnodes;
@@ -85,7 +86,6 @@ int tsp_solve_vns(struct tsp* tsp)
 	tsp_add_current(tsp, current_solution_value);
 	tsp_add_incumbent(tsp, current_solution_value);
 
-	int current_iteration = 0;
 	int* new_solution = (int*)malloc(tsp->nnodes * sizeof(int));
 
 	while (1) {
@@ -105,7 +105,7 @@ int tsp_solve_vns(struct tsp* tsp)
 		int r = (rand() % (UPPER - LOWER + 1)) + LOWER;
 		// do 3opt [UPPER, LOWER] times
 		for (int i = 0; i < r; i++) {
-			generate_3opt_positions(tsp, positions, 3); // i -> j -> k
+			generate_3opt_positions(tsp, positions); // i -> j -> k
 			tsp_3opt_swap(positions[0], positions[1], positions[2], current_solution, new_solution,
 				      tsp->nnodes);
 			memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);

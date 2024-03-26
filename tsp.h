@@ -103,7 +103,12 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j);
 /**
  * Optimize the provided solution until local minimum is found
  * */
-void tsp_2opt_solution(struct tsp* tsp, int* current_solution, double* current_solution_value, int best_i, int best_j, double best_delta);
+void tsp_2opt_solution(struct tsp* tsp,
+		       int* current_solution,
+		       double* current_solution_value,
+		       int best_i,
+		       int best_j,
+		       double best_delta);
 
 /**
  * Finds the best 2opt swap nodes

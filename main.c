@@ -221,6 +221,12 @@ void parse_friendly_output()
 
 void summary_and_exit(int signal)
 {
+
+	double res;
+	if (!tsp_check_solution(&tsp, &res)) {
+		printf("Houston, we've had a problem\n");
+	}
+
 	if (parseFriendly) {
 		parse_friendly_output();
 		goto summary_finish;
