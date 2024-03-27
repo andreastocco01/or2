@@ -2,8 +2,8 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amsfonts}
-% \usepackage{algorithm}
-% \usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{caption}
 \usepackage{subcaption}
 
@@ -37,38 +37,54 @@ On the other hand, the Tabu Search algorithm, starting from a random node, tries
 \subsection{2-opt}
 
 \section{Metaheuristics}
+A metaheuristic is a versatile problem-solving approach characterized by its iterative nature and adaptability across various optimization problems. Unlike specific algorithms tailored to particular problems, metaheuristics serve as overarching strategies that guide subordinate heuristics to efficiently explore and exploit solution spaces. They intelligently combine different concepts to navigate through search spaces, aiming to find near-optimal solutions effectively.
+In our experiments, we will adopt metaheuristic using \textit{2-opt} as the underlying
+heuristic. We will prove that simple but very clever ideas (like Tabu Search and VNS) combined with the previously seen heuristics allow us to get solutions very close to the optimal ones.
+
 \subsection{Tabu Search}
-Provide background information on the Greedy algorithm, 2-opt optimization, and Tabu Search algorithm. Explain how these algorithms 
-work and their relevance to solving the TSP.
+Tabu Search is a metaheuristic algorithm that efficiently explores the solution space by intelligently navigating through a neighborhood of solutions while maintaining a short-term memory to avoid revisiting previously visited or less promising solutions. The algorithm is particularly effective for combinatorial optimization problems like the Traveling Salesman Problem (TSP).
 
-\section{Methodology}
-Describe the implementation details of each algorithm, including any specific parameters used, initialization methods, and termination criteria.
+The main idea behind the tabu search is to sometimes allow some ``bad'' moves in order to escape
+some local minimum. To avoid reverting such bad move immediatly after performing it, we save
+a list of moves that are tabu for (the name of the method comes from this idea). A move will be forbidden only for a short period of time, after which it will be possibile to do it again,
+with the hope that we moved away from the previous minimum enough.
 
-\section{Experimental Setup}
-Explain the experimental setup used for evaluating the performance of the algorithms. Describe the datasets used, including the number 
-of cities and any special characteristics.
+By design, this procedure will initially head directly towards a local minimum, thanks to the underlying heuristic. The only purpose of this metaheuristic is then to escape it and, hopefully, converge to a better minimum.
 
+The search procedure will be alternating between 2 different behaviors by its nature. First of all
+we will identify a phase where the method, starting from a ``bad'' solution, uses the underlying
+heuristic to improve its cost. We will call this ``intensification phase''. Once a local minimum is reached, we will apply some bad moves to escape from this solution. We name this the ``diversification phase''. We hope that the alternation between improving the solution and moving
+away from it allows us to explore different local minimum, allowing us to get an overall better
+solution.
+
+Algorithm~\ref{alg:tabu} shows a very abstract description of the procedure we use in practice. The first solution is found using a greedy method (the closest neighbor apporach) and then \textit{2-opt} is used for the intensification phase. It is important to notice that $delta$ is
+how much the solution cost would improve (decrease by).
+
+\begin{algorithm}[h]
+\caption{Tabu Search}
+\label{alg:tabu}
+\begin{algorithmic}
+  \Procedure{tabusearch}{$solution$}
+    \State\Call{greedy}{solution}
+    \State $tabulist \gets \emptyset$
+
+    \While{$!stop$}
+        \State $move \gets \Call{findbestswapnotabu}{solution, tabulist}$
+        \State $delta \gets \Call{delta}{move}$
+        \State $solution \gets \Call{apply}{solution, move}$
+        \If{$delta \leq 0$}
+          \State $tabulist \gets tabulist \cup \{move\}$
+        \EndIf
+        \State $\Call{removeold}{tabulist}$
+    \EndWhile
+
+  \EndProcedure
+
+\end{algorithmic}
+\end{algorithm}
+
+
+\section{Exact Methods}
 \section{Results}
-Present the results obtained from running the algorithms on the datasets. Include tables or graphs showing the tour lengths produced 
-by each algorithm and the computational time taken.
-
-\section{Discussion}
-Discuss the results obtained, highlighting any trends or patterns observed. Compare the performance of the algorithms in terms of solution 
-quality and computational efficiency.
-
-\section{Conclusion}
-Summarize the findings of the study and draw conclusions regarding the effectiveness of the algorithms for solving the TSP.
-Discuss any limitations of the study and suggest directions for future research.
-
-\section*{Acknowledgments}
-(Optional) Acknowledge any individuals or organizations that contributed to the project.
-
-\begin{thebibliography}{9}
-    \bibitem{reference1}
-    Author, A., \& Author, B. (Year). Title of the paper. \textit{Journal Name}, \textbf{Volume}(Issue), Page numbers.
-
-    \bibitem{reference2}
-    Another Author, C. (Year). Title of the book. Publisher.
-\end{thebibliography}
 
 \end{document}
