@@ -1,6 +1,8 @@
 #ifndef TSP_H_
 #define TSP_H_
 
+#include <math.h>
+
 #define RANDOM_MAX_X               10000
 #define RANDOM_MAX_Y               10000
 #define EPSILON                    1e-7
@@ -44,6 +46,15 @@ struct tsp {
 	int current_solution_next_index;
 };
 
+// COST FUNCTIONS
+typedef double (*tsp_costfunction)(double xi, double xj, double yi, double yj);
+
+int nint(double x);
+
+double tsp_costfunction_att(double xi, double xj, double yi, double yj);
+double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj);
+
+
 /**
  * Initialize a tsp structure
  * */
@@ -69,7 +80,7 @@ int tsp_allocate_costs(struct tsp* tsp);
 /**
  * Fills the matrix of costs
  * */
-int tsp_compute_costs(struct tsp* tsp);
+int tsp_compute_costs(struct tsp* tsp, tsp_costfunction costfunction);
 
 /**
  * Free memory allocated by a tsp struct

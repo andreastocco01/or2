@@ -192,6 +192,9 @@ void main_compute(int argc, char** argv)
 	debug_print_coords(&tsp);
 #endif
 
+	/* tsp_compute_costs(&tsp, tsp_costfunction_euclidian); */
+	tsp_compute_costs(&tsp, tsp_costfunction_att);
+
 	if (runConfig == 0) {
 		if (tsp_solve_vns(&tsp)) {
 			perror("Can't solve greedy\n");

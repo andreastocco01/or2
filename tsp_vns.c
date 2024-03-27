@@ -64,9 +64,6 @@ int tsp_solve_vns(struct tsp* tsp)
 	if (tsp_allocate_solution(tsp))
 		return -1;
 
-	if (tsp_compute_costs(tsp))
-		return -1;
-
 	if (!tsp->cost_matrix)
 		return -1;
 

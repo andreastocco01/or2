@@ -61,9 +61,6 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	if (tsp_allocate_solution(tsp))
 		return -1;
 
-	if (tsp_compute_costs(tsp))
-		return -1;
-
 	if (!tsp->cost_matrix)
 		return -1;
 

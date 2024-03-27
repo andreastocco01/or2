@@ -183,7 +183,12 @@ int tsp_allocate_solution(struct tsp* tsp)
 	return 0;
 }
 
-int tsp_compute_costs(struct tsp* tsp)
+int nint(double x)
+{
+	return (int)(x + 0.5);
+}
+
+int tsp_compute_costs(struct tsp* tsp, tsp_costfunction costfunction)
 {
 	if (tsp->cost_matrix == NULL)
 		tsp_allocate_costs(tsp);
@@ -193,11 +198,11 @@ int tsp_compute_costs(struct tsp* tsp)
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 		for (int j = 0; j < tsp->nnodes; j++) {
-			double deltax = (tsp->coords[i].x - tsp->coords[j].x);
-			double deltay = (tsp->coords[i].y - tsp->coords[j].y);
-			double sqdist = deltax * deltax + deltay * deltay;
 
-			tsp->cost_matrix[flatten_coords(i, j, tsp->nnodes)] = sqrt(sqdist);
+			double dij = costfunction(tsp->coords[i].x, tsp->coords[j].x, tsp->coords[i].y,
+						  tsp->coords[j].y);
+
+			tsp->cost_matrix[flatten_coords(i, j, tsp->nnodes)] = dij;
 		}
 	}
 
@@ -368,4 +373,28 @@ void tsp_2opt_swap(int left, int right, int* solution)
 		left++;
 		right--;
 	}
+}
+
+double tsp_costfunction_att(double xi, double xj, double yi, double yj)
+{
+	double deltax = (xi - xj);
+	double deltay = (yi - yj);
+	double sqdist = deltax * deltax + deltay * deltay;
+	double rij = sqrt(sqdist / 10.0);
+	double tij = nint(rij);
+	double dij;
+	if (tij < rij)
+		dij = tij + 1;
+	else
+		dij = tij;
+
+	return dij;
+}
+
+double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj)
+{
+	double deltax = (xi - xj);
+	double deltay = (yi - yj);
+	double sqdist = deltax * deltax + deltay * deltay;
+	return sqrt(sqdist);
 }

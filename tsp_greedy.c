@@ -128,8 +128,6 @@ int tsp_solve_multigreedy_init(struct tsp* tsp)
 		return -1;
 	if (tsp_allocate_costs(tsp))
 		return -1;
-	if (tsp_compute_costs(tsp))
-		return -1;
 
 	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation, &tsp->solution_value))
 		return -1;
@@ -142,8 +140,6 @@ int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
 	if (tsp_allocate_solution(tsp))
 		return -1;
 	if (tsp_allocate_costs(tsp))
-		return -1;
-	if (tsp_compute_costs(tsp))
 		return -1;
 
 	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value))
