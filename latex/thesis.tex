@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{algorithm}
+% \usepackage{algpseudocode}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{Performance Analysis of TSP Solving Algorithms}
+\author{Basaglia Alberto, Stocco Andrea}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+	The Traveling Salesman Problem (TSP) is one of the most intensively studied problems in optimization.
+	It asks the following question:\\\\
+	\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route 
+	that visits each city exactly once and returns to the origin city?}\\\\
+	TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact algorithms} to solve it.
+	In this thesis we are going to show and compare the performances of these algorithms. 
+\end{abstract}
+
+\section{Introduction}
+In this study we focus on evaluating the performance of two heuristic algorithms: the \textit{Greedy} algorithm with \textit{2-opt} 
+optimization and the \textit{Tabu Search} algorithm.
+The Greedy algorithm, starting from every possible node of the instance, tries to find the optimal solution always updating the path
+with the closest node. To improve the performance of this algorithm, after that, we apply also the 2-opt algorithm, to remove 
+the intersection between the edges of the path.
+On the other hand, the Tabu Search algorithm, starting from a random node, tries to `move`... TODO
+
+\section{Heuristics}
+\subsection{Greedy}
+\subsection{2-opt}
+
+\section{Metaheuristics}
+\subsection{Tabu Search}
+Provide background information on the Greedy algorithm, 2-opt optimization, and Tabu Search algorithm. Explain how these algorithms 
+work and their relevance to solving the TSP.
+
+\section{Methodology}
+Describe the implementation details of each algorithm, including any specific parameters used, initialization methods, and termination criteria.
+
+\section{Experimental Setup}
+Explain the experimental setup used for evaluating the performance of the algorithms. Describe the datasets used, including the number 
+of cities and any special characteristics.
+
+\section{Results}
+Present the results obtained from running the algorithms on the datasets. Include tables or graphs showing the tour lengths produced 
+by each algorithm and the computational time taken.
+
+\section{Discussion}
+Discuss the results obtained, highlighting any trends or patterns observed. Compare the performance of the algorithms in terms of solution 
+quality and computational efficiency.
+
+\section{Conclusion}
+Summarize the findings of the study and draw conclusions regarding the effectiveness of the algorithms for solving the TSP.
+Discuss any limitations of the study and suggest directions for future research.
+
+\section*{Acknowledgments}
+(Optional) Acknowledge any individuals or organizations that contributed to the project.
+
+\begin{thebibliography}{9}
+    \bibitem{reference1}
+    Author, A., \& Author, B. (Year). Title of the paper. \textit{Journal Name}, \textbf{Volume}(Issue), Page numbers.
+
+    \bibitem{reference2}
+    Another Author, C. (Year). Title of the book. Publisher.
+\end{thebibliography}
+
+\end{document}
