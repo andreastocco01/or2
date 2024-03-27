@@ -78,6 +78,28 @@ how much the solution cost would improve (decrease by).
 \end{algorithmic}
 \end{algorithm}
 
+The procedure begins by solving the problem with a greedy approach and the tabu list
+is empty. All the procedure is executed in a while loop with a generic condition. We could
+decide to exit the loop in a large variety of ways. In our experiments we leave the loop
+after a predefined time-limit. Other possibilities can involve a maximum number of iterations, a lack of any improvement in the last iterations or any other kind of stopping criteria.
+
+At every iteration of the loop, we find the best move that is not in the tabu list. If this move has a positive delta (meaning that its application would lead to an
+improvement in the solution) we apply it and jump to the next iteration. If the best
+move has a negative delta we apply it anyway, adding it to the list of the tabu moves.
+
+It is then important to define a way to remove moves from the list. In the pseudo-code we define it with a generic ``removeold'' function, in practice there are many ways the remove tabu entries.
+
+We define ``tenure'' of the tabu method the window of iteration in which tabu moves are considered. For example a tenure of $100$ iterations would mean that we remove
+from the tabu list all moves that weren't added in the last $100$ iterations.
+
+This \textit{hyperparameter} is crucial for the effectiveness of the method. In our implementation we experimented with a fixed tenure (dependent on the number of
+nodes of the instance) and with some functions of the number of the current iteration. Some good results were obtained with a sinusoidal function.
+
+This approach using variable values for the tenure can be quite effective compared to a fixed one as we will se in the chapted dedicated to experimental results.
+An intuition behind this can be given by the fact that varying the tenure can be beneficial to the search of a new minimum because it tries to solve both the problems of having a tenure that is too big and one that is too small.
+A small tenure can be problematic because we cannot escape the local minimum far enough. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
+tabu list. Having a variable tenure can sometimes, on the long run, avoid the drawbacks of a fixed approach.
+
 \subsection{VNS (Variable Neighborhood Search)}
 In \textit{Tabu Search} we have seen two different phases: 
 \begin{itemize}

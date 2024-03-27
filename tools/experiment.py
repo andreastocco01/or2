@@ -7,7 +7,7 @@ import itertools
 output_file = "out.txt"
 executable_name = "./main"
 pfflag = "--parsefriendly"
-timelimit = "60"
+timelimit = "30"
 
 def run_experiment(parameters) -> str:
     split_params = list(map(lambda x: x.split(), parameters))
@@ -64,8 +64,8 @@ def parse_result(result: str) -> (float, float):
 
 # f.close()
 
-ninstances = 10
-configs = [0, 1]
+ninstances = 4
+configs = [0, 1, 2]
 f = open(output_file, "w")
 
 f.write("{}".format(len(configs)))
@@ -76,7 +76,7 @@ f.write("\n")
 for n in range(ninstances):
     parameters = [
         ("", ['-r']),
-        ('nnodes', [500]),
+        ('nnodes', [2000]),
         ('seed', [n*100]),
         ('config', configs)
     ]
