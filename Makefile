@@ -27,4 +27,4 @@ main: main.c tsp.h tsp.o util.h util.o tsp_greedy.h tsp_greedy.o tsp_tabu.h tsp_
 	$(CC) $(CFLAGS) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o main.c $(LINK) -o main
 
 clean:
-	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o main
+	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o main
