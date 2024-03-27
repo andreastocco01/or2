@@ -20,5 +20,13 @@ int tenure_sin(int nnodes, int iteration);
  * This function runs forever.
  * */
 int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure);
+int is_tabu(int* tabu_iteration, int node, int current_iteration, int tenure);
+double tsp_2opt_findbestswap_no_tabu(struct tsp* tsp,
+				     int* solution,
+				     int* best_i,
+				     int* best_j,
+				     int* tabu_iteration,
+				     int tenure,
+				     int current_iteration);
 
 #endif
