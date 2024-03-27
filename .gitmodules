@@ -1,0 +1,3 @@
+[submodule "tsplib"]
+	path = tsplib
+	url = git@github.com:mastqe/tsplib.git
