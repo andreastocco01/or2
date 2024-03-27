@@ -85,17 +85,6 @@ In \textit{Tabu Search} we have seen two different phases:
 	\item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
 	non-tabu moves
 \end{itemize}
-% With this approach we waste a lot of time without producing any better 
-% solution (Diversification Phase). One possible solution could be restarting from a random point every time we 
-% find a local minimum (Multistart) but, in this way, we would spend a lot of time doing the Intensification 
-% Phase. Furthermore, when we reach a local minimum it's very likely that the solution found is not 
-% completely wrong, but that has to be `fixed` in some sense.
-% VNS is a metaheuristic that performs a little permutation of the solution to escape from a local minimum
-% instead of restarting from a completely different one.
-% With this approach we move from one solution to a better one using 2-opt until we find a local minimum.
-% At this point we perform a permutation of three nodes (3-opt) to escape from the minimum.
-% In this way we also ensure that we'll never restart from a solution already visited in the last 
-% 2-opt application because it cannot be obtained by a single permutation of 3 nodes.
 With this approach, we may spend a considerable amount of time without achieving any improvement in 
 solution quality (Diversification Phase). One potential solution could involve restarting from a random 
 point each time we encounter a local minimum (Multistart). However, this approach would significantly 
@@ -104,10 +93,37 @@ that the solution obtained is not entirely incorrect but requires adjustment in 
 VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as 
 opposed to restarting from a completely different starting point.
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching 
-a local minimum. Subsequently, we execute a permutation involving three nodes (3-opt) to navigate away 
-from the minimum. This approach also guarantees that we never revert to a previously visited solution in 
-the last 2-opt application, as it cannot be achieved through a single permutation of three nodes.
+a local minimum. Subsequently, we perform a random number of permutations involving three nodes (3-opt)
+to navigate away from the minimum. This approach also ensures that we never revert to a previously visited
+solution in the last 2-opt application, as it cannot be achieved through a sequence of permutations of
+three nodes.
+This is a simplified version of the algorithm; state-of-the-art techniques also allow for larger permutations
+of nodes (e.g., 4-opt, 5-opt, etc.) instead of multiple 3-opt operations.
+Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
 
+\begin{algorithm}[h]
+\caption{VNS}
+\label{alg:vns}
+\begin{algorithmic}
+  \Procedure{vns}{$solution$}
+    \State\Call{greedy}{solution}
+
+    \While{$!stop$}
+        \State $move \gets \Call{findbest2optswap}{solution}$
+        \State $delta \gets \Call{delta}{move}$
+        \If{$delta \leq 0$}
+			\For{random number of times}
+				\State $move \gets \Call{find3optswap}{solution}$
+		        \State $solution \gets \Call{apply}{solution, move}$
+			\EndFor
+        \EndIf
+        \State $solution \gets \Call{apply}{solution, move}$
+    \EndWhile
+
+  \EndProcedure
+
+\end{algorithmic}
+\end{algorithm}
 
 \section{Exact Methods}
 \section{Results}
