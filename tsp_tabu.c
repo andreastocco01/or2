@@ -9,16 +9,49 @@
 #include <string.h>
 #include <unistd.h>
 
+int min(int a, int b)
+{
+	return a > b ? b : a;
+}
+
+int tenure_min = 10;
+
+void tenure_setmin(int min)
+{
+	tenure_min = min;
+}
+
+int tenure_fixed_divisor = 10;
+
 int tenure_fixed(int nnodes, int iteration)
 {
-	int computed = nnodes / TENURE_FIXED_DIVISOR;
-	return computed > TENURE_MIN ? computed : TENURE_MIN;
+	int computed = nnodes / tenure_fixed_divisor;
+	return min(computed, tenure_min);
 }
+
+void tenure_fixed_setdivisor(int divisor)
+{
+	tenure_fixed_divisor = divisor;
+}
+
+int tenure_sin_divisor = 2000;
+int tenure_sin_scale = 20;
 
 int tenure_sin(int nnodes, int iteration)
 {
-	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE + TENURE_SIN_SCALE * 2;
-	return computed > TENURE_MIN ? computed : TENURE_MIN;
+	double scale = (double) nnodes / tenure_sin_scale;
+	int computed = sin(((double)iteration) / tenure_sin_divisor) * scale + scale * 2;
+	return min(computed, tenure_min);
+}
+
+void tenure_sin_setscale(int scale)
+{
+	tenure_sin_scale = scale;
+}
+
+void tenure_sin_setdivisor(int divisor)
+{
+	tenure_sin_divisor = divisor;
 }
 
 int is_tabu(int* tabu_iteration, int node, int current_iteration, int tenure)
