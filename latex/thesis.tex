@@ -134,7 +134,7 @@ Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
         \State $move \gets \Call{findbest2optswap}{solution}$
         \State $delta \gets \Call{delta}{move}$
         \If{$delta \leq 0$}
-			\For{random number of times}
+			\For{$\Call{random}{range}$}
 				\State $move \gets \Call{find3optswap}{solution}$
 		        \State $solution \gets \Call{apply}{solution, move}$
 			\EndFor
