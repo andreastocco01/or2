@@ -1,10 +1,10 @@
 #include "tsp_tabu.h"
 
+#include "eventlog.h"
 #include "tsp.h"
 #include "tsp_greedy.h"
 #include <bits/types/sigset_t.h>
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -17,7 +17,7 @@ int tenure_fixed(int nnodes, int iteration)
 
 int tenure_sin(int nnodes, int iteration)
 {
-	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE + TENURE_SIN_SCALE;
+	int computed = sin(((double)iteration) / TENURE_SIN_DIVISOR) * TENURE_SIN_SCALE + TENURE_SIN_SCALE * 2;
 	return computed > TENURE_MIN ? computed : TENURE_MIN;
 }
 
@@ -83,8 +83,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	double current_solution_value = tsp->solution_value;
 
 	memcpy(current_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
-	tsp_add_current(tsp, current_solution_value);
-	tsp_add_incumbent(tsp, current_solution_value);
+	eventlog_logdouble("new_current", 0, current_solution_value);
+	eventlog_logdouble("new_incumbent", 0, current_solution_value);
 
 	int current_iteration = 0;
 	int ten;
@@ -101,11 +101,16 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 			if (best_delta <= 0)
 				break; // local minimum
 
-			tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j, best_delta);
+			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
+							best_delta);
+			if (isnewbest)
+				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
+			eventlog_logdouble("new_current", current_iteration, current_solution_value);
 		}
 
 		// Diversification phase
 		ten = tenure(tsp->nnodes, current_iteration);
+		eventlog_logdouble("tenure", current_iteration, ten);
 		/* printf("tenure(%d) = %d\n", current_iteration, ten); */
 		if (is_tabu(tabu_iteration, best_i, current_iteration, ten)) {
 			// the node is tabu. We need to skip
@@ -116,7 +121,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 		current_solution_value -= best_delta;
 		// add to tabu list
 		tabu_iteration[best_i] = current_iteration;
-		tsp_add_current(tsp, current_solution_value);
+		eventlog_logdouble("new_current", current_iteration, current_solution_value);
 	}
 
 	free(tabu_iteration);

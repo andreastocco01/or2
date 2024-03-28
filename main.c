@@ -1,5 +1,5 @@
+#include "eventlog.h"
 #include "tsp.h"
-#include "tsp_greedy.h"
 #include "tsp_tabu.h"
 #include "tsp_vns.h"
 #include "util.h"
@@ -21,6 +21,7 @@ int timeLimit = 0;
 int plotCurrent = 0;
 int runConfig = -1;
 int childpid;
+char* logfile = "log.txt";
 struct tsp tsp;
 
 int plot_instance(struct tsp* tsp)
@@ -52,36 +53,6 @@ int plot_instance(struct tsp* tsp)
 
 	fclose(gpprocess);
 	return 0;
-}
-
-int plot_array(double* array, int size, const char* title, FILE* file)
-{
-	if (file == NULL)
-		return -1;
-
-	fprintf(file, "$data << EOD\n");
-
-	for (int i = 0; i < size; i++) {
-		fprintf(file, "%d %lf\n", i, array[i]);
-	}
-
-	fprintf(file, "EOD\n");
-	fprintf(file, "plot $data using 1:2 title \"%s\" pt 7 ps 2 with lines\n", title);
-
-	fclose(file);
-	return 0;
-}
-
-int plot_incumbents(struct tsp* tsp)
-{
-	FILE* gpprocess = popen("gnuplot --persist", "w");
-	return plot_array(tsp->incumbents, tsp->incumbent_next_index, "incumbent", gpprocess);
-}
-
-int plot_current_solutions(struct tsp* tsp)
-{
-	FILE* gpprocess = popen("gnuplot --persist", "w");
-	return plot_array(tsp->current_solutions, tsp->current_solution_next_index, "current solution", gpprocess);
 }
 
 int load_instance_file(struct tsp* tsp)
@@ -168,6 +139,8 @@ void parse_arguments(int argc, char** argv)
 			parseFriendly = 1;
 		} else if (!strcmp(argv[i], "--config")) {
 			runConfig = atoi(argv[++i]);
+		} else if (!strcmp(argv[i], "--logfile")) {
+			logfile = argv[++i];
 		}
 	}
 }
@@ -175,6 +148,10 @@ void parse_arguments(int argc, char** argv)
 void main_compute(int argc, char** argv)
 {
 	tsp_init(&tsp);
+	if (eventlog_initialize(logfile)) {
+		printf("Can't initialize logger\n");
+		exit(-1);
+	}
 
 	if (tsp_parse_arguments(argc, argv, &tsp)) {
 		exit(-1);
@@ -211,6 +188,10 @@ void main_compute(int argc, char** argv)
 		}
 	}
 
+	fprintf(stderr, "Please specify a config to solve the problem\n");
+	eventlog_close();
+	exit(0);
+
 	summary_and_exit(-1);
 }
 
@@ -224,10 +205,11 @@ void parse_friendly_output()
 
 void summary_and_exit(int signal)
 {
+	eventlog_close();
 
 	double res;
 	if (!tsp_check_solution(&tsp, &res)) {
-		printf("Houston, we've had a problem\n");
+		printf("The computed solution is invalid!\n");
 	}
 
 	if (parseFriendly) {
@@ -251,12 +233,6 @@ void summary_and_exit(int signal)
 	if (configPlot) {
 		if (plot_instance(&tsp)) {
 			perror("Can't plot solution\n");
-		}
-		if (plot_incumbents(&tsp)) {
-			perror("Can't plot incumbents\n");
-		}
-		if (plotCurrent == 1 && plot_current_solutions(&tsp)) {
-			perror("Can't plot incumbents\n");
 		}
 	}
 summary_finish:

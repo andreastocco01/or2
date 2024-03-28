@@ -36,14 +36,6 @@ struct tsp {
 
 	int* solution_permutation;
 	double solution_value;
-
-	double* incumbents;
-	int incumbent_length;
-	int incumbent_next_index;
-
-	double* current_solutions;
-	int current_solution_length;
-	int current_solution_next_index;
 };
 
 // COST FUNCTIONS
@@ -53,7 +45,6 @@ int nint(double x);
 
 double tsp_costfunction_att(double xi, double xj, double yi, double yj);
 double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj);
-
 
 /**
  * Initialize a tsp structure
@@ -96,30 +87,22 @@ void debug_print(struct tsp* tsp);
 void debug_print_coords(struct tsp* tsp);
 
 /**
- * Add an incumbent to the list of incumbents
- * */
-void tsp_add_incumbent(struct tsp* tsp, double value);
-
-/**
- * Add a solution to the list of current solutions
- * */
-void tsp_add_current(struct tsp* tsp, double value);
-
-/**
  * Compute the delta that would be obtained by applying
  * the 2opt procedure on the given indices
  * */
 double compute_delta(struct tsp* tsp, int* solution, int i, int j);
 
 /**
- * Optimize the provided solution until local minimum is found
+ * Executes a 2-opt swap and updates the current solution.
+ *
+ * returns 1 if a new best solution (incumbent) is found
  * */
-void tsp_2opt_solution(struct tsp* tsp,
-		       int* current_solution,
-		       double* current_solution_value,
-		       int best_i,
-		       int best_j,
-		       double best_delta);
+int tsp_2opt_solution(struct tsp* tsp,
+		      int* current_solution,
+		      double* current_solution_value,
+		      int best_i,
+		      int best_j,
+		      double best_delta);
 
 /**
  * Finds the best 2opt swap nodes

@@ -1,4 +1,5 @@
 #include "tsp.h"
+#include "eventlog.h"
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>
@@ -18,12 +19,6 @@ void tsp_free(struct tsp* tsp)
 
 	if (tsp->solution_permutation)
 		free(tsp->solution_permutation);
-
-	if (tsp->incumbents)
-		free(tsp->incumbents);
-
-	if (tsp->current_solutions)
-		free(tsp->current_solutions);
 }
 
 void tsp_init(struct tsp* tsp)
@@ -34,8 +29,6 @@ void tsp_init(struct tsp* tsp)
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
 	tsp->nnodes = 0;
-	tsp->incumbents = NULL;
-	tsp->current_solutions = NULL;
 }
 
 int tsp_allocate_buffers(struct tsp* tsp)
@@ -47,20 +40,6 @@ int tsp_allocate_buffers(struct tsp* tsp)
 		return -1;
 
 	tsp->coords = (struct point*)malloc(sizeof(struct point) * tsp->nnodes);
-
-	if (tsp->incumbents)
-		free(tsp->incumbents);
-
-	tsp->incumbents = (double*)malloc(sizeof(double) * STARTING_INCUMBENTS);
-	tsp->incumbent_next_index = 0;
-	tsp->incumbent_length = STARTING_INCUMBENTS;
-
-	if (tsp->current_solutions)
-		free(tsp->current_solutions);
-
-	tsp->current_solutions = (double*)malloc(sizeof(double) * STARTING_CURRENT_SOLUTIONS);
-	tsp->current_solution_next_index = 0;
-	tsp->current_solution_length = STARTING_CURRENT_SOLUTIONS;
 
 	return 0;
 }
@@ -220,21 +199,21 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 	return distance_prev - distance_next;
 }
 
-void tsp_2opt_solution(struct tsp* tsp,
-		       int* current_solution,
-		       double* current_solution_value,
-		       int best_i,
-		       int best_j,
-		       double best_delta)
+int tsp_2opt_solution(struct tsp* tsp,
+		      int* current_solution,
+		      double* current_solution_value,
+		      int best_i,
+		      int best_j,
+		      double best_delta)
 {
 	tsp_2opt_swap(best_i + 1, best_j, current_solution);
 	*current_solution_value -= best_delta;
-	tsp_add_current(tsp, *current_solution_value);
 	if (*current_solution_value < tsp->solution_value) {
 		tsp->solution_value = *current_solution_value;
-		tsp_add_incumbent(tsp, tsp->solution_value);
 		tsp_save_signal_safe(tsp, current_solution, *current_solution_value);
+		return 1;
 	}
+	return 0;
 }
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
@@ -290,34 +269,6 @@ void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
 
 	// restore old mask
 	sigprocmask(SIG_SETMASK, &old, NULL);
-}
-
-void insert_resize(double** array, int* next_index, int* length, int factor, double value)
-{
-	if (*next_index == *length) {
-		// we need to resize
-		double* new_area = malloc(sizeof(double) * (*length) * factor);
-
-		memcpy(new_area, *array, *length * sizeof(double));
-
-		free(*array);
-		*array = new_area;
-		*length *= factor;
-	}
-
-	(*array)[*next_index] = value;
-	*next_index = *next_index + 1;
-}
-
-void tsp_add_incumbent(struct tsp* tsp, double value)
-{
-	insert_resize(&tsp->incumbents, &tsp->incumbent_next_index, &tsp->incumbent_length, 2, value);
-}
-
-void tsp_add_current(struct tsp* tsp, double value)
-{
-	insert_resize(&tsp->current_solutions, &tsp->current_solution_next_index, &tsp->current_solution_length, 2,
-		      value);
 }
 
 int tsp_is_solution_arg(int* solution, int nnodes)

@@ -1,4 +1,5 @@
 #include "tsp_vns.h"
+#include "eventlog.h"
 #include "tsp.h"
 #include "tsp_greedy.h"
 #include "util.h"
@@ -80,21 +81,28 @@ int tsp_solve_vns(struct tsp* tsp)
 	double current_solution_value = tsp->solution_value;
 
 	memcpy(current_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
-	tsp_add_current(tsp, current_solution_value);
-	tsp_add_incumbent(tsp, current_solution_value);
+	eventlog_logdouble("new_current", 0, current_solution_value);
+	eventlog_logdouble("new_incumbent", 0, current_solution_value);
 
 	int* new_solution = (int*)malloc(tsp->nnodes * sizeof(int));
+
+	int current_iteration = 0;
 
 	while (1) {
 		// Intensification phase
 		while (1) {
+			current_iteration++;
 			int best_i, best_j;
 			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 
 			if (best_delta <= 0)
 				break; // local minimum
 
-			tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j, best_delta);
+			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
+							best_delta);
+			if (isnewbest)
+				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
+			eventlog_logdouble("new_current", current_iteration, current_solution_value);
 		}
 
 		// Diversification phase
@@ -106,8 +114,11 @@ int tsp_solve_vns(struct tsp* tsp)
 			tsp_3opt_swap(positions, current_solution, new_solution, tsp->nnodes);
 			memcpy(current_solution, new_solution, sizeof(int) * tsp->nnodes);
 		}
+		// now we are considering all the kicks as a single move.
+		// consider moving the instruction below into the cycle to count them as
+		// different moves
 		current_solution_value = compute_solution_value(tsp, current_solution);
-		tsp_add_current(tsp, current_solution_value);
+		eventlog_logdouble("new_current", current_iteration, current_solution_value);
 	}
 	free(new_solution);
 	free(current_solution);

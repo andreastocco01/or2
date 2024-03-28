@@ -1,4 +1,5 @@
 #include "tsp_greedy.h"
+#include "eventlog.h"
 #include "tsp.h"
 #include <bits/types/sigset_t.h>
 #include <signal.h>
@@ -75,6 +76,7 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 		to_extract[i] = i;
 	}
 	int t = 0;
+	int current_iteration = 0;
 
 	for (int i = 0; i < tsp->nnodes; i++) {
 		// compute starting node
@@ -92,6 +94,7 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 			return -1;
 		}
 		while (1) {
+			current_iteration++;
 			int best_i, best_j;
 			double best_delta = tsp_2opt_findbestswap(tsp, current, &best_i, &best_j);
 			if (best_delta <= 0) {
@@ -104,11 +107,11 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 			best_dist = current_dist;
 			memcpy(best, current, sizeof(int) * tsp->nnodes);
 
-			tsp_add_incumbent(tsp, best_dist);
+			eventlog_logdouble("new_incumbent", current_iteration, current_dist);
 			// saving the solution at every iteration
 			tsp_save_signal_safe(tsp, current, best_dist);
 		}
-		tsp_add_current(tsp, current_dist);
+		eventlog_logdouble("new_current", current_iteration, current_dist);
 	}
 
 	// TODO can we remove this?

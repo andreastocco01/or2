@@ -11,7 +11,7 @@ typedef int (*tsp_tenure)(int nnodes, int iteration);
 #define TENURE_FIXED_DIVISOR 10
 int tenure_fixed(int nnodes, int iteration);
 
-#define TENURE_SIN_DIVISOR 10000
+#define TENURE_SIN_DIVISOR 1000
 #define TENURE_SIN_SCALE   100
 int tenure_sin(int nnodes, int iteration);
 
