@@ -9,9 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 
-int min(int a, int b)
+int max(int a, int b)
 {
-	return a > b ? b : a;
+	return a < b ? b : a;
 }
 
 int tenure_min = 10;
@@ -26,7 +26,7 @@ int tenure_fixed_divisor = 10;
 int tenure_fixed(int nnodes, int iteration)
 {
 	int computed = nnodes / tenure_fixed_divisor;
-	return min(computed, tenure_min);
+	return max(computed, tenure_min);
 }
 
 void tenure_fixed_setdivisor(int divisor)
@@ -41,7 +41,7 @@ int tenure_sin(int nnodes, int iteration)
 {
 	double scale = (double) nnodes / tenure_sin_scale;
 	int computed = sin(((double)iteration) / tenure_sin_divisor) * scale + scale * 2;
-	return min(computed, tenure_min);
+	return max(computed, tenure_min);
 }
 
 void tenure_sin_setscale(int scale)
