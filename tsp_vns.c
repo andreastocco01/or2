@@ -2,13 +2,18 @@
 #include "eventlog.h"
 #include "tsp.h"
 #include "tsp_greedy.h"
-#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define UPPER 10
-#define LOWER 2
+int lower = 1;
+int upper = 3;
+
+void vns_setrange(int min, int max)
+{
+	lower = min;
+	upper = max;
+}
 
 int compar(const void* a, const void* b)
 {
@@ -107,7 +112,7 @@ int tsp_solve_vns(struct tsp* tsp)
 
 		// Diversification phase
 		int positions[3];
-		int r = (rand() % (UPPER - LOWER + 1)) + LOWER;
+		int r = (rand() % (upper - lower + 1)) + lower;
 		// do 3opt [UPPER, LOWER] times
 		for (int i = 0; i < r; i++) {
 			generate_3opt_positions(tsp, positions); // i -> j -> k
