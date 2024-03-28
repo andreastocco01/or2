@@ -138,8 +138,9 @@ Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
 				\State $move \gets \Call{find3optswap}{solution}$
 		        \State $solution \gets \Call{apply}{solution, move}$
 			\EndFor
-        \EndIf
-        \State $solution \gets \Call{apply}{solution, move}$
+		\Else
+			\State $solution \gets \Call{apply}{solution, move}$
+		\EndIf
     \EndWhile
 
   \EndProcedure
