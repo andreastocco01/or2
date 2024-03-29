@@ -46,6 +46,8 @@ int nint(double x);
 double tsp_costfunction_att(double xi, double xj, double yi, double yj);
 double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj);
 
+int tsp_solve_cplex(struct tsp* tsp);
+
 /**
  * Initialize a tsp structure
  * */

@@ -1,5 +1,6 @@
 #include "tsp.h"
 #include "eventlog.h"
+#include <cplex.h>
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>
@@ -348,4 +349,67 @@ double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj)
 	double deltay = (yi - yj);
 	double sqdist = deltax * deltax + deltay * deltay;
 	return sqrt(sqdist);
+}
+
+int xpos(int i, int j, struct tsp* tsp)
+{
+	if (i == j) {
+		printf("i == j\n");
+		return -1;
+	}
+	if (i > j)
+		xpos(j, i, tsp);
+	return i * tsp->nnodes + j - ((i + 1) * (i + 2)) / 2;
+}
+
+int build_model(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
+{
+	char binary = 'B';
+	char* name = calloc(100, sizeof(char));
+
+	// add variables to cplex
+	for (int i = 0; i < tsp->nnodes - 1; i++) {
+		for (int j = i + 1; j < tsp->nnodes; j++) {
+			double cost = tsp->cost_matrix[flatten_coords(i, j, tsp->nnodes)];
+			double lb = 0;
+			double ub = 1;
+			sprintf(name, "x(%d,%d)", i + 1, j + 1);
+			int err;
+			if ((err = CPXnewcols(env, lp, 1, &cost, &lb, &ub, &binary, &name))) {
+				printf("Error adding variable: %d\n", err);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+int tsp_solve_cplex(struct tsp* tsp)
+{
+	if (tsp_allocate_solution(tsp))
+		return -1;
+
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+
+	int error;
+	CPXENVptr env = CPXopenCPLEX(&error);
+	if (error) {
+		printf("Error creating env: %d\n", error);
+		return -1;
+	}
+	CPXLPptr lp = CPXcreateprob(env, &error, "tps");
+	if (error) {
+		printf("Error creating lp: %d\n", error);
+		return -1;
+	}
+
+	build_model(tsp, env, lp);
+
+	CPXfreeprob(env, &lp);
+	return 0;
 }
