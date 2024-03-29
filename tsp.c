@@ -1,5 +1,4 @@
 #include "tsp.h"
-#include "eventlog.h"
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>

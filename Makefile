@@ -41,8 +41,11 @@ tsp_vns.o: tsp_vns.h tsp_vns.c
 eventlog.o: eventlog.h eventlog.c
 	$(CC) $(CFLAGS) -c eventlog.c -o eventlog.o
 
-main: main.c tsp.h tsp.o util.h util.o tsp_greedy.h tsp_greedy.o tsp_tabu.h tsp_tabu.o tsp_vns.h tsp_vns.o eventlog.o tsp_cplex.o
-	$(CC) $(CFLAGS) $(LINKFLAGS) $(INCFLAGS) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o main.c $(LINK) $(CPLEX_LIBS) -o main
+tsp_instance.o: tsp_instance.h tsp_instance.c
+	$(CC) $(CFLAGS) -c tsp_instance.c -o tsp_instance.o
+
+main: main.c tsp.h tsp.o util.h util.o tsp_greedy.h tsp_greedy.o tsp_tabu.h tsp_tabu.o tsp_vns.h tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.h tsp_instance.o
+	$(CC) $(CFLAGS) $(LINKFLAGS) $(INCFLAGS) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.o main.c $(LINK) $(CPLEX_LIBS) -o main
 
 clean:
-	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o main
+	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.o main
