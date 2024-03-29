@@ -1,5 +1,6 @@
 #include "eventlog.h"
 #include "tsp.h"
+#include "tsp_cplex.h"
 #include "tsp_tabu.h"
 #include "tsp_vns.h"
 #include "util.h"
@@ -185,6 +186,11 @@ void main_compute(int argc, char** argv)
 	if (runConfig == 2) {
 		if (tsp_solve_tabu(&tsp, tenure_sin)) {
 			perror("Can't solve tabu\n");
+		}
+	}
+	if (runConfig == 3) {
+		if (tsp_solve_cplex(&tsp)) {
+			perror("Can't solve cplex\n");
 		}
 	}
 
