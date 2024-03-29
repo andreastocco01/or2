@@ -13,5 +13,4 @@ int tsp_solve_vns(struct tsp* tsp);
  * */
 void vns_setrange(int min, int max);
 
-
 #endif

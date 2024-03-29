@@ -39,7 +39,7 @@ int tenure_sin_scale = 20;
 
 int tenure_sin(int nnodes, int iteration)
 {
-	double scale = (double) nnodes / tenure_sin_scale;
+	double scale = (double)nnodes / tenure_sin_scale;
 	int computed = sin(((double)iteration) / tenure_sin_divisor) * scale + scale * 2;
 	return max(computed, tenure_min);
 }
@@ -138,8 +138,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 			if (best_delta <= 0)
 				break; // local minimum
 
-			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
-							best_delta);
+			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i,
+							  best_j, best_delta);
 			if (isnewbest)
 				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
 			eventlog_logdouble("new_current", current_iteration, current_solution_value);

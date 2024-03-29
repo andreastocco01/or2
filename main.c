@@ -1,10 +1,11 @@
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include "eventlog.h"
 #include "tsp.h"
 #include "tsp_instance.h"
 #include "tsp_vns.h"
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 struct experiment_args {
 	int parse_friendly;
@@ -15,17 +16,12 @@ struct experiment_args {
 
 struct experiment_args parse_arguments(int argc, char** argv)
 {
-	struct experiment_args args = {
-	    .do_plot = 0,
-	    .logfile = "log.txt",
-	    .parse_friendly = 0,
-	    .runconfiguration = -1
-	};
+	struct experiment_args args = {.do_plot = 0, .logfile = "log.txt", .parse_friendly = 0, .runconfiguration = -1};
 
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
 			args.do_plot = 1;
-		}  else if (!strcmp(argv[i], "--parsefriendly")) {
+		} else if (!strcmp(argv[i], "--parsefriendly")) {
 			args.parse_friendly = 1;
 		} else if (!strcmp(argv[i], "--config")) {
 			args.runconfiguration = atoi(argv[++i]);
@@ -34,7 +30,7 @@ struct experiment_args parse_arguments(int argc, char** argv)
 		}
 	}
 
-    return args;
+	return args;
 }
 
 int plot_instance(struct tsp* tsp)
@@ -70,8 +66,8 @@ int plot_instance(struct tsp* tsp)
 
 int run_experiment(struct tsp* tsp, int config)
 {
-    // add more configurations here
-    return tsp_solve_vns(tsp);
+	// add more configurations here
+	return tsp_solve_vns(tsp);
 	/* return tsp_solve_cplex(tsp); */
 }
 
@@ -85,10 +81,10 @@ void print_parse_friendly_output(struct tsp* tsp)
 
 int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
 {
-    double res;
+	double res;
 	if (!tsp_check_solution(tsp, &res)) {
 		printf("The computed solution is invalid!\n");
-        return -1;
+		return -1;
 	}
 
 	if (is_parse_friendly) {
@@ -100,19 +96,34 @@ int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
 	if (do_plot) {
 		if (plot_instance(tsp)) {
 			perror("Can't plot solution\n");
-            return -1;
+			return -1;
 		}
 	}
 
-    return 0;
+	return 0;
+}
+
+struct tsp* signal_tsp;
+
+void handle_sigint(int signal)
+{
+	signal_tsp->force_stop = 1;
+}
+
+void setup_signals(struct tsp* tsp)
+{
+	signal_tsp = tsp;
+	signal(SIGINT, handle_sigint);
 }
 
 int main(int argc, char** argv)
 {
-    struct experiment_args args = parse_arguments(argc, argv);
-    struct tsp tsp;
+	struct experiment_args args = parse_arguments(argc, argv);
+	struct tsp tsp;
 
-    tsp_init(&tsp);
+	setup_signals(&tsp);
+
+	tsp_init(&tsp);
 	if (eventlog_initialize(args.logfile)) {
 		printf("Can't initialize logger\n");
 		exit(-1);
@@ -132,13 +143,13 @@ int main(int argc, char** argv)
 	/* tsp_compute_costs(&tsp, tsp_costfunction_euclidian); */
 	tsp_compute_costs(&tsp, tsp_costfunction_att);
 
-    if(run_experiment(&tsp, args.runconfiguration)) {
-        exit(-1);
-    }
+	if (run_experiment(&tsp, args.runconfiguration)) {
+		exit(-1);
+	}
 
 	conclude_experiment(&tsp, args.parse_friendly, args.do_plot);
 
-    eventlog_close();
+	eventlog_close();
 
 	return 0;
 }

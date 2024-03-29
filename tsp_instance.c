@@ -6,7 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
-int tsp_loadinstance_random(struct tsp* tsp) {
+int tsp_loadinstance_random(struct tsp* tsp)
+{
 
 	srand(tsp->seed);
 

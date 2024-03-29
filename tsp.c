@@ -340,6 +340,11 @@ double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj)
 
 int tsp_shouldstop(struct tsp* tsp)
 {
+	if (tsp->force_stop)
+		return 1;
+	if (tsp->timelimit_secs <= 0)
+		return 0;
+
 	time_t currenttime = clock();
 	time_t starttime = tsp->start_time;
 

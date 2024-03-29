@@ -1,10 +1,10 @@
 #ifndef TSP_H_
 #define TSP_H_
 
-#define RANDOM_MAX_X               10000
-#define RANDOM_MAX_Y               10000
-#define EPSILON                    1e-7
-#define flatten_coords(x, y, N)    x* N + y
+#define RANDOM_MAX_X            10000
+#define RANDOM_MAX_Y            10000
+#define EPSILON                 1e-7
+#define flatten_coords(x, y, N) x* N + y
 
 #include <time.h>
 

@@ -6,6 +6,4 @@
 int tsp_loadinstance_random(struct tsp* tsp);
 int tsp_loadinstance_tsplib(struct tsp* tsp);
 
-
-
 #endif //

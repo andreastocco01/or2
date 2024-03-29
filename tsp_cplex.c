@@ -74,7 +74,7 @@ int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	int ncols = CPXgetnumcols(env, lp);
 	double* vars = malloc(sizeof(double) * ncols); // REVIEW this can get very large!
 
-	if(CPXgetx(env, lp, vars, 0, ncols-1)) {
+	if (CPXgetx(env, lp, vars, 0, ncols - 1)) {
 		fprintf(stderr, "Error getting variable value\n");
 		res = -1; // error
 		goto out;
@@ -140,7 +140,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 	CPXgetobjval(env, lp, &objval);
 	printf("Result = %lf\n", objval);
 
-	if(tsp_cplex_getsolution(tsp, env, lp)) {
+	if (tsp_cplex_getsolution(tsp, env, lp)) {
 		printf("Can't get solution of lp\n");
 		res = -1;
 		goto free_prob;
