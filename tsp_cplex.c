@@ -67,6 +67,33 @@ int tsp_build_lpmodel(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	return 0;
 }
 
+int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
+{
+	int res = 0;
+	int ncols = CPXgetnumcols(env, lp);
+	double* vars = malloc(sizeof(double) * ncols); // REVIEW this can get very large!
+
+	if(CPXgetx(env, lp, vars, 0, ncols-1)) {
+		fprintf(stderr, "Error getting variable value\n");
+		res = -1; // error
+		goto out;
+	}
+
+	for (int i = 0; i < tsp->nnodes - 1; i++) {
+		for (int j = i + 1; j < tsp->nnodes; j++) {
+			int pos = xpos(i, j, tsp);
+			int val = vars[pos] > 0.5 ? 1 : 0;
+			printf("%d->%d: %d\n", i, j, val);
+		}
+	}
+
+	// TODO actually get and store the solution
+
+out:
+	free(vars);
+	return res;
+}
+
 int tsp_solve_cplex(struct tsp* tsp)
 {
 	if (tsp_allocate_solution(tsp))
@@ -78,30 +105,47 @@ int tsp_solve_cplex(struct tsp* tsp)
 	if (!tsp->nnodes)
 		return -1;
 
+	int res = 0;
+
 	int error;
 	CPXENVptr env = CPXopenCPLEX(&error);
 	if (error) {
 		printf("Error creating env: %d\n", error);
-		return -1;
+		res = -1;
+		goto free_cplex;
 	}
 	CPXLPptr lp = CPXcreateprob(env, &error, "tps");
 	if (error) {
 		printf("Error creating lp: %d\n", error);
-		return -1;
+		res = -1;
+		goto free_prob;
 	}
 
-	if ((error = tsp_build_lpmodel(tsp, env, lp)))
-		return -1;
+	if ((error = tsp_build_lpmodel(tsp, env, lp))) {
+		printf("Erorr building model\n");
+		res = -1;
+		goto free_prob;
+	}
 
 	if ((error = CPXmipopt(env, lp))) {
 		printf("Error while optimizing: %d\n", error);
-		return -1;
+		res = -1;
+		goto free_prob;
 	}
 
-	double res;
-	CPXgetobjval(env, lp, &res);
-	printf("Result = %lf\n", res);
+	double objval;
+	CPXgetobjval(env, lp, &objval);
+	printf("Result = %lf\n", objval);
 
+	if(tsp_cplex_getsolution(tsp, env, lp)) {
+		printf("Can't get solution of lp\n");
+		res = -1;
+		goto free_prob;
+	}
+
+free_prob:
 	CPXfreeprob(env, &lp);
-	return 0;
+free_cplex:
+	CPXcloseCPLEX(&env);
+	return res;
 }
