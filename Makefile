@@ -10,7 +10,7 @@ CPLEX_INC_DIR = $(CPLEX_PATH)/cplex/include/ilcplex
 CPLEX_LIB_DIR = $(CPLEX_PATH)/cplex/lib/x86-64_linux/static_pic
 CPLEX_CONCERT_INC_DIR = $(CPLEX_PATH)/concert/include
 CPLEX_CONCERT_LIB_DIR = $(CPLEX_PATH)/concert/lib/x86-64_linux/static_pic
-CPLEX_LIBS = -lcplex -lilocplex -lconcert -lm -lpthread
+CPLEX_LIBS = -lcplex -lilocplex -lconcert -lpthread
 
 all: main
 
