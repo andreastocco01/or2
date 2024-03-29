@@ -1,8 +1,6 @@
 #include "tsp_greedy.h"
 #include "eventlog.h"
 #include "tsp.h"
-#include <bits/types/sigset_t.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +26,9 @@ int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, d
 	current_solution[starting_node] = 0;
 
 	double cumulative_dist = 0;
+
+	tsp_starttimer(tsp);
+	// TODO where do we check if we finished here?
 
 	for (int i = 0; i < tsp->nnodes - 1; i++) {
 		double min_dist = 1e30;
@@ -78,6 +79,8 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 	int t = 0;
 	int current_iteration = 0;
 
+	tsp_starttimer(tsp);
+
 	for (int i = 0; i < tsp->nnodes; i++) {
 		// compute starting node
 		int r = rand() % (tsp->nnodes - t);
@@ -94,6 +97,8 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 			return -1;
 		}
 		while (1) {
+			if (tsp_shouldstop(tsp))
+				goto free_solution_buffers;
 			current_iteration++;
 			int best_i, best_j;
 			double best_delta = tsp_2opt_findbestswap(tsp, current, &best_i, &best_j);
@@ -109,10 +114,12 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 
 			eventlog_logdouble("new_incumbent", current_iteration, current_dist);
 			// saving the solution at every iteration
-			tsp_save_signal_safe(tsp, current, best_dist);
+			tsp_save_solution(tsp, current, best_dist);
 		}
 		eventlog_logdouble("new_current", current_iteration, current_dist);
 	}
+
+free_solution_buffers:
 
 	// TODO can we remove this?
 	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);

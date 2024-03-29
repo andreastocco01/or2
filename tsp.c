@@ -1,9 +1,9 @@
 #include "tsp.h"
 #include <math.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 void tsp_free(struct tsp* tsp)
 {
@@ -28,6 +28,7 @@ void tsp_init(struct tsp* tsp)
 	tsp->coords = NULL;
 	tsp->edge_weight_type = NULL;
 	tsp->nnodes = 0;
+	tsp->force_stop = 0;
 }
 
 int tsp_allocate_buffers(struct tsp* tsp)
@@ -67,6 +68,8 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 		} else if (!strcmp(argv[i], "--nnodes") || !strcmp(argv[i], "-n")) {
 			tsp->nnodes = atoi(argv[++i]);
 			userSetNnodes = 1;
+		} else if (!strcmp(argv[i], "--timelimit") || !strcmp(argv[i], "-t")) {
+			tsp->timelimit_secs = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "--inputfile") || !strcmp(argv[i], "-i")) {
 			tsp->input_file = argv[++i];
 			if (modelSource != -1) {
@@ -209,7 +212,7 @@ int tsp_2opt_solution(struct tsp* tsp,
 	*current_solution_value -= best_delta;
 	if (*current_solution_value < tsp->solution_value) {
 		tsp->solution_value = *current_solution_value;
-		tsp_save_signal_safe(tsp, current_solution, *current_solution_value);
+		tsp_save_solution(tsp, current_solution, *current_solution_value);
 		return 1;
 	}
 	return 0;
@@ -250,24 +253,10 @@ int tsp_check_solution(struct tsp* tsp, double* computed)
 	return 1;
 }
 
-void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value)
+void tsp_save_solution(struct tsp* tsp, int* solution, double value)
 {
-	// mask the signal while we are saving to the tsp
-	// instance
-	sigset_t sigset;
-	sigset_t old;
-
-	sigemptyset(&sigset);
-	sigaddset(&sigset, SIGUSR1);
-	sigaddset(&sigset, SIGINT);
-	sigprocmask(SIG_BLOCK, &sigset, &old);
-
-	// save to the instance
 	memcpy(tsp->solution_permutation, solution, sizeof(int) * tsp->nnodes);
 	tsp->solution_value = value;
-
-	// restore old mask
-	sigprocmask(SIG_SETMASK, &old, NULL);
 }
 
 int tsp_is_solution_arg(int* solution, int nnodes)
@@ -347,4 +336,20 @@ double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj)
 	double deltay = (yi - yj);
 	double sqdist = deltax * deltax + deltay * deltay;
 	return sqrt(sqdist);
+}
+
+int tsp_shouldstop(struct tsp* tsp)
+{
+	time_t currenttime = clock();
+	time_t starttime = tsp->start_time;
+
+	if ((double)(currenttime - starttime) / CLOCKS_PER_SEC > (double)tsp->timelimit_secs)
+		return 1;
+
+	return 0;
+}
+
+void tsp_starttimer(struct tsp* tsp)
+{
+	tsp->start_time = clock();
 }

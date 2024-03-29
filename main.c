@@ -1,30 +1,41 @@
-#include "eventlog.h"
-#include "tsp.h"
-#include "tsp_cplex.h"
-#include "tsp_instance.h"
-#include "tsp_tabu.h"
-#include "tsp_vns.h"
-#include "util.h"
-#include <assert.h>
-#include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
 #include <time.h>
-#include <unistd.h>
+#include "eventlog.h"
+#include "tsp.h"
+#include "tsp_instance.h"
+#include "tsp_vns.h"
 
-void summary_and_exit(int signal);
+struct experiment_args {
+	int parse_friendly;
+	int do_plot;
+	int runconfiguration;
+	char* logfile;
+};
 
-time_t startTime;
-int parseFriendly = 0;
-int configPlot = 0;
-int timeLimit = 0;
-int plotCurrent = 0;
-int runConfig = -1;
-int childpid;
-char* logfile = "log.txt";
-struct tsp tsp;
+struct experiment_args parse_arguments(int argc, char** argv)
+{
+	struct experiment_args args = {
+	    .do_plot = 0,
+	    .logfile = "log.txt",
+	    .parse_friendly = 0,
+	    .runconfiguration = -1
+	};
+
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
+			args.do_plot = 1;
+		}  else if (!strcmp(argv[i], "--parsefriendly")) {
+			args.parse_friendly = 1;
+		} else if (!strcmp(argv[i], "--config")) {
+			args.runconfiguration = atoi(argv[++i]);
+		} else if (!strcmp(argv[i], "--logfile")) {
+			args.logfile = argv[++i];
+		}
+	}
+
+    return args;
+}
 
 int plot_instance(struct tsp* tsp)
 {
@@ -57,33 +68,52 @@ int plot_instance(struct tsp* tsp)
 	return 0;
 }
 
-/*
- * Parses command line arguments for configuring the
- * execution
- * */
-void parse_arguments(int argc, char** argv)
+int run_experiment(struct tsp* tsp, int config)
 {
-	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "--plot") || !strcmp(argv[i], "-p")) {
-			configPlot = 1;
-		} else if (!strcmp(argv[i], "--timelimit") || !strcmp(argv[i], "-t")) {
-			timeLimit = atoi(argv[++i]);
-		} else if (!strcmp(argv[i], "--plotcurrent") || !strcmp(argv[i], "-c")) {
-			plotCurrent = 1;
-		} else if (!strcmp(argv[i], "--parsefriendly")) {
-			parseFriendly = 1;
-		} else if (!strcmp(argv[i], "--config")) {
-			runConfig = atoi(argv[++i]);
-		} else if (!strcmp(argv[i], "--logfile")) {
-			logfile = argv[++i];
-		}
-	}
+    // add more configurations here
+    return tsp_solve_vns(tsp);
+	/* return tsp_solve_cplex(tsp); */
 }
 
-void main_compute(int argc, char** argv)
+void print_parse_friendly_output(struct tsp* tsp)
 {
-	tsp_init(&tsp);
-	if (eventlog_initialize(logfile)) {
+	time_t currentTime = clock();
+	double totalTime = (double)(currentTime - tsp->start_time) / CLOCKS_PER_SEC;
+
+	printf("%lf;%lf\n", totalTime, tsp->solution_value);
+}
+
+int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
+{
+    double res;
+	if (!tsp_check_solution(tsp, &res)) {
+		printf("The computed solution is invalid!\n");
+        return -1;
+	}
+
+	if (is_parse_friendly) {
+		print_parse_friendly_output(tsp);
+	} else {
+		printf("Best solution: %lf\n", tsp->solution_value);
+	}
+
+	if (do_plot) {
+		if (plot_instance(tsp)) {
+			perror("Can't plot solution\n");
+            return -1;
+		}
+	}
+
+    return 0;
+}
+
+int main(int argc, char** argv)
+{
+    struct experiment_args args = parse_arguments(argc, argv);
+    struct tsp tsp;
+
+    tsp_init(&tsp);
+	if (eventlog_initialize(args.logfile)) {
 		printf("Can't initialize logger\n");
 		exit(-1);
 	}
@@ -99,117 +129,16 @@ void main_compute(int argc, char** argv)
 			exit(-1);
 	}
 
-#ifdef DEBUG
-	debug_print(&tsp);
-	debug_print_coords(&tsp);
-#endif
-
 	/* tsp_compute_costs(&tsp, tsp_costfunction_euclidian); */
 	tsp_compute_costs(&tsp, tsp_costfunction_att);
 
-	if (runConfig == 0) {
-		if (tsp_solve_vns(&tsp)) {
-			perror("Can't solve greedy\n");
-		}
-	}
-	if (runConfig == 1) {
-		if (tsp_solve_tabu(&tsp, tenure_fixed)) {
-			perror("Can't solve tabu\n");
-		}
-	}
-	if (runConfig == 2) {
-		if (tsp_solve_tabu(&tsp, tenure_sin)) {
-			perror("Can't solve tabu\n");
-		}
-	}
-	if (runConfig == 3) {
-		if (tsp_solve_cplex(&tsp)) {
-			perror("Can't solve cplex\n");
-		}
-		summary_and_exit(-1);
-	}
+    if(run_experiment(&tsp, args.runconfiguration)) {
+        exit(-1);
+    }
 
-	fprintf(stderr, "Please specify a config to solve the problem\n");
-	eventlog_close();
-	exit(0);
+	conclude_experiment(&tsp, args.parse_friendly, args.do_plot);
 
-	summary_and_exit(-1);
-}
+    eventlog_close();
 
-void parse_friendly_output()
-{
-	time_t currentTime = clock();
-	double totalTime = (double)(currentTime - startTime) / CLOCKS_PER_SEC;
-
-	printf("%lf;%lf\n", totalTime, tsp.solution_value);
-}
-
-void summary_and_exit(int signal)
-{
-	eventlog_close();
-
-	double res;
-	if (!tsp_check_solution(&tsp, &res)) {
-		printf("The computed solution is invalid!\n");
-	}
-
-	if (parseFriendly) {
-		parse_friendly_output();
-		goto summary_finish;
-	}
-
-	if (signal == -1) {
-		kill(getppid(), SIGINT);
-		printf("Execution terminated\n");
-	} else if (signal == SIGUSR1) {
-		printf("Timelimit reached\n");
-	} else if (signal == SIGKILL) {
-		printf("Execution terminated by the user\n");
-	}
-
-#ifdef DEBUG
-	debug_print(&tsp);
-#endif
-
-	if (configPlot) {
-		if (plot_instance(&tsp)) {
-			perror("Can't plot solution\n");
-		}
-	}
-summary_finish:
-	exit(0);
-}
-
-void redirect_to_child(int signal)
-{
-	kill(childpid, signal);
-}
-
-int main(int argc, char** argv)
-{
-	parse_arguments(argc, argv);
-
-	startTime = clock();
-	childpid = fork();
-	fprintf(stderr, "childpid = %d\n", childpid);
-	if (!childpid) {
-		// ===== CHILD
-		// signal for terminating with timelimit
-		signal(SIGUSR1, summary_and_exit);
-		// signal for terminating with ctrl+c
-		signal(SIGINT, summary_and_exit);
-		main_compute(argc, argv);
-	} else {
-		// ===== PARENT
-		signal(SIGINT, redirect_to_child);
-		if (timeLimit != 0) {
-			sleep(timeLimit);
-			int res = kill(childpid, SIGUSR1);
-		}
-		int res;
-		wait(&res);
-		if (!parseFriendly)
-			printf("Child returned %s\n", strerror(res));
-	}
 	return 0;
 }

@@ -122,11 +122,15 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 	int current_iteration = 0;
 	int ten;
 
+	tsp_starttimer(tsp);
+
 	while (1) {
 		// Intensification phase
 		int best_i, best_j;
 		double best_delta;
 		while (1) {
+			if (tsp_shouldstop(tsp))
+				goto free_solution_buffers;
 			current_iteration++;
 			ten = tenure(tsp->nnodes, current_iteration);
 			best_delta = tsp_2opt_findbestswap_no_tabu(tsp, current_solution, &best_i, &best_j,
@@ -156,6 +160,8 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 		tabu_iteration[best_i] = current_iteration;
 		eventlog_logdouble("new_current", current_iteration, current_solution_value);
 	}
+
+free_solution_buffers:
 
 	free(tabu_iteration);
 	free(current_solution);

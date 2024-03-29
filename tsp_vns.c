@@ -93,9 +93,13 @@ int tsp_solve_vns(struct tsp* tsp)
 
 	int current_iteration = 0;
 
+	tsp_starttimer(tsp);
+
 	while (1) {
 		// Intensification phase
 		while (1) {
+			if (tsp_shouldstop(tsp))
+				goto free_solution_buffers;
 			current_iteration++;
 			int best_i, best_j;
 			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
@@ -103,8 +107,8 @@ int tsp_solve_vns(struct tsp* tsp)
 			if (best_delta <= 0)
 				break; // local minimum
 
-			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i, best_j,
-							best_delta);
+			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i,
+							  best_j, best_delta);
 			if (isnewbest)
 				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
 			eventlog_logdouble("new_current", current_iteration, current_solution_value);
@@ -125,6 +129,7 @@ int tsp_solve_vns(struct tsp* tsp)
 		current_solution_value = compute_solution_value(tsp, current_solution);
 		eventlog_logdouble("new_current", current_iteration, current_solution_value);
 	}
+free_solution_buffers:
 	free(new_solution);
 	free(current_solution);
 	return 0;

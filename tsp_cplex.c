@@ -1,4 +1,5 @@
 #include "tsp_cplex.h"
+#include "tsp.h"
 
 int xpos(int i, int j, struct tsp* tsp)
 {
@@ -104,6 +105,8 @@ int tsp_solve_cplex(struct tsp* tsp)
 
 	if (!tsp->nnodes)
 		return -1;
+
+	tsp_starttimer(tsp);
 
 	int res = 0;
 

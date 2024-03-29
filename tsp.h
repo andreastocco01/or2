@@ -1,13 +1,9 @@
 #ifndef TSP_H_
 #define TSP_H_
 
-#include <math.h>
-
 #define RANDOM_MAX_X               10000
 #define RANDOM_MAX_Y               10000
 #define EPSILON                    1e-7
-#define STARTING_INCUMBENTS        4096
-#define STARTING_CURRENT_SOLUTIONS 4096
 #define flatten_coords(x, y, N)    x* N + y
 
 #include <time.h>
@@ -36,6 +32,12 @@ struct tsp {
 
 	int* solution_permutation;
 	double solution_value;
+
+	// execution control data
+
+	time_t start_time;
+	int timelimit_secs;
+	int force_stop;
 };
 
 // COST FUNCTIONS
@@ -151,8 +153,21 @@ int tsp_is_solution_arg(int* solution, int nnodes);
 int tsp_is_solution(struct tsp* tsp);
 
 /**
- * Save a new solution inside the tsp struct in a signal-safe way
+ * Save a new solution inside the tsp struct
  * */
-void tsp_save_signal_safe(struct tsp* tsp, int* solution, double value);
+void tsp_save_solution(struct tsp* tsp, int* solution, double value);
+
+/**
+ * Returns 1 if the execution should stop, 0 otherwise.
+ *
+ * The execution could be stopped because the timelimit has been reached or
+ * because the user stopped it.
+ * */
+int tsp_shouldstop(struct tsp* tsp);
+
+/**
+ * Set the current time as the begin time of the solve.
+ * */
+void tsp_starttimer(struct tsp* tsp);
 
 #endif // TSP_H_
