@@ -3,13 +3,22 @@ CFLAGS=-g -DDEBUG
 LINK=-lm
 # CFLAGS= -g -O3
 
+# from command line
+CPLEX_PATH ?= /opt/ibm/ILOG/CPLEX_Studio2211
+
+CPLEX_INC_DIR = $(CPLEX_PATH)/cplex/include/ilcplex
+CPLEX_LIB_DIR = $(CPLEX_PATH)/cplex/lib/x86-64_linux/static_pic
+CPLEX_CONCERT_INC_DIR = $(CPLEX_PATH)/concert/include
+CPLEX_CONCERT_LIB_DIR = $(CPLEX_PATH)/concert/lib/x86-64_linux/static_pic
+CPLEX_LIBS = -lcplex -lilocplex -lconcert -lm -lpthread
+
 all: main
 
 format:
 	find . -iname "*.h" -o -iname "*.c" | xargs clang-format -i
 
 tsp.o: tsp.h tsp.c
-	$(CC) $(CFLAGS) -c tsp.c -o tsp.o
+	$(CC) $(CFLAGS) -I$(CPLEX_INC_DIR) -I$(CPLEX_CONCERT_INC_DIR) -c tsp.c -o tsp.o
 
 util.o: util.h util.c
 	$(CC) $(CFLAGS) -c util.c -o util.o
@@ -27,7 +36,7 @@ eventlog.o: eventlog.h eventlog.c
 	$(CC) $(CFLAGS) -c eventlog.c -o eventlog.o
 
 main: main.c tsp.h tsp.o util.h util.o tsp_greedy.h tsp_greedy.o tsp_tabu.h tsp_tabu.o tsp_vns.h tsp_vns.o eventlog.o
-	$(CC) $(CFLAGS) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o main.c $(LINK) -o main
+	$(CC) $(CFLAGS) -L$(CPLEX_LIB_DIR) -L$(CPLEX_CONCERT_LIB_DIR) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o main.c $(LINK) $(CPLEX_LIBS) -o main
 
 clean:
-	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o main
+	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o main
