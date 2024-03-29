@@ -15,37 +15,25 @@ CPLEX_LIBS = -lcplex -lilocplex -lconcert -lpthread
 LINKFLAGS = -L$(CPLEX_CONCERT_LIB_DIR) -L$(CPLEX_LIB_DIR)
 INCFLAGS = -I$(CPLEX_CONCERT_INC_DIR) -I$(CPLEX_INC_DIR)
 
+BUILD_OBJS = tsp.o \
+	tsp_cplex.o \
+	util.o \
+	tsp_greedy.o \
+	tsp_tabu.o \
+	tsp_vns.o \
+	eventlog.o \
+	tsp_instance.o
+
 all: main
+
+%.o : %.c %.h
+	$(CC) $(CFLAGS) $(INCFLAGS) -c $< -o $@
+
+main: main.c $(BUILD_OBJS)
+	$(CC) $(CFLAGS) $(LINKFLAGS) $(INCFLAGS) $(BUILD_OBJS) main.c $(LINK) $(CPLEX_LIBS) -o main
+
+clean:
+	rm -f $(BUILD_OBJS) main
 
 format:
 	find . -iname "*.h" -o -iname "*.c" | xargs clang-format -i
-
-tsp.o: tsp.h tsp.c
-	$(CC) $(CFLAGS) -c tsp.c -o tsp.o
-
-tsp_cplex.o: tsp_cplex.h tsp_cplex.c
-	$(CC) $(CFLAGS) $(INCFLAGS) -c tsp_cplex.c -o tsp_cplex.o
-
-util.o: util.h util.c
-	$(CC) $(CFLAGS) -c util.c -o util.o
-
-tsp_greedy.o: tsp_greedy.h tsp_greedy.c
-	$(CC) $(CFLAGS) -c tsp_greedy.c -o tsp_greedy.o
-
-tsp_tabu.o: tsp_tabu.h tsp_tabu.c
-	$(CC) $(CFLAGS) -c tsp_tabu.c -o tsp_tabu.o
-
-tsp_vns.o: tsp_vns.h tsp_vns.c
-	$(CC) $(CFLAGS) -c tsp_vns.c -o tsp_vns.o
-
-eventlog.o: eventlog.h eventlog.c
-	$(CC) $(CFLAGS) -c eventlog.c -o eventlog.o
-
-tsp_instance.o: tsp_instance.h tsp_instance.c
-	$(CC) $(CFLAGS) -c tsp_instance.c -o tsp_instance.o
-
-main: main.c tsp.h tsp.o util.h util.o tsp_greedy.h tsp_greedy.o tsp_tabu.h tsp_tabu.o tsp_vns.h tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.h tsp_instance.o
-	$(CC) $(CFLAGS) $(LINKFLAGS) $(INCFLAGS) tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.o main.c $(LINK) $(CPLEX_LIBS) -o main
-
-clean:
-	rm -f tsp.o util.o tsp_greedy.o tsp_tabu.o tsp_vns.o eventlog.o tsp_cplex.o tsp_instance.o main
