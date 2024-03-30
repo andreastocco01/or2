@@ -75,5 +75,6 @@ int tsp_loadinstance_tsplib(struct tsp* tsp)
 
 free_buffer:
 	free(buffer);
+	fclose(file);
 	return res;
 }
