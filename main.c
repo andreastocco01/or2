@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 
 	eventlog_close();
 
-        tsp_free(&tsp);
+	tsp_free(&tsp);
 
 	return 0;
 }
