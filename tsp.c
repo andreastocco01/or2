@@ -211,7 +211,6 @@ int tsp_2opt_solution(struct tsp* tsp,
 	tsp_2opt_swap(best_i + 1, best_j, current_solution);
 	*current_solution_value -= best_delta;
 	if (*current_solution_value < tsp->solution_value) {
-		tsp->solution_value = *current_solution_value;
 		tsp_save_solution(tsp, current_solution, *current_solution_value);
 		return 1;
 	}

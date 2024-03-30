@@ -1,6 +1,8 @@
 #include "eventlog.h"
 #include "tsp.h"
+#include "tsp_greedy.h"
 #include "tsp_instance.h"
+#include "tsp_tabu.h"
 #include "tsp_vns.h"
 #include <signal.h>
 #include <stdlib.h>
@@ -67,8 +69,17 @@ int plot_instance(struct tsp* tsp)
 int run_experiment(struct tsp* tsp, int config)
 {
 	// add more configurations here
-	return tsp_solve_vns(tsp);
+	if (config == 0) {
+		return tsp_solve_multigreedy(tsp);
+	}
+	if (config == 1) {
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 2) {
+		return tsp_solve_tabu(tsp, tenure_sin);
+	}
 	/* return tsp_solve_cplex(tsp); */
+	return -1;
 }
 
 void print_parse_friendly_output(struct tsp* tsp)
@@ -144,6 +155,7 @@ int main(int argc, char** argv)
 	tsp_compute_costs(&tsp, tsp_costfunction_att);
 
 	if (run_experiment(&tsp, args.runconfiguration)) {
+		printf("Cannot run experiment\n");
 		exit(-1);
 	}
 

@@ -1,6 +1,8 @@
 #include "tsp_greedy.h"
 #include "eventlog.h"
 #include "tsp.h"
+#include "tsp_tabu.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,9 +28,6 @@ int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, d
 	current_solution[starting_node] = 0;
 
 	double cumulative_dist = 0;
-
-	tsp_starttimer(tsp);
-	// TODO where do we check if we finished here?
 
 	for (int i = 0; i < tsp->nnodes - 1; i++) {
 		double min_dist = 1e30;
@@ -62,15 +61,20 @@ int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, d
 	return 0;
 }
 
-int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_value)
+int tsp_solve_multigreedy(struct tsp* tsp)
 {
-	if (tsp->nnodes <= 0)
+	if (tsp_allocate_solution(tsp))
 		return -1;
 
-	int* best = malloc(sizeof(int) * tsp->nnodes);
-	int* current = malloc(sizeof(int) * tsp->nnodes);
-	double current_dist = 10e30;
-	double best_dist = 10e30;
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+
+	tsp->solution_value = 10e30;
+	int* current_solution = malloc(sizeof(int) * tsp->nnodes);
+	double current_solution_value = 10e30;
 
 	int* to_extract = malloc(sizeof(int) * tsp->nnodes);
 	for (int i = 0; i < tsp->nnodes; i++) {
@@ -92,68 +96,35 @@ int tsp_solve_multigreedy(struct tsp* tsp, int* output_solution, double* output_
 		fprintf(stderr, "Starting node %d/%d\n", starting_node + 1, tsp->nnodes);
 #endif
 
-		if (tsp_solve_greedy(tsp, starting_node, current, &current_dist)) {
+		if (tsp_solve_greedy(tsp, starting_node, current_solution, &current_solution_value)) {
 			fprintf(stderr, "Can't solve greedy!\n");
 			return -1;
 		}
+		if (current_solution_value < tsp->solution_value) {
+			tsp_save_solution(tsp, current_solution, current_solution_value);
+			eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
+		}
+		eventlog_logdouble("new_current", current_iteration, current_solution_value);
 		while (1) {
 			if (tsp_shouldstop(tsp))
 				goto free_solution_buffers;
 			current_iteration++;
 			int best_i, best_j;
-			double best_delta = tsp_2opt_findbestswap(tsp, current, &best_i, &best_j);
-			if (best_delta <= 0) {
+			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
+			if (best_delta <= 0)
 				break;
-			}
-			tsp_2opt_swap(best_i + 1, best_j, current);
-			current_dist -= best_delta;
+			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i,
+							  best_j, best_delta);
+			if (isnewbest)
+				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
+			eventlog_logdouble("new_current", current_iteration, current_solution_value);
 		}
-		if (current_dist < best_dist) {
-			best_dist = current_dist;
-			memcpy(best, current, sizeof(int) * tsp->nnodes);
-
-			eventlog_logdouble("new_incumbent", current_iteration, current_dist);
-			// saving the solution at every iteration
-			tsp_save_solution(tsp, current, best_dist);
-		}
-		eventlog_logdouble("new_current", current_iteration, current_dist);
 	}
 
 free_solution_buffers:
 
-	// TODO can we remove this?
-	memcpy(output_solution, best, sizeof(int) * tsp->nnodes);
-	*output_value = best_dist;
-
-	free(best);
-	free(current);
+	free(current_solution);
 	free(to_extract);
-
-	return 0;
-}
-
-int tsp_solve_multigreedy_init(struct tsp* tsp)
-{
-	if (tsp_allocate_solution(tsp))
-		return -1;
-	if (tsp_allocate_costs(tsp))
-		return -1;
-
-	if (tsp_solve_multigreedy(tsp, tsp->solution_permutation, &tsp->solution_value))
-		return -1;
-
-	return 0;
-}
-
-int tsp_solve_greedy_save(struct tsp* tsp, int starting_node)
-{
-	if (tsp_allocate_solution(tsp))
-		return -1;
-	if (tsp_allocate_costs(tsp))
-		return -1;
-
-	if (tsp_solve_greedy(tsp, starting_node, tsp->solution_permutation, &tsp->solution_value))
-		return -1;
 
 	return 0;
 }
