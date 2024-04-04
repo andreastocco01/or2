@@ -62,7 +62,7 @@ int plot_instance(struct tsp* tsp)
 		fprintf(gpprocess, "plot $data using 1:2 pt 7 ps 2 with points\n");
 	}
 
-	fclose(gpprocess);
+	pclose(gpprocess);
 	return 0;
 }
 

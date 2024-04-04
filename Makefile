@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -DDEBUG
+CFLAGS=-g -DDEBUG -Wall
 LINK=-lm
 # CFLAGS= -g -O3
 

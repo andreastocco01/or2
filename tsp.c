@@ -81,7 +81,7 @@ int tsp_parse_arguments(int argc, char** argv, struct tsp* tsp)
 	}
 
 	if (modelSource == 0) {
-		if (userSetSeed == 0 | userSetNnodes == 0) {
+		if (userSetSeed == 0 || userSetNnodes == 0) {
 			perror("Set seed and nnodes to use random generation\n");
 			return -1;
 		}
