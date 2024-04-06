@@ -1,5 +1,6 @@
 #include "tsp_cplex.h"
 #include "tsp.h"
+#include "util.h"
 #include <stdio.h>
 
 int xpos(int i, int j, struct tsp* tsp)
@@ -69,6 +70,15 @@ int tsp_build_lpmodel(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	return 0;
 }
 
+int found(struct tsp* tsp, int val, int limit)
+{
+	for (int i = 0; i < limit; i++) {
+		if (tsp->solution_permutation[i] == val)
+			return 1;
+	}
+	return 0;
+}
+
 int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 {
 	int res = 0;
@@ -89,7 +99,23 @@ int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 		}
 	}
 
-	// TODO actually get and store the solution
+	int current = 0;
+	int i = 0;
+	tsp->solution_permutation[current++] = i;
+	while (current < tsp->nnodes) {
+		for (int j = 0; j < tsp->nnodes; j++) {
+			if (i != j) {
+				int pos = xpos(i, j, tsp);
+				int val = vars[pos] > 0.5 ? 1 : 0;
+				if (val == 1 && !found(tsp, j, current - 1) && !found(tsp, i, current - 1)) {
+					tsp->solution_permutation[current++] = j;
+					i = j;
+					break;
+				}
+			}
+		}
+	}
+	print_array_int(tsp->solution_permutation, tsp->nnodes);
 
 out:
 	free(vars);
@@ -203,9 +229,6 @@ free_buffers:
 
 int tsp_solve_cplex(struct tsp* tsp)
 {
-	/* if (tsp_allocate_solution(tsp)) */
-	/* 	return -1; */
-
 	tsp->solution_permutation = NULL;
 
 	if (!tsp->cost_matrix)
@@ -213,8 +236,6 @@ int tsp_solve_cplex(struct tsp* tsp)
 
 	if (!tsp->nnodes)
 		return -1;
-
-	tsp_starttimer(tsp);
 
 	int res = 0;
 
@@ -250,6 +271,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 	int it = 0;
 
 	while (1) {
+		CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp->timelimit_secs - (clock() - tsp->timelimit_secs));
 		it++;
 		if (tsp_shouldstop(tsp))
 			goto timelimit_reached;
@@ -257,7 +279,6 @@ int tsp_solve_cplex(struct tsp* tsp)
 		int row = CPXgetnumrows(env, lp);
 		fprintf(stderr, "Rows are %d\n", row);
 #endif
-		// TODO set the timelimit to cplex
 		if ((error = CPXmipopt(env, lp))) {
 			printf("Error while optimizing: %d\n", error);
 			res = -1;
@@ -281,16 +302,18 @@ int tsp_solve_cplex(struct tsp* tsp)
 		CPXwriteprob(env, lp, probname, NULL);
 	}
 
+	double objval;
 timelimit_reached:
-	/* double objval; */
-	/* CPXgetobjval(env, lp, &objval); */
-	/* printf("Result = %lf\n", objval); */
+	CPXgetobjval(env, lp, &objval);
+	tsp->solution_value = objval;
 
-	/* if (tsp_cplex_getsolution(tsp, env, lp)) { */
-	/* 	printf("Can't get solution of lp\n"); */
-	/* 	res = -1; */
-	/* 	goto free_prob; */
-	/* } */
+	if (tsp_allocate_solution(tsp))
+		return -1;
+	if (tsp_cplex_getsolution(tsp, env, lp)) {
+		printf("Can't get solution of lp\n");
+		res = -1;
+		goto free_prob;
+	}
 free_buffers:
 	free(succ);
 	free(comp);
