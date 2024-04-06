@@ -219,6 +219,9 @@ int tsp_2opt_solution(struct tsp* tsp,
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
 {
+	if(solution == NULL)
+		return -1;
+
 	double current_solution = 0;
 	for (int i = 0; i < tsp->nnodes - 1; i++) {
 		current_solution += tsp->cost_matrix[flatten_coords(solution[i], solution[i + 1], tsp->nnodes)];
@@ -241,6 +244,9 @@ double tsp_recompute_solution(struct tsp* tsp)
  * */
 int tsp_check_solution(struct tsp* tsp, double* computed)
 {
+	if(tsp->solution_permutation == NULL)
+		return 0;
+
 	double computedsol = tsp_recompute_solution(tsp);
 
 	if (computed)
@@ -344,7 +350,7 @@ int tsp_shouldstop(struct tsp* tsp)
 	if (tsp->timelimit_secs <= 0)
 		return 0;
 
-	if(tsp_getremainingseconds(tsp) <= 0 )
+	if (tsp_getremainingseconds(tsp) <= 0)
 		return 1;
 
 	return 0;
@@ -361,7 +367,7 @@ double tsp_getremainingseconds(struct tsp* tsp)
 	time_t starttime = tsp->start_time;
 
 	time_t elapsedtime = currenttime - starttime;
-	double elapsedseconds = ((double) elapsedtime) / CLOCKS_PER_SEC;
+	double elapsedseconds = ((double)elapsedtime) / CLOCKS_PER_SEC;
 
-	return ((double) tsp->timelimit_secs) - elapsedseconds;
+	return ((double)tsp->timelimit_secs) - elapsedseconds;
 }

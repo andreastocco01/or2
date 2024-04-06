@@ -95,10 +95,107 @@ out:
 	return res;
 }
 
+void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* comp, int* ncomp)
+{
+
+#ifdef DEBUG
+	int *degree = (int *) calloc(tsp->nnodes, sizeof(int));
+	for ( int i = 0; i < tsp->nnodes; i++ )
+	{
+		for ( int j = i+1; j < tsp->nnodes; j++ )
+		{
+			int k = xpos(i,j,tsp);
+			if ( fabs(xstar[k]) > 10e-7 && fabs(xstar[k]-1.0) > 10e-7)
+				printf(" wrong xstar in build_sol()\n");
+			if ( xstar[k] > 0.5 )
+			{
+				++degree[i];
+				++degree[j];
+			}
+		}
+	}
+	for ( int i = 0; i < tsp->nnodes; i++ )
+	{
+		if ( degree[i] != 2 ) printf("wrong degree in build_sol()\n");
+	}
+	free(degree);
+#endif
+
+	*ncomp = 0;
+	for (int i = 0; i < tsp->nnodes; i++) {
+		succ[i] = -1;
+		comp[i] = -1;
+	}
+
+	for (int start = 0; start < tsp->nnodes; start++) {
+		if (comp[start] >= 0)
+			continue; // node "start" was already visited, just skip it
+
+		// a new component is found
+		(*ncomp)++;
+		int i = start;
+		int done = 0;
+		while (!done) // go and visit the current component
+		{
+			comp[i] = *ncomp;
+			done = 1;
+			for (int j = 0; j < tsp->nnodes; j++) {
+				if (i != j && xstar[xpos(i, j, tsp)] > 0.5 &&
+				    comp[j] == -1) // the edge [i,j] is selected in xstar and j was not visited before
+				{
+					succ[i] = j;
+					i = j;
+					done = 0;
+					break;
+				}
+			}
+		}
+		succ[i] = start; // last arc to close the cycle
+
+		// go to the next component
+	}
+}
+
+void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, int* comp)
+{
+	int ncols = CPXgetnumcols(env, lp);
+
+	int* index = malloc(sizeof(int) * ncols);
+	double* value = malloc(sizeof(double) * ncols);
+	char sense = 'L';
+	char* cname = "";
+	for (int k = 0; k < ncomp; k++) {
+		int nnz = 0;
+		double rhs = -1.0;
+		for (int i = 0; i < tsp->nnodes; i++) {
+			for (int j = i + 1; j < tsp->nnodes; j++) {
+				if (comp[j] != k)
+					continue;
+				index[nnz] = xpos(i, j, tsp);
+				value[nnz] = 1.0;
+				nnz++;
+				rhs += 1.0;
+			}
+		}
+		int izero = 0;
+		int res = CPXaddrows(env, lp, 0, 1, nnz, &rhs, &sense, &izero, index, value, NULL, &cname);
+		if (res) {
+			printf("Can't add new row\n");
+			goto free_buffers;
+		}
+	}
+
+free_buffers:
+	free(index);
+	free(value);
+}
+
 int tsp_solve_cplex(struct tsp* tsp)
 {
-	if (tsp_allocate_solution(tsp))
-		return -1;
+	/* if (tsp_allocate_solution(tsp)) */
+	/* 	return -1; */
+
+	tsp->solution_permutation = NULL;
 
 	if (!tsp->cost_matrix)
 		return -1;
@@ -130,22 +227,50 @@ int tsp_solve_cplex(struct tsp* tsp)
 		goto free_prob;
 	}
 
-	if ((error = CPXmipopt(env, lp))) {
-		printf("Error while optimizing: %d\n", error);
-		res = -1;
-		goto free_prob;
+	int* succ = malloc(sizeof(int) * tsp->nnodes);
+	int* comp = malloc(sizeof(int) * tsp->nnodes);
+	int ncomp;
+
+	tsp_starttimer(tsp);
+
+	while (1) {
+		if (tsp_shouldstop(tsp))
+			goto timelimit_reached;
+#ifdef DEBUG
+		int row = CPXgetnumrows(env, lp);
+		fprintf(stderr, "Rows are %d\n", row);
+#endif
+		// TODO set the timelimit to cplex
+		if ((error = CPXmipopt(env, lp))) {
+			printf("Error while optimizing: %d\n", error);
+			res = -1;
+			goto free_buffers;
+		}
+		int ncols = CPXgetnumcols(env, lp);
+		double* xvars = malloc(sizeof(double) * ncols);
+		tsp_cplex_buildsol(tsp, xvars, succ, comp, &ncomp);
+		free(xvars);
+#ifdef DEBUG
+		fprintf(stderr, "ncomp=%d\n", ncomp);
+#endif
+		if (ncomp == 1)
+			break;
+		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
 	}
 
-	double objval;
-	CPXgetobjval(env, lp, &objval);
-	printf("Result = %lf\n", objval);
+timelimit_reached:
+	/* double objval; */
+	/* CPXgetobjval(env, lp, &objval); */
+	/* printf("Result = %lf\n", objval); */
 
-	if (tsp_cplex_getsolution(tsp, env, lp)) {
-		printf("Can't get solution of lp\n");
-		res = -1;
-		goto free_prob;
-	}
-
+	/* if (tsp_cplex_getsolution(tsp, env, lp)) { */
+	/* 	printf("Can't get solution of lp\n"); */
+	/* 	res = -1; */
+	/* 	goto free_prob; */
+	/* } */
+free_buffers:
+	free(succ);
+	free(comp);
 free_prob:
 	CPXfreeprob(env, &lp);
 free_cplex:
