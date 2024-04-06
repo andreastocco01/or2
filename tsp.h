@@ -170,4 +170,9 @@ int tsp_shouldstop(struct tsp* tsp);
  * */
 void tsp_starttimer(struct tsp* tsp);
 
+/**
+ * Gets the remaining time available to solve the problem in seconds
+ * */
+double tsp_getremainingseconds(struct tsp* tsp);
+
 #endif // TSP_H_

@@ -344,10 +344,7 @@ int tsp_shouldstop(struct tsp* tsp)
 	if (tsp->timelimit_secs <= 0)
 		return 0;
 
-	time_t currenttime = clock();
-	time_t starttime = tsp->start_time;
-
-	if ((double)(currenttime - starttime) / CLOCKS_PER_SEC > (double)tsp->timelimit_secs)
+	if(tsp_getremainingseconds(tsp) <= 0 )
 		return 1;
 
 	return 0;
@@ -356,4 +353,15 @@ int tsp_shouldstop(struct tsp* tsp)
 void tsp_starttimer(struct tsp* tsp)
 {
 	tsp->start_time = clock();
+}
+
+double tsp_getremainingseconds(struct tsp* tsp)
+{
+	time_t currenttime = clock();
+	time_t starttime = tsp->start_time;
+
+	time_t elapsedtime = currenttime - starttime;
+	double elapsedseconds = ((double) elapsedtime) / CLOCKS_PER_SEC;
+
+	return ((double) tsp->timelimit_secs) - elapsedseconds;
 }
