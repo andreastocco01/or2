@@ -155,6 +155,17 @@ void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* co
 	}
 }
 
+double compute_rhs(int* comp, int len, int current_component)
+{
+	double rhs = -1;
+	for (int i = 0; i < len; i++) {
+		if (comp[i] == current_component) {
+			rhs++;
+		}
+	}
+	return rhs;
+}
+
 void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, int* comp)
 {
 	int ncols = CPXgetnumcols(env, lp);
@@ -166,7 +177,7 @@ void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, in
 	int izero = 0;
 	for (int k = 1; k <= ncomp; k++) {
 		int nnz = 0;
-		double rhs = -1.0;
+		double rhs = compute_rhs(comp, ncols, k);
 		for (int i = 0; i < tsp->nnodes; i++) {
 			if (comp[i] != k)
 				continue;
@@ -176,7 +187,6 @@ void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, in
 				index[nnz] = xpos(i, j, tsp);
 				value[nnz] = 1.0;
 				nnz++;
-				rhs += 1.0;
 			}
 		}
 		int res = CPXaddrows(env, lp, 0, 1, nnz, &rhs, &sense, &izero, index, value, NULL, &cname);
@@ -267,8 +277,8 @@ int tsp_solve_cplex(struct tsp* tsp)
 		if (ncomp == 1)
 			break;
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
-		/* sprintf(probname, "prob_%d.lp", it); */
-		/* CPXwriteprob(env, lp, probname, NULL); */
+		sprintf(probname, "prob_%d.lp", it);
+		CPXwriteprob(env, lp, probname, NULL);
 	}
 
 timelimit_reached:
