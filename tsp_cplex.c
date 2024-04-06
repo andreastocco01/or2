@@ -1,5 +1,6 @@
 #include "tsp_cplex.h"
 #include "tsp.h"
+#include <stdio.h>
 
 int xpos(int i, int j, struct tsp* tsp)
 {
@@ -95,28 +96,26 @@ out:
 	return res;
 }
 
+#define EPS 1e-5
 void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* comp, int* ncomp)
 {
 
 #ifdef DEBUG
-	int *degree = (int *) calloc(tsp->nnodes, sizeof(int));
-	for ( int i = 0; i < tsp->nnodes; i++ )
-	{
-		for ( int j = i+1; j < tsp->nnodes; j++ )
-		{
-			int k = xpos(i,j,tsp);
-			if ( fabs(xstar[k]) > 10e-7 && fabs(xstar[k]-1.0) > 10e-7)
+	int* degree = (int*)calloc(tsp->nnodes, sizeof(int));
+	for (int i = 0; i < tsp->nnodes; i++) {
+		for (int j = i + 1; j < tsp->nnodes; j++) {
+			int k = xpos(i, j, tsp);
+			if (fabs(xstar[k]) > EPS && fabs(xstar[k] - 1.0) > EPS)
 				printf(" wrong xstar in build_sol()\n");
-			if ( xstar[k] > 0.5 )
-			{
+			if (xstar[k] > 0.5) {
 				++degree[i];
 				++degree[j];
 			}
 		}
 	}
-	for ( int i = 0; i < tsp->nnodes; i++ )
-	{
-		if ( degree[i] != 2 ) printf("wrong degree in build_sol()\n");
+	for (int i = 0; i < tsp->nnodes; i++) {
+		if (degree[i] != 2)
+			printf("wrong degree in build_sol()\n");
 	}
 	free(degree);
 #endif
@@ -164,10 +163,13 @@ void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, in
 	double* value = malloc(sizeof(double) * ncols);
 	char sense = 'L';
 	char* cname = "";
-	for (int k = 0; k < ncomp; k++) {
+	int izero = 0;
+	for (int k = 1; k <= ncomp; k++) {
 		int nnz = 0;
 		double rhs = -1.0;
 		for (int i = 0; i < tsp->nnodes; i++) {
+			if (comp[i] != k)
+				continue;
 			for (int j = i + 1; j < tsp->nnodes; j++) {
 				if (comp[j] != k)
 					continue;
@@ -177,7 +179,6 @@ void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, in
 				rhs += 1.0;
 			}
 		}
-		int izero = 0;
 		int res = CPXaddrows(env, lp, 0, 1, nnz, &rhs, &sense, &izero, index, value, NULL, &cname);
 		if (res) {
 			printf("Can't add new row\n");
@@ -214,7 +215,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 		res = -1;
 		goto free_cplex;
 	}
-	CPXLPptr lp = CPXcreateprob(env, &error, "tps");
+	CPXLPptr lp = CPXcreateprob(env, &error, "tsp");
 	if (error) {
 		printf("Error creating lp: %d\n", error);
 		res = -1;
@@ -227,13 +228,19 @@ int tsp_solve_cplex(struct tsp* tsp)
 		goto free_prob;
 	}
 
+	CPXwriteprob(env, lp, "prob.lp", NULL);
+
 	int* succ = malloc(sizeof(int) * tsp->nnodes);
 	int* comp = malloc(sizeof(int) * tsp->nnodes);
 	int ncomp;
+	char probname[50];
 
 	tsp_starttimer(tsp);
 
+	int it = 0;
+
 	while (1) {
+		it++;
 		if (tsp_shouldstop(tsp))
 			goto timelimit_reached;
 #ifdef DEBUG
@@ -248,6 +255,10 @@ int tsp_solve_cplex(struct tsp* tsp)
 		}
 		int ncols = CPXgetnumcols(env, lp);
 		double* xvars = malloc(sizeof(double) * ncols);
+		if (CPXgetx(env, lp, xvars, 0, ncols - 1)) {
+			printf("Can't get vars\n");
+			break;
+		}
 		tsp_cplex_buildsol(tsp, xvars, succ, comp, &ncomp);
 		free(xvars);
 #ifdef DEBUG
@@ -256,6 +267,8 @@ int tsp_solve_cplex(struct tsp* tsp)
 		if (ncomp == 1)
 			break;
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
+		/* sprintf(probname, "prob_%d.lp", it); */
+		/* CPXwriteprob(env, lp, probname, NULL); */
 	}
 
 timelimit_reached:
