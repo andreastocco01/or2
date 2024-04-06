@@ -69,16 +69,18 @@ int plot_instance(struct tsp* tsp)
 int run_experiment(struct tsp* tsp, int config)
 {
 	// add more configurations here
-	/* if (config == 0) { */
-	/* 	return tsp_solve_multigreedy(tsp); */
-	/* } */
-	/* if (config == 1) { */
-	/* 	return tsp_solve_vns(tsp); */
-	/* } */
-	/* if (config == 2) { */
-	/* 	return tsp_solve_tabu(tsp, tenure_sin); */
-	/* } */
-	return tsp_solve_cplex(tsp);
+	if (config == 0) {
+		return tsp_solve_multigreedy(tsp);
+	}
+	if (config == 1) {
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 2) {
+		return tsp_solve_tabu(tsp, tenure_sin);
+	}
+	if (config == 3) {
+		return tsp_solve_cplex(tsp);
+	}
 	return -1;
 }
 

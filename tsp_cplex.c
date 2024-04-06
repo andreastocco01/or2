@@ -70,7 +70,7 @@ int tsp_build_lpmodel(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	return 0;
 }
 
-int found(struct tsp* tsp, int val, int limit)
+int permutation_contains_value(struct tsp* tsp, int val, int limit)
 {
 	for (int i = 0; i < limit; i++) {
 		if (tsp->solution_permutation[i] == val)
@@ -91,14 +91,6 @@ int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 		goto out;
 	}
 
-	for (int i = 0; i < tsp->nnodes - 1; i++) {
-		for (int j = i + 1; j < tsp->nnodes; j++) {
-			int pos = xpos(i, j, tsp);
-			int val = vars[pos] > 0.5 ? 1 : 0;
-			printf("%d->%d: %d\n", i, j, val);
-		}
-	}
-
 	int current = 0;
 	int i = 0;
 	tsp->solution_permutation[current++] = i;
@@ -107,7 +99,8 @@ int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 			if (i != j) {
 				int pos = xpos(i, j, tsp);
 				int val = vars[pos] > 0.5 ? 1 : 0;
-				if (val == 1 && !found(tsp, j, current - 1) && !found(tsp, i, current - 1)) {
+				if (val == 1 && !permutation_contains_value(tsp, j, current - 1) &&
+				    !permutation_contains_value(tsp, i, current - 1)) {
 					tsp->solution_permutation[current++] = j;
 					i = j;
 					break;
@@ -115,7 +108,6 @@ int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 			}
 		}
 	}
-	print_array_int(tsp->solution_permutation, tsp->nnodes);
 
 out:
 	free(vars);
