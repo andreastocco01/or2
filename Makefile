@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-g -DDEBUG -Wall
 LINK=-lm
-# CFLAGS= -g -O3
+# CFLAGS= -O3 -Wall
 
 # from command line
 CPLEX_PATH ?= /opt/ibm/ILOG/CPLEX_Studio2211

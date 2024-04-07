@@ -339,12 +339,12 @@ timelimit_reached:
 	tsp->solution_value = objval;
 
 	if (tsp_allocate_solution(tsp))
-		return -1;
+		res = -1;
 	if (tsp_cplex_getsolution(tsp, env, lp)) {
 		printf("Can't get solution of lp\n");
 		res = -1;
-		goto free_prob;
 	}
+
 free_buffers:
 	free(succ);
 	free(comp);
