@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "chrono.h"
 
 void tsp_free(struct tsp* tsp)
 {
@@ -358,16 +359,15 @@ int tsp_shouldstop(struct tsp* tsp)
 
 void tsp_starttimer(struct tsp* tsp)
 {
-	tsp->start_time = clock();
+	tsp->start_time = second();
 }
 
 double tsp_getremainingseconds(struct tsp* tsp)
 {
-	time_t currenttime = clock();
-	time_t starttime = tsp->start_time;
+	double currenttime = second();
+	double starttime = tsp->start_time;
 
-	time_t elapsedtime = currenttime - starttime;
-	double elapsedseconds = ((double)elapsedtime) / CLOCKS_PER_SEC;
+	double elapsedseconds = currenttime - starttime;
 
 	return ((double)tsp->timelimit_secs) - elapsedseconds;
 }

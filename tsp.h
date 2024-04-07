@@ -35,7 +35,7 @@ struct tsp {
 
 	// execution control data
 
-	time_t start_time;
+	double start_time;
 	int timelimit_secs;
 	int force_stop;
 };

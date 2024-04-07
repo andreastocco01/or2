@@ -297,7 +297,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 	int it = 0;
 
 	while (1) {
-		CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp->timelimit_secs - (clock() - tsp->timelimit_secs));
+		CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 		it++;
 		if (tsp_shouldstop(tsp)) {
 			res = -1;
@@ -320,9 +320,9 @@ int tsp_solve_cplex(struct tsp* tsp)
 		}
 		tsp_cplex_buildsol(tsp, xvars, succ, comp, &ncomp);
 		free(xvars);
-#ifdef DEBUG
+
 		fprintf(stderr, "ncomp=%d\n", ncomp);
-#endif
+
 		if (ncomp == 1)
 			break;
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
