@@ -195,7 +195,7 @@ void tsp_cplex_addsec(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, int ncomp, in
 	int izero = 0;
 	for (int k = 1; k <= ncomp; k++) {
 		int nnz = 0;
-		double rhs = compute_rhs(comp, ncols, k);
+		double rhs = compute_rhs(comp, tsp->nnodes, k);
 		for (int i = 0; i < tsp->nnodes; i++) {
 			if (comp[i] != k)
 				continue;
