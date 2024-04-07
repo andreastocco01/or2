@@ -1,10 +1,10 @@
 #include "tsp.h"
+#include "chrono.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "chrono.h"
 
 void tsp_free(struct tsp* tsp)
 {
@@ -362,12 +362,16 @@ void tsp_starttimer(struct tsp* tsp)
 	tsp->start_time = second();
 }
 
-double tsp_getremainingseconds(struct tsp* tsp)
+double tsp_getelapsedseconds(struct tsp* tsp)
 {
 	double currenttime = second();
 	double starttime = tsp->start_time;
 
-	double elapsedseconds = currenttime - starttime;
+	return currenttime - starttime;
+}
 
+double tsp_getremainingseconds(struct tsp* tsp)
+{
+	double elapsedseconds = tsp_getelapsedseconds(tsp);
 	return ((double)tsp->timelimit_secs) - elapsedseconds;
 }

@@ -171,6 +171,11 @@ int tsp_shouldstop(struct tsp* tsp);
 void tsp_starttimer(struct tsp* tsp);
 
 /**
+ * Returns the elapsed time in seconds
+ * */
+double tsp_getelapsedseconds(struct tsp* tsp);
+
+/**
  * Gets the remaining time available to solve the problem in seconds
  * */
 double tsp_getremainingseconds(struct tsp* tsp);

@@ -312,6 +312,12 @@ int tsp_solve_cplex(struct tsp* tsp)
 			res = -1;
 			goto free_buffers;
 		}
+		if (tsp_shouldstop(tsp)) {
+			// this needs to be called again because the timelimit
+			// could be reached during the execution of cplex.
+			res = -1;
+			goto timelimit_reached;
+		}
 		int ncols = CPXgetnumcols(env, lp);
 		double* xvars = malloc(sizeof(double) * ncols);
 		if (CPXgetx(env, lp, xvars, 0, ncols - 1)) {

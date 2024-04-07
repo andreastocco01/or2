@@ -86,8 +86,7 @@ int run_experiment(struct tsp* tsp, int config)
 
 void print_parse_friendly_output(struct tsp* tsp)
 {
-	time_t currentTime = clock();
-	double totalTime = (double)(currentTime - tsp->start_time) / CLOCKS_PER_SEC;
+	double elapsedseconds = tsp_getelapsedseconds(tsp);
 
 	double sol;
 	if (tsp->solution_permutation) {
@@ -95,7 +94,7 @@ void print_parse_friendly_output(struct tsp* tsp)
 	} else {
 		sol = 10e30;
 	}
-	printf("%lf;%lf\n", totalTime, sol);
+	printf("%lf;%lf\n", elapsedseconds, sol);
 }
 
 int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
