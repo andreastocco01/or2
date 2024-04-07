@@ -219,7 +219,7 @@ int tsp_2opt_solution(struct tsp* tsp,
 
 double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
 {
-	if(solution == NULL)
+	if (solution == NULL)
 		return -1;
 
 	double current_solution = 0;
@@ -244,7 +244,7 @@ double tsp_recompute_solution(struct tsp* tsp)
  * */
 int tsp_check_solution(struct tsp* tsp, double* computed)
 {
-	if(tsp->solution_permutation == NULL)
+	if (tsp->solution_permutation == NULL)
 		return 0;
 
 	double computedsol = tsp_recompute_solution(tsp);

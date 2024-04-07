@@ -219,6 +219,39 @@ free_buffers:
 	free(value);
 }
 
+void print_loops_file(struct tsp* tsp, int* succ, char* filename)
+{
+	int* visited = calloc(tsp->nnodes, sizeof(int));
+	FILE* f = fopen(filename, "w");
+
+	while (1) {
+		int notvisited = -1;
+		for (int i = 0; i < tsp->nnodes; i++) {
+			if (!visited[i]) {
+				notvisited = i;
+				break;
+			}
+		}
+		if (notvisited == -1)
+			break;
+
+		int current = notvisited;
+		fprintf(f, "newloop\n");
+		while (1) {
+			visited[current] = 1;
+			fprintf(f, "%lf, %lf\n", tsp->coords[current].x, tsp->coords[current].y);
+			current = succ[current];
+			if (current == notvisited) {
+				fprintf(f, "%lf, %lf\n", tsp->coords[current].x, tsp->coords[current].y);
+				break;
+			}
+		}
+	}
+
+	fclose(f);
+	free(visited);
+}
+
 int tsp_solve_cplex(struct tsp* tsp)
 {
 	tsp->solution_permutation = NULL;
@@ -251,12 +284,13 @@ int tsp_solve_cplex(struct tsp* tsp)
 		goto free_prob;
 	}
 
+#ifdef DEBUG
 	CPXwriteprob(env, lp, "prob.lp", NULL);
+#endif
 
 	int* succ = malloc(sizeof(int) * tsp->nnodes);
 	int* comp = malloc(sizeof(int) * tsp->nnodes);
 	int ncomp;
-	char probname[50];
 
 	tsp_starttimer(tsp);
 
@@ -290,8 +324,13 @@ int tsp_solve_cplex(struct tsp* tsp)
 		if (ncomp == 1)
 			break;
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
+#ifdef DEBUG
+		char probname[50];
 		sprintf(probname, "prob_%d.lp", it);
 		CPXwriteprob(env, lp, probname, NULL);
+		sprintf(probname, "partial_%d.csv", it);
+		print_loops_file(tsp, succ, probname);
+#endif
 	}
 
 	double objval;
