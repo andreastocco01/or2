@@ -326,9 +326,9 @@ int tsp_solve_cplex(struct tsp* tsp)
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
 #ifdef DEBUG
 		char probname[50];
-		sprintf(probname, "prob_%d.lp", it);
+		sprintf(probname, "prob_%04d.lp", it);
 		CPXwriteprob(env, lp, probname, NULL);
-		sprintf(probname, "partial_%d.csv", it);
+		sprintf(probname, "partial_%04d.csv", it);
 		print_loops_file(tsp, succ, probname);
 #endif
 	}
