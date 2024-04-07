@@ -126,7 +126,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 
 	while (1) {
 		// Intensification phase
-		int best_i, best_j;
+		int best_i = -1, best_j = -1;
 		double best_delta;
 		while (1) {
 			if (tsp_shouldstop(tsp))
