@@ -299,8 +299,10 @@ int tsp_solve_cplex(struct tsp* tsp)
 	while (1) {
 		CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp->timelimit_secs - (clock() - tsp->timelimit_secs));
 		it++;
-		if (tsp_shouldstop(tsp))
+		if (tsp_shouldstop(tsp)) {
+			res = -1;
 			goto timelimit_reached;
+		}
 #ifdef DEBUG
 		int row = CPXgetnumrows(env, lp);
 		fprintf(stderr, "Rows are %d\n", row);
@@ -334,17 +336,18 @@ int tsp_solve_cplex(struct tsp* tsp)
 	}
 
 	double objval;
-timelimit_reached:
 	CPXgetobjval(env, lp, &objval);
 	tsp->solution_value = objval;
 
 	if (tsp_allocate_solution(tsp))
 		res = -1;
+
 	if (tsp_cplex_getsolution(tsp, env, lp)) {
-		printf("Can't get solution of lp\n");
+		fprintf(stderr, "Can't get solution of lp\n");
 		res = -1;
 	}
 
+timelimit_reached:
 free_buffers:
 	free(succ);
 	free(comp);

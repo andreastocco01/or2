@@ -89,13 +89,18 @@ void print_parse_friendly_output(struct tsp* tsp)
 	time_t currentTime = clock();
 	double totalTime = (double)(currentTime - tsp->start_time) / CLOCKS_PER_SEC;
 
-	printf("%lf;%lf\n", totalTime, tsp->solution_value);
+	double sol;
+	if (tsp->solution_permutation) {
+		sol = tsp->solution_value;
+	} else {
+		sol = 10e30;
+	}
+	printf("%lf;%lf\n", totalTime, sol);
 }
 
 int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
 {
-	double res;
-	if (!tsp_check_solution(tsp, &res)) {
+	if (tsp->solution_permutation && !tsp_check_solution(tsp, NULL)) {
 		printf("The computed solution is invalid!\n");
 		return -1;
 	}
@@ -157,8 +162,7 @@ int main(int argc, char** argv)
 	tsp_compute_costs(&tsp, tsp_costfunction_att);
 
 	if (run_experiment(&tsp, args.runconfiguration)) {
-		printf("Cannot run experiment\n");
-		exit(-1);
+		fprintf(stderr, "Unable to find a solution\n");
 	}
 
 	conclude_experiment(&tsp, args.parse_friendly, args.do_plot);
