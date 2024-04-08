@@ -71,8 +71,17 @@ the nearest unvisited one. Algorithm \ref{alg:greedy} shows the pseudocode of th
 \end{algorithm}
 Repeating this procedure for every possible starting node, we'll be able to find the best
 achievable solution.
+However, the solution found by this algorithm could have a lot of `intersections`
+(TODO explain what intersections are maybe with a figure)
 
 \subsection{2-opt}
+The 2-opt algorithm is an optimization technique that can be used to improve heuristic
+algorithm's solutions.
+The 2-opt algorithm evaluates the possibility of removing two edges in the tour for reconnecting the nodes in a different order.
+This process aims to improve the cost of the tour by eliminating inefficient segments while preserving the overall tour structure. By
+iteratively exploring these adjustments and accepting them if they result in a shorter tour cost, the algorithm gradually refines
+the solution. This iterative refinement continues until no further improvements can be made, potentially resulting in a more optimal
+solution for the given problem instance. (TODO add a picture to better explain this algorithm)
 
 \section{Metaheuristics}
 A metaheuristic is a versatile problem-solving approach characterized by its iterative nature and adaptability across various optimization problems. Unlike specific algorithms tailored to particular problems, metaheuristics serve as overarching strategies that guide subordinate heuristics to efficiently explore and exploit solution spaces. They intelligently combine different concepts to navigate through search spaces, aiming to find near-optimal solutions effectively.
