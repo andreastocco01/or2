@@ -33,7 +33,45 @@ the intersection between the edges of the path.
 On the other hand, the Tabu Search algorithm, starting from a random node, tries to `move`... TODO
 
 \section{Heuristics}
+Heuristics are algorithms to determine a near-optimal solution to an optimization problem. In certain scenarios, 
+exact methods aren't able to provide the optimal solution in a reasonable amount of time or they can't find it
+at all. In contrast, a heuristic is generally capable of offering a solution that is more or less close to
+the optimal one.
+While there is no assurance regarding the optimality of the provided solution, it may still be considered
+acceptable in some instances.
+
 \subsection{Greedy}
+A greedy algorithm is a heuristic that attempts to find an optimal solution by selecting the best possible choice at each iteration.
+For instance, in our case, when determining the next node to visit, the greedy algorithm will always choose
+the nearest unvisited one. Algorithm \ref{alg:greedy} shows the pseudocode of this procedure
+
+\begin{algorithm}[h]
+\caption{Greedy}
+\label{alg:greedy}
+\begin{algorithmic}
+  \Procedure{greedy}{$solution$, $startingnode$, $nnodes$}
+
+	\State $solution \gets {0, 1, 2, 3 \dots, nnodes - 1}$
+	\State $solution \gets \Call{swap}{solution, 0, startingnode}$
+    \For{$i \gets 0$ to $nnodes - 1$}
+		\State $mindist \gets \infty$
+		\State $minindex \gets -1$
+		\For{$j \gets i + 1$ to $nnodes$}
+			\If{$dist(i, j) < mindist$}
+				\State $mindist \gets dist(i, j)$
+				\State $minindex \gets j$
+			\EndIf
+		\EndFor
+		\State $solution \gets \Call{swap}{solution, i + 1, minindex}$
+    \EndFor
+
+  \EndProcedure
+
+\end{algorithmic}
+\end{algorithm}
+Repeating this procedure for every possible starting node, we'll be able to find the best
+achievable solution.
+
 \subsection{2-opt}
 
 \section{Metaheuristics}
