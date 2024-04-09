@@ -52,10 +52,11 @@ the nearest unvisited one. Algorithm \ref{alg:greedy} shows the pseudocode of th
 \begin{algorithm}[h]
 \caption{Greedy}
 \label{alg:greedy}
+\hspace*{\algorithmicindent} \textbf{Output}: $solution$
 \begin{algorithmic}
-  \Procedure{greedy}{$solution$, $startingnode$, $nnodes$}
+  \Procedure{greedy}{$startingnode, nnodes$}
 
-	\State $solution \gets {0, 1, 2, 3 \dots, nnodes - 1}$
+	\State $solution \gets {0, 1, \dots, nnodes - 1}$
 	\State $solution \gets \Call{swap}{solution, 0, startingnode}$
     \For{$i \gets 0$ to $nnodes - 1$}
 		\State $mindist \gets \infty$
@@ -108,6 +109,37 @@ beneficial, figure~\ref{fig:2optmove} illustrates an example of such a move.
 
 It's easy to see that the removal of the crossing edges is beneficial to the
 cost of the solution.
+
+Algorithm \ref{alg:greedy_2opt} shows a possible implementation of this procedure to improve
+the solution found by greedy.
+
+\begin{algorithm}[h]
+\caption{Greedy + 2-opt}
+\label{alg:greedy_2opt}
+\hspace*{\algorithmicindent} \textbf{Output}: $solution$
+\begin{algorithmic}
+  \Procedure{greedy2opt}{$nnodes$}
+	\State $solution \gets \emptyset$
+	\State $solutioncost \gets \infty$
+	\ForAll{$node \in tsp$}
+		\State $currentsolution \gets \Call{greedy}{node, nnodes}$
+		\While{$true$}
+			\State $2optsolution \gets \Call{best2optswap}{currentsolution}$
+			\If{$\Call{cost}{2optsolution} < \Call{cost}{currentsolution}$}
+				\State $currentsolution \gets 2optsolution$
+			\Else
+				\State $break$
+			\EndIf
+		\EndWhile
+		\If{$\Call{cost}{currentsolution} < solutioncost$}
+			\State $solution \gets currentsolution$
+			\State $solutioncost \gets \Call{cost}{currentsolution}$
+		\EndIf
+	\EndFor
+  \EndProcedure
+
+\end{algorithmic}
+\end{algorithm}
 
 \section{Metaheuristics}
 A metaheuristic is a versatile problem-solving approach characterized by its iterative nature and adaptability across various optimization problems. Unlike specific algorithms tailored to particular problems, metaheuristics serve as overarching strategies that guide subordinate heuristics to efficiently explore and exploit solution spaces. They intelligently combine different concepts to navigate through search spaces, aiming to find near-optimal solutions effectively.
