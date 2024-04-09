@@ -52,7 +52,7 @@ the nearest unvisited one. Algorithm \ref{alg:greedy} shows the pseudocode of th
 \begin{algorithm}[h]
 \caption{Greedy}
 \label{alg:greedy}
-\hspace*{\algorithmicindent} \textbf{Output}: $solution$
+\hspace*{0.5em} \textbf{Output}: $solution$
 \begin{algorithmic}
   \Procedure{greedy}{$startingnode, nnodes$}
 
@@ -114,9 +114,28 @@ Algorithm \ref{alg:greedy_2opt} shows a possible implementation of this procedur
 the solution found by greedy.
 
 \begin{algorithm}[h]
+\caption{Best 2-opt Swap}
+\label{alg:best2optswap}
+\hspace*{0.5em} \textbf{Output}: $bestsolution$
+\begin{algorithmic}
+	\Procedure{best2optswap}{$solution, nnodes$}
+	    \State $bestsolution \gets solution$
+	    \For{$i \gets 0$ to $nnodes - 2$}
+	        \For{$j \gets i + 2$ to $nnodes$}
+	            \State $newsolution \gets \Call{reversesubsequence}{solution, i + 1, j}$
+	            \If{$\Call{cost}{newsolution} < \Call{cost}{bestsolution}$}
+	                \State $bestsolution \gets newsolution$
+	            \EndIf
+	        \EndFor
+	    \EndFor
+	\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h]
 \caption{Greedy + 2-opt}
 \label{alg:greedy_2opt}
-\hspace*{\algorithmicindent} \textbf{Output}: $solution$
+\hspace*{0.5em} \textbf{Output}: $solution$
 \begin{algorithmic}
   \Procedure{greedy2opt}{$nnodes$}
 	\State $solution \gets \emptyset$
@@ -124,7 +143,7 @@ the solution found by greedy.
 	\ForAll{$node \in tsp$}
 		\State $currentsolution \gets \Call{greedy}{node, nnodes}$
 		\While{$true$}
-			\State $2optsolution \gets \Call{best2optswap}{currentsolution}$
+			\State $2optsolution \gets \Call{best2optswap}{currentsolution, nnodes}$
 			\If{$\Call{cost}{2optsolution} < \Call{cost}{currentsolution}$}
 				\State $currentsolution \gets 2optsolution$
 			\Else
