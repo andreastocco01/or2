@@ -6,6 +6,10 @@
 \usepackage{algpseudocode}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{import}
+\usepackage{subcaption}
+
+\graphicspath{./assets/}
 
 \title{Performance Analysis of TSP Solving Algorithms}
 \author{Basaglia Alberto, Stocco Andrea}
@@ -75,13 +79,35 @@ However, the solution found by this algorithm could have a lot of `intersections
 (TODO explain what intersections are maybe with a figure)
 
 \subsection{2-opt}
-The 2-opt algorithm is an optimization technique that can be used to improve heuristic
-algorithm's solutions.
-The 2-opt algorithm evaluates the possibility of removing two edges in the tour for reconnecting the nodes in a different order.
+The 2-opt algorithm is an optimization technique that can be used to improve a sub-optimal solution.
+It evaluates the possibility of removing two edges in the tour and reconnecting the now disconnected nodes in the other way.
 This process aims to improve the cost of the tour by eliminating inefficient segments while preserving the overall tour structure. By
 iteratively exploring these adjustments and accepting them if they result in a shorter tour cost, the algorithm gradually refines
-the solution. This iterative refinement continues until no further improvements can be made, potentially resulting in a more optimal
-solution for the given problem instance. (TODO add a picture to better explain this algorithm)
+the solution. This iterative refinement continues until no further improvements can be made, resulting in a more 
+solution closer to the optimal one for the given problem instance. 
+Although it is not the only possible situation where a 2-opt move could be
+beneficial, figure~\ref{fig:2optmove} illustrates an example of such a move.
+
+\begin{figure}[H]
+        \caption{Example of a 2-opt move}
+        \label{fig:2optmove}
+        \centering
+        \begin{subfigure}{.5\textwidth}
+                \centering
+                \def\svgwidth{.7\linewidth}
+                \import{assets}{2opt-pre.pdf_tex}
+                \caption{Before the move}
+        \end{subfigure}%
+        \begin{subfigure}{.5\textwidth}
+                \centering
+                \def\svgwidth{.7\linewidth}
+                \import{assets}{2opt-post.pdf_tex}
+                \caption{After the move}
+        \end{subfigure}
+\end{figure}
+
+It's easy to see that the removal of the crossing edges is beneficial to the
+cost of the solution.
 
 \section{Metaheuristics}
 A metaheuristic is a versatile problem-solving approach characterized by its iterative nature and adaptability across various optimization problems. Unlike specific algorithms tailored to particular problems, metaheuristics serve as overarching strategies that guide subordinate heuristics to efficiently explore and exploit solution spaces. They intelligently combine different concepts to navigate through search spaces, aiming to find near-optimal solutions effectively.
