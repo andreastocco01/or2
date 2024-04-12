@@ -22,7 +22,8 @@ BUILD_OBJS = tsp.o \
 	tsp_tabu.o \
 	tsp_vns.o \
 	eventlog.o \
-	tsp_instance.o
+	tsp_instance.o \
+	chrono.o
 
 all: main
 

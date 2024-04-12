@@ -2,6 +2,7 @@
 #include "tsp.h"
 #include "util.h"
 #include <stdio.h>
+#include <string.h>
 
 int xpos(int i, int j, struct tsp* tsp)
 {
@@ -252,6 +253,90 @@ void print_loops_file(struct tsp* tsp, int* succ, char* filename)
 	free(visited);
 }
 
+void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int ncomp, int* succout)
+{
+	// find the best patch
+	double best_delta = 10e30;
+	int besti;
+	int bestj;
+	int removed_comp;
+	for (int k1 = 1; k1 < ncomp - 1; k1++) {
+		for (int k2 = k1 + 1; k2 < ncomp; k2++) {
+			int current1 = start[k1];
+			int current2 = start[k2];
+			printf("k1=%d, k2=%d\n", k1, k2);
+
+			while (1) {
+				while (1) {
+					int i = current1;
+					int j = current2;
+					double c_isj = tsp->cost_matrix[flatten_coords(i, succin[j], tsp->nnodes)];
+					double c_jsi = tsp->cost_matrix[flatten_coords(j, succin[i], tsp->nnodes)];
+					double c_isi = tsp->cost_matrix[flatten_coords(i, succin[i], tsp->nnodes)];
+					double c_jsj = tsp->cost_matrix[flatten_coords(j, succin[j], tsp->nnodes)];
+
+					double delta = c_isj + c_jsi - c_isi - c_jsj;
+					printf("i=%d, j=%d\n", i, j);
+
+					if (delta < best_delta) {
+						best_delta = delta;
+						besti = current1;
+						bestj = current2;
+						removed_comp = k2;
+					}
+
+					current2 = succin[current2];
+					if (current2 == start[k2])
+						break;
+				}
+				current1 = succin[current1];
+				if (current1 == start[k1])
+					break;
+			}
+		}
+	}
+	// execute the best patch
+	memcpy(succout, succin, tsp->nnodes * sizeof(int));
+	succout[besti] = succin[bestj];
+	succout[bestj] = succin[besti];
+
+	int temp = start[removed_comp];
+	start[removed_comp] = start[ncomp - 1];
+	start[ncomp - 1] = temp;
+}
+
+void tsp_compute_comp_start(struct tsp* tsp, int* comp, int ncomp, int* start)
+{
+	// initialize start
+	for (int i = 0; i < ncomp + 1; i++)
+		start[i] = -1;
+
+	for (int i = 0; i < tsp->nnodes; i++) {
+		int k = comp[i];
+		if (start[k] == -1)
+			start[k] = i;
+	}
+}
+
+void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int ncomp, int* succout)
+{
+	int* start = malloc(sizeof(int) * (ncomp + 1));
+	tsp_compute_comp_start(tsp, comp, ncomp, start);
+
+	int* temp = malloc(sizeof(int) * tsp->nnodes);
+	memcpy(temp, succin, tsp->nnodes * sizeof(int));
+	while (ncomp > 1) {
+		tsp_cplex_patchonce(tsp, temp, start, ncomp, succout);
+		memcpy(temp, succout, tsp->nnodes * sizeof(int));
+
+		ncomp--;
+	}
+
+	free(temp);
+
+	free(start);
+}
+
 int tsp_solve_cplex(struct tsp* tsp)
 {
 	tsp->solution_permutation = NULL;
@@ -339,6 +424,13 @@ int tsp_solve_cplex(struct tsp* tsp)
 		sprintf(probname, "partial_%04d.csv", it);
 		print_loops_file(tsp, succ, probname);
 #endif
+
+		// compute patching in case next
+		// iteration doesn't have time to finish
+
+		int* patched = malloc(sizeof(int) * tsp->nnodes);
+		tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
+		free(patched);
 	}
 
 	double objval;
