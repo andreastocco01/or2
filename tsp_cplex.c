@@ -296,12 +296,12 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 	printf("patchonce: besti=%d, bestj=%d, removed=%d\n", besti, bestj, removed_comp);
 	// execute the best patch
 	memcpy(succout, succin, tsp->nnodes * sizeof(int));
-	succout[besti] = succin[bestj];
-	succout[bestj] = succin[besti];
+	succout[succin[besti]] = succin[succin[bestj]];
+	succout[succin[bestj]] = succin[succin[besti]];
 
 	int temp = start[removed_comp];
-	start[removed_comp] = start[ncomp - 1];
-	start[ncomp - 1] = temp;
+	start[removed_comp] = start[ncomp];
+	start[ncomp] = temp;
 }
 
 void tsp_compute_comp_start(struct tsp* tsp, int* comp, int ncomp, int* start)
@@ -324,9 +324,15 @@ void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int nco
 
 	int* temp = malloc(sizeof(int) * tsp->nnodes);
 	memcpy(temp, succin, tsp->nnodes * sizeof(int));
+	printf("comp:\n");
+	print_array_int(comp, tsp->nnodes);
 	while (ncomp > 1) {
+		printf("start:\n");
+		print_array_int(start, ncomp + 1);
+		printf("temp: \n");
 		print_array_int(temp, tsp->nnodes);
 		tsp_cplex_patchonce(tsp, temp, start, ncomp, succout);
+		printf("succout: \n");
 		print_array_int(succout, tsp->nnodes);
 		memcpy(temp, succout, tsp->nnodes * sizeof(int));
 
@@ -423,7 +429,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 		sprintf(probname, DEBUGOUT_LPPROB, it);
 		CPXwriteprob(env, lp, probname, NULL);
 		sprintf(probname, DEBUGOUT_PARTIAL, it);
-		print_loops_file(tsp, succ, probname);
+		// print_loops_file(tsp, succ, probname);
 #endif
 
 		// compute patching in case next
@@ -439,7 +445,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 		}
 #ifdef DEBUG
 		sprintf(probname, DEBUGOUT_PATCHED, it);
-		print_loops_file(tsp, patched, probname);
+		// print_loops_file(tsp, patched, probname);
 #endif
 		double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
 		fprintf(stderr, "Patched solution cost is %lf\n", cost);
