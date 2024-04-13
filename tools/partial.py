@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-def plot_loops(file_path):
+def plot_loops(file_path, save):
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
@@ -29,8 +29,16 @@ def plot_loops(file_path):
     plt.ylabel('Y')
     plt.title('Loops from File')
     plt.grid(True)
-    plt.show()
+    if save != None:
+        plt.savefig(save)
+    else:
+        plt.show()
 
-# Example usage:
+
+
 file_path = sys.argv[1]
-plot_loops(file_path)
+save = None
+if len(sys.argv) > 2:
+    save = sys.argv[2]
+
+plot_loops(file_path, save)
