@@ -224,6 +224,10 @@ void tsp_print_loops_file(struct tsp* tsp, int* succ, char* filename)
 {
 	int* visited = calloc(tsp->nnodes, sizeof(int));
 	FILE* f = fopen(filename, "w");
+	if(f == NULL) {
+		fprintf(stderr, "Can't create file\n");
+		return;
+	}
 
 	while (1) {
 		int notvisited = -1;
