@@ -80,7 +80,7 @@ int permutation_contains_value(struct tsp* tsp, int val, int limit)
 	return 0;
 }
 
-int tsp_cplex_getsolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
+int tsp_cplex_savesolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 {
 	int res = 0;
 	int ncols = CPXgetnumcols(env, lp);
@@ -257,14 +257,13 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 {
 	// find the best patch
 	double best_delta = 10e30;
-	int besti;
-	int bestj;
-	int removed_comp;
-	for (int k1 = 1; k1 < ncomp - 1; k1++) {
-		for (int k2 = k1 + 1; k2 < ncomp; k2++) {
+	int besti = -1;
+	int bestj = -1;
+	int removed_comp = -1;
+	for (int k1 = 1; k1 < ncomp; k1++) {
+		for (int k2 = k1 + 1; k2 < ncomp + 1; k2++) {
 			int current1 = start[k1];
 			int current2 = start[k2];
-			printf("k1=%d, k2=%d\n", k1, k2);
 
 			while (1) {
 				while (1) {
@@ -276,7 +275,6 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 					double c_jsj = tsp->cost_matrix[flatten_coords(j, succin[j], tsp->nnodes)];
 
 					double delta = c_isj + c_jsi - c_isi - c_jsj;
-					printf("i=%d, j=%d\n", i, j);
 
 					if (delta < best_delta) {
 						best_delta = delta;
@@ -295,6 +293,7 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 			}
 		}
 	}
+	printf("patchonce: besti=%d, bestj=%d, removed=%d\n", besti, bestj, removed_comp);
 	// execute the best patch
 	memcpy(succout, succin, tsp->nnodes * sizeof(int));
 	succout[besti] = succin[bestj];
@@ -326,14 +325,16 @@ void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int nco
 	int* temp = malloc(sizeof(int) * tsp->nnodes);
 	memcpy(temp, succin, tsp->nnodes * sizeof(int));
 	while (ncomp > 1) {
+		print_array_int(temp, tsp->nnodes);
 		tsp_cplex_patchonce(tsp, temp, start, ncomp, succout);
+		print_array_int(succout, tsp->nnodes);
 		memcpy(temp, succout, tsp->nnodes * sizeof(int));
 
 		ncomp--;
+		printf("ncomp = %d\n", ncomp);
 	}
 
 	free(temp);
-
 	free(start);
 }
 
@@ -419,9 +420,9 @@ int tsp_solve_cplex(struct tsp* tsp)
 		tsp_cplex_addsec(tsp, env, lp, ncomp, comp);
 #ifdef DEBUG
 		char probname[50];
-		sprintf(probname, "prob_%04d.lp", it);
+		sprintf(probname, DEBUGOUT_LPPROB, it);
 		CPXwriteprob(env, lp, probname, NULL);
-		sprintf(probname, "partial_%04d.csv", it);
+		sprintf(probname, DEBUGOUT_PARTIAL, it);
 		print_loops_file(tsp, succ, probname);
 #endif
 
@@ -430,6 +431,19 @@ int tsp_solve_cplex(struct tsp* tsp)
 
 		int* patched = malloc(sizeof(int) * tsp->nnodes);
 		tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
+		if (tsp_allocate_solution(tsp)) {
+			fprintf(stderr, "Can't allocate solution\n");
+		}
+		if (tsp_succ_to_perm(tsp, patched, tsp->solution_permutation)) {
+			fprintf(stderr, "Can't convert solution\n");
+		}
+#ifdef DEBUG
+		sprintf(probname, DEBUGOUT_PATCHED, it);
+		print_loops_file(tsp, patched, probname);
+#endif
+		double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+		fprintf(stderr, "Patched solution cost is %lf\n", cost);
+		tsp->solution_value = cost;
 		free(patched);
 	}
 
@@ -440,7 +454,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 	if (tsp_allocate_solution(tsp))
 		res = -1;
 
-	if (tsp_cplex_getsolution(tsp, env, lp)) {
+	if (tsp_cplex_savesolution(tsp, env, lp)) {
 		fprintf(stderr, "Can't get solution of lp\n");
 		res = -1;
 	}

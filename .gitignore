@@ -54,3 +54,5 @@ dkms.conf
 main
 compile_commands.json
 .cache/
+debugout/*
+!debugout/.gitkeep

@@ -375,3 +375,37 @@ double tsp_getremainingseconds(struct tsp* tsp)
 	double elapsedseconds = tsp_getelapsedseconds(tsp);
 	return ((double)tsp->timelimit_secs) - elapsedseconds;
 }
+
+int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm)
+{
+	int* visited = calloc(tsp->nnodes, sizeof(int));
+	int perm_pointer = 0;
+
+	int current = succ[0];
+
+	while (1) {
+		// visit the element
+		perm[perm_pointer] = current;
+		visited[current] = 1;
+
+		current = succ[current];
+		perm_pointer++;
+		if (current == succ[0])
+			break;
+	}
+
+	int res = 0;
+	if (perm_pointer != tsp->nnodes)
+		res = 1;
+	// checks whether all the elements have been visited
+	for (int i = 0; i < tsp->nnodes; i++) {
+		if (!visited[i]) {
+			res = 1;
+			fprintf(stderr, "unvisited element!\n");
+			break;
+		}
+	}
+
+	free(visited);
+	return res;
+}

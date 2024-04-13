@@ -6,6 +6,11 @@
 #define EPSILON                 1e-7
 #define flatten_coords(x, y, N) x* N + y
 
+#define DEBUGOUT_BASE           "debugout/"
+#define DEBUGOUT_PARTIAL        DEBUGOUT_BASE "partial_%04d.csv"
+#define DEBUGOUT_LPPROB         DEBUGOUT_BASE "lpprob_%04d.csv"
+#define DEBUGOUT_PATCHED        DEBUGOUT_BASE "patched_%04d.csv"
+
 #include <time.h>
 
 struct point {
@@ -179,5 +184,14 @@ double tsp_getelapsedseconds(struct tsp* tsp);
  * Gets the remaining time available to solve the problem in seconds
  * */
 double tsp_getremainingseconds(struct tsp* tsp);
+
+/**
+ * Converts a solution from the "successive" format to the "permutation" format
+ *
+ * The perm array should be preallocated with size nnodes
+ *
+ * Returns 0 if success, 1 if fails.
+ * */
+int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm);
 
 #endif // TSP_H_
