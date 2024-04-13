@@ -202,12 +202,12 @@ double compute_delta(struct tsp* tsp, int* solution, int i, int j)
 	return distance_prev - distance_next;
 }
 
-int tsp_2opt_solution(struct tsp* tsp,
-		      int* current_solution,
-		      double* current_solution_value,
-		      int best_i,
-		      int best_j,
-		      double best_delta)
+int tsp_2opt_swap_save(struct tsp* tsp,
+		       int* current_solution,
+		       double* current_solution_value,
+		       int best_i,
+		       int best_j,
+		       double best_delta)
 {
 	tsp_2opt_swap(best_i + 1, best_j, current_solution);
 	*current_solution_value -= best_delta;
@@ -408,4 +408,32 @@ int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm)
 
 	free(visited);
 	return res;
+}
+
+int tsp_2opt_swap_arg(struct tsp* tsp, int* permutation, double* permutation_cost)
+{
+	while (1) {
+		int best_i, best_j;
+		double best_delta = tsp_2opt_findbestswap(tsp, permutation, &best_i, &best_j);
+		if (best_delta <= 0)
+			break;
+
+		*permutation_cost -= best_delta;
+		tsp_2opt_swap(best_i + 1, best_j, permutation);
+	}
+	return 0;
+}
+
+void tsp_print_perm_file(struct tsp* tsp, int* permutation, char* filename)
+{
+	FILE* f = fopen(filename, "w");
+
+	fprintf(f, "newloop\n");
+	for (int i = 0; i < tsp->nnodes; i++) {
+		int current = permutation[i];
+		fprintf(f, "%lf, %lf\n", tsp->coords[current].x, tsp->coords[current].y);
+	}
+	fprintf(f, "%lf, %lf\n", tsp->coords[permutation[0]].x, tsp->coords[permutation[0]].y);
+
+	fclose(f);
 }

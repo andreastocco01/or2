@@ -113,7 +113,7 @@ int tsp_solve_multigreedy(struct tsp* tsp)
 			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
 			if (best_delta <= 0)
 				break;
-			int isnewbest = tsp_2opt_solution(tsp, current_solution, &current_solution_value, best_i,
+			int isnewbest = tsp_2opt_swap_save(tsp, current_solution, &current_solution_value, best_i,
 							  best_j, best_delta);
 			if (isnewbest)
 				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);

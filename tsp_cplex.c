@@ -220,7 +220,7 @@ free_buffers:
 	free(value);
 }
 
-void print_loops_file(struct tsp* tsp, int* succ, char* filename)
+void tsp_print_loops_file(struct tsp* tsp, int* succ, char* filename)
 {
 	int* visited = calloc(tsp->nnodes, sizeof(int));
 	FILE* f = fopen(filename, "w");
@@ -293,11 +293,10 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 			}
 		}
 	}
-	printf("patchonce: besti=%d, bestj=%d, removed=%d\n", besti, bestj, removed_comp);
 	// execute the best patch
 	memcpy(succout, succin, tsp->nnodes * sizeof(int));
-	succout[succin[besti]] = succin[succin[bestj]];
-	succout[succin[bestj]] = succin[succin[besti]];
+	succout[besti] = succin[bestj];
+	succout[bestj] = succin[besti];
 
 	int temp = start[removed_comp];
 	start[removed_comp] = start[ncomp];
@@ -324,20 +323,11 @@ void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int nco
 
 	int* temp = malloc(sizeof(int) * tsp->nnodes);
 	memcpy(temp, succin, tsp->nnodes * sizeof(int));
-	printf("comp:\n");
-	print_array_int(comp, tsp->nnodes);
 	while (ncomp > 1) {
-		printf("start:\n");
-		print_array_int(start, ncomp + 1);
-		printf("temp: \n");
-		print_array_int(temp, tsp->nnodes);
 		tsp_cplex_patchonce(tsp, temp, start, ncomp, succout);
-		printf("succout: \n");
-		print_array_int(succout, tsp->nnodes);
 		memcpy(temp, succout, tsp->nnodes * sizeof(int));
 
 		ncomp--;
-		printf("ncomp = %d\n", ncomp);
 	}
 
 	free(temp);
@@ -429,7 +419,7 @@ int tsp_solve_cplex(struct tsp* tsp)
 		sprintf(probname, DEBUGOUT_LPPROB, it);
 		CPXwriteprob(env, lp, probname, NULL);
 		sprintf(probname, DEBUGOUT_PARTIAL, it);
-		// print_loops_file(tsp, succ, probname);
+		tsp_print_loops_file(tsp, succ, probname);
 #endif
 
 		// compute patching in case next
@@ -445,12 +435,27 @@ int tsp_solve_cplex(struct tsp* tsp)
 		}
 #ifdef DEBUG
 		sprintf(probname, DEBUGOUT_PATCHED, it);
-		// print_loops_file(tsp, patched, probname);
+		tsp_print_loops_file(tsp, patched, probname);
 #endif
 		double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
 		fprintf(stderr, "Patched solution cost is %lf\n", cost);
 		tsp->solution_value = cost;
+#ifdef DEBUG
+		if (!tsp_check_solution(tsp, NULL)) {
+			printf("Discrepancy in solution cost\n");
+			exit(0);
+		}
+#endif
+		tsp_2opt_swap_arg(tsp, tsp->solution_permutation, &tsp->solution_value);
 		free(patched);
+#ifdef DEBUG
+		if (!tsp_check_solution(tsp, NULL)) {
+			printf("Discrepancy in solution cost\n");
+			exit(0);
+		}
+		sprintf(probname, DEBUGOUT_PATCHED2OPT, it);
+		tsp_print_perm_file(tsp, tsp->solution_permutation, probname);
+#endif
 	}
 
 	double objval;

@@ -10,6 +10,7 @@
 #define DEBUGOUT_PARTIAL        DEBUGOUT_BASE "partial_%04d.csv"
 #define DEBUGOUT_LPPROB         DEBUGOUT_BASE "lpprob_%04d.csv"
 #define DEBUGOUT_PATCHED        DEBUGOUT_BASE "patched_%04d.csv"
+#define DEBUGOUT_PATCHED2OPT    DEBUGOUT_BASE "patched_2opt_%04d.csv"
 
 #include <time.h>
 
@@ -101,17 +102,19 @@ void debug_print_coords(struct tsp* tsp);
  * */
 double compute_delta(struct tsp* tsp, int* solution, int i, int j);
 
+int tsp_2opt_swap_arg(struct tsp* tsp, int* permutation, double* permutation_cost);
+
 /**
  * Executes a 2-opt swap and updates the current solution.
  *
  * returns 1 if a new best solution (incumbent) is found
  * */
-int tsp_2opt_solution(struct tsp* tsp,
-		      int* current_solution,
-		      double* current_solution_value,
-		      int best_i,
-		      int best_j,
-		      double best_delta);
+int tsp_2opt_swap_save(struct tsp* tsp,
+		       int* current_solution,
+		       double* current_solution_value,
+		       int best_i,
+		       int best_j,
+		       double best_delta);
 
 /**
  * Finds the best 2opt swap nodes
@@ -193,5 +196,7 @@ double tsp_getremainingseconds(struct tsp* tsp);
  * Returns 0 if success, 1 if fails.
  * */
 int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm);
+
+void tsp_print_perm_file(struct tsp* tsp, int* permutation, char* filename);
 
 #endif // TSP_H_
