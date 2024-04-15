@@ -453,6 +453,8 @@ int tsp_solve_cplex(struct tsp* tsp)
 		tsp_2opt_swap_arg(tsp, tsp->solution_permutation, &tsp->solution_value);
 		free(patched);
 #ifdef DEBUG
+		cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+		fprintf(stderr, "2-opted solution cost is %lf\n", cost);
 		if (!tsp_check_solution(tsp, NULL)) {
 			printf("Discrepancy in solution cost\n");
 			exit(0);
