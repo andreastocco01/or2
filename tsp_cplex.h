@@ -6,6 +6,6 @@
 
 int tsp_build_lpmodel(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
 int tsp_cplex_savesolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
-int tsp_solve_cplex(struct tsp* tsp);
+int tsp_solve_benders(struct tsp* tsp);
 
 #endif

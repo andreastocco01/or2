@@ -1,5 +1,6 @@
 #include "eventlog.h"
 #include "tsp.h"
+#include "tsp_cplex.h"
 #include "tsp_greedy.h"
 #include "tsp_instance.h"
 #include "tsp_tabu.h"
@@ -79,7 +80,7 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 3) {
-		return tsp_solve_cplex(tsp);
+		return tsp_solve_benders(tsp);
 	}
 	return -1;
 }

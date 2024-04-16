@@ -338,7 +338,7 @@ void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int nco
 	free(start);
 }
 
-int tsp_solve_cplex(struct tsp* tsp)
+int tsp_solve_benders(struct tsp* tsp)
 {
 	tsp->solution_permutation = NULL;
 
