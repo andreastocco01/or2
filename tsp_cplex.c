@@ -418,7 +418,9 @@ int tsp_solve_benders(struct tsp* tsp, int patching)
 		tsp_cplex_buildsol(tsp, xvars, succ, comp, &ncomp);
 		free(xvars);
 
+#ifdef DEBUG
 		fprintf(stderr, "ncomp=%d\n", ncomp);
+#endif
 
 		if (ncomp == 1)
 			break;
@@ -448,7 +450,9 @@ int tsp_solve_benders(struct tsp* tsp, int patching)
 			tsp_print_loops_file(tsp, patched, probname);
 #endif
 			double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+#ifdef DEBUG
 			fprintf(stderr, "Patched solution cost is %lf\n", cost);
+#endif
 			tsp->solution_value = cost;
 #ifdef DEBUG
 			if (!tsp_check_solution(tsp, NULL)) {
@@ -544,7 +548,9 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 	int res = 0;
 	const struct callback_generate_sec_params* params = (const struct callback_generate_sec_params*)userhandle;
 	const struct tsp* tsp = params->tsp;
+#ifdef DEBUG
 	fprintf(stderr, "ncols is %d\n", params->ncols);
+#endif
 
 	// allocate buffers
 	double* xstar = malloc(sizeof(double) * params->ncols);
@@ -559,7 +565,9 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 		res = -1; // triggers an error 1006 in cplex.
 		goto free_buffers;
 	}
+#ifdef DEBUG
 	fprintf(stderr, "Value of candidate is %lf\n", objval);
+#endif
 
 	// build a solution in the "successive" format
 	if (tsp_cplex_buildsol(tsp, xstar, succ, comp, &ncomp)) {
@@ -567,7 +575,9 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 		res = -1;
 		goto free_buffers;
 	}
+#ifdef DEBUG
 	fprintf(stderr, "found %d components\n", ncomp);
+#endif
 	if (ncomp == 1) {
 		// the solution is feasible
 		res = 0;
