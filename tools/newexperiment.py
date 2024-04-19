@@ -5,11 +5,12 @@ from subprocess import run, PIPE, Popen
 output_file = "out.txt"
 executable_name = "./main"
 pfflag = "--parsefriendly"
-timelimit = "30"
+timelimit = "120"
 parallel_tasks = 1
 nnodes = 50
 ninstances = 5
-configs = [2, 3]
+configs = [3, 4]
+cost_or_time = 1 # 0 for time, 1 for cost 
 
 def divide_list_into_blocks(lst, n):
     return [lst[i:i+n] for i in range(0, len(lst), n)]
@@ -77,7 +78,7 @@ f.write("\n")
 for n in range(ninstances):
     f.write("{}".format(n))
     for config in configs:
-        result = done[(n, config)][1]
+        result = done[(n, config)][cost_or_time]
         f.write(",{}".format(result))
     f.write("\n")
 
