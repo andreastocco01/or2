@@ -80,7 +80,10 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 3) {
-		return tsp_solve_benders(tsp);
+		return tsp_solve_benders(tsp, 1);
+	}
+	if (config == 4) {
+		return tsp_solve_branchcut(tsp);
 	}
 	return -1;
 }

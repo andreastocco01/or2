@@ -427,7 +427,7 @@ int tsp_2opt_swap_arg(struct tsp* tsp, int* permutation, double* permutation_cos
 void tsp_print_perm_file(struct tsp* tsp, int* permutation, char* filename)
 {
 	FILE* f = fopen(filename, "w");
-	if(f == NULL) {
+	if (f == NULL) {
 		fprintf(stderr, "Can't create file\n");
 		return;
 	}

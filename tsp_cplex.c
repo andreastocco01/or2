@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int xpos(int i, int j, struct tsp* tsp)
+int xpos(int i, int j, const struct tsp* tsp)
 {
 	if (i == j) {
 		printf("i == j\n");
@@ -116,16 +116,17 @@ out:
 }
 
 #define EPS 1e-5
-void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* comp, int* ncomp)
+int tsp_cplex_buildsol(const struct tsp* tsp, const double* xstar, int* succ, int* comp, int* ncomp)
 {
-
 #ifdef DEBUG
 	int* degree = (int*)calloc(tsp->nnodes, sizeof(int));
 	for (int i = 0; i < tsp->nnodes; i++) {
 		for (int j = i + 1; j < tsp->nnodes; j++) {
 			int k = xpos(i, j, tsp);
-			if (fabs(xstar[k]) > EPS && fabs(xstar[k] - 1.0) > EPS)
+			if (fabs(xstar[k]) > EPS && fabs(xstar[k] - 1.0) > EPS) {
 				printf(" wrong xstar in build_sol()\n");
+				return -1;
+			}
 			if (xstar[k] > 0.5) {
 				++degree[i];
 				++degree[j];
@@ -133,8 +134,10 @@ void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* co
 		}
 	}
 	for (int i = 0; i < tsp->nnodes; i++) {
-		if (degree[i] != 2)
+		if (degree[i] != 2) {
 			printf("wrong degree in build_sol()\n");
+			return -1;
+		}
 	}
 	free(degree);
 #endif
@@ -172,6 +175,7 @@ void tsp_cplex_buildsol(struct tsp* tsp, const double* xstar, int* succ, int* co
 
 		// go to the next component
 	}
+	return 0;
 }
 
 double compute_rhs(int* comp, int len, int current_component)
@@ -224,7 +228,7 @@ void tsp_print_loops_file(struct tsp* tsp, int* succ, char* filename)
 {
 	int* visited = calloc(tsp->nnodes, sizeof(int));
 	FILE* f = fopen(filename, "w");
-	if(f == NULL) {
+	if (f == NULL) {
 		fprintf(stderr, "Can't create file\n");
 		return;
 	}
@@ -338,7 +342,7 @@ void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int nco
 	free(start);
 }
 
-int tsp_solve_benders(struct tsp* tsp)
+int tsp_solve_benders(struct tsp* tsp, int patching)
 {
 	tsp->solution_permutation = NULL;
 
@@ -408,6 +412,7 @@ int tsp_solve_benders(struct tsp* tsp)
 		double* xvars = malloc(sizeof(double) * ncols);
 		if (CPXgetx(env, lp, xvars, 0, ncols - 1)) {
 			printf("Can't get vars\n");
+			free(xvars);
 			break;
 		}
 		tsp_cplex_buildsol(tsp, xvars, succ, comp, &ncomp);
@@ -429,39 +434,41 @@ int tsp_solve_benders(struct tsp* tsp)
 		// compute patching in case next
 		// iteration doesn't have time to finish
 
-		int* patched = malloc(sizeof(int) * tsp->nnodes);
-		tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
-		if (tsp_allocate_solution(tsp)) {
-			fprintf(stderr, "Can't allocate solution\n");
-		}
-		if (tsp_succ_to_perm(tsp, patched, tsp->solution_permutation)) {
-			fprintf(stderr, "Can't convert solution\n");
-		}
+		if (patching) {
+			int* patched = malloc(sizeof(int) * tsp->nnodes);
+			tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
+			if (tsp_allocate_solution(tsp)) {
+				fprintf(stderr, "Can't allocate solution\n");
+			}
+			if (tsp_succ_to_perm(tsp, patched, tsp->solution_permutation)) {
+				fprintf(stderr, "Can't convert solution\n");
+			}
 #ifdef DEBUG
-		sprintf(probname, DEBUGOUT_PATCHED, it);
-		tsp_print_loops_file(tsp, patched, probname);
+			sprintf(probname, DEBUGOUT_PATCHED, it);
+			tsp_print_loops_file(tsp, patched, probname);
 #endif
-		double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
-		fprintf(stderr, "Patched solution cost is %lf\n", cost);
-		tsp->solution_value = cost;
+			double cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+			fprintf(stderr, "Patched solution cost is %lf\n", cost);
+			tsp->solution_value = cost;
 #ifdef DEBUG
-		if (!tsp_check_solution(tsp, NULL)) {
-			printf("Discrepancy in solution cost\n");
-			exit(0);
-		}
+			if (!tsp_check_solution(tsp, NULL)) {
+				printf("Discrepancy in solution cost\n");
+				exit(0);
+			}
 #endif
-		tsp_2opt_swap_arg(tsp, tsp->solution_permutation, &tsp->solution_value);
-		free(patched);
+			tsp_2opt_swap_arg(tsp, tsp->solution_permutation, &tsp->solution_value);
+			free(patched);
 #ifdef DEBUG
-		cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
-		fprintf(stderr, "2-opted solution cost is %lf\n", cost);
-		if (!tsp_check_solution(tsp, NULL)) {
-			printf("Discrepancy in solution cost\n");
-			exit(0);
-		}
-		sprintf(probname, DEBUGOUT_PATCHED2OPT, it);
-		tsp_print_perm_file(tsp, tsp->solution_permutation, probname);
+			cost = tsp_recompute_solution_arg(tsp, tsp->solution_permutation);
+			fprintf(stderr, "2-opted solution cost is %lf\n", cost);
+			if (!tsp_check_solution(tsp, NULL)) {
+				printf("Discrepancy in solution cost\n");
+				exit(0);
+			}
+			sprintf(probname, DEBUGOUT_PATCHED2OPT, it);
+			tsp_print_perm_file(tsp, tsp->solution_permutation, probname);
 #endif
+		}
 	}
 
 	double objval;
@@ -480,6 +487,182 @@ timelimit_reached:
 free_buffers:
 	free(succ);
 	free(comp);
+free_prob:
+	CPXfreeprob(env, &lp);
+free_cplex:
+	CPXcloseCPLEX(&env);
+	return res;
+}
+
+struct callback_generate_sec_params {
+	const struct tsp* tsp;
+	int ncols;
+};
+
+static int callback_generate_sec_addsec(CPXCALLBACKCONTEXTptr context,
+					int ncols,
+					const struct tsp* tsp,
+					int ncomp,
+					int* comp)
+{
+	int res = 0;
+
+	int* index = malloc(sizeof(int) * ncols);
+	double* value = malloc(sizeof(double) * ncols);
+	char sense = 'L';
+	int izero = 0;
+	for (int k = 1; k <= ncomp; k++) {
+		int nnz = 0;
+		double rhs = compute_rhs(comp, tsp->nnodes, k);
+		for (int i = 0; i < tsp->nnodes; i++) {
+			if (comp[i] != k)
+				continue;
+			for (int j = i + 1; j < tsp->nnodes; j++) {
+				if (comp[j] != k)
+					continue;
+				index[nnz] = xpos(i, j, tsp);
+				value[nnz] = 1.0;
+				nnz++;
+			}
+		}
+		int res = CPXcallbackrejectcandidate(context, 1, nnz, &rhs, &sense, &izero, index, value);
+		if (res) {
+			fprintf(stderr, "Can't reject solution and add new cut\n");
+			res = -1;
+			goto free_buffers;
+		}
+	}
+
+free_buffers:
+	free(index);
+	free(value);
+	return res;
+}
+
+static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void* userhandle)
+{
+	int res = 0;
+	const struct callback_generate_sec_params* params = (const struct callback_generate_sec_params*)userhandle;
+	const struct tsp* tsp = params->tsp;
+	fprintf(stderr, "ncols is %d\n", params->ncols);
+
+	// allocate buffers
+	double* xstar = malloc(sizeof(double) * params->ncols);
+	int* succ = malloc(sizeof(int) * tsp->nnodes);
+	int* comp = malloc(sizeof(int) * tsp->nnodes);
+	int ncomp;
+	double objval = CPX_INFBOUND;
+
+	// retreive candidate solution
+	if (CPXcallbackgetcandidatepoint(context, xstar, 0, params->ncols - 1, &objval)) {
+		fprintf(stderr, "callbackgetcandidatepoint failed!\n");
+		res = -1; // triggers an error 1006 in cplex.
+		goto free_buffers;
+	}
+	fprintf(stderr, "Value of candidate is %lf\n", objval);
+
+	// build a solution in the "successive" format
+	if (tsp_cplex_buildsol(tsp, xstar, succ, comp, &ncomp)) {
+		fprintf(stderr, "Can't build solution\n");
+		res = -1;
+		goto free_buffers;
+	}
+	fprintf(stderr, "found %d components\n", ncomp);
+	if (ncomp == 1) {
+		// the solution is feasible
+		res = 0;
+		goto free_buffers;
+	}
+
+	// generate cuts
+	if (callback_generate_sec_addsec(context, params->ncols, tsp, ncomp, comp)) {
+		printf("Can't add SECs\n");
+		res = -1;
+		goto free_buffers;
+	}
+
+free_buffers:
+	free(xstar);
+	free(succ);
+	free(comp);
+	return res;
+}
+
+int tsp_solve_branchcut(struct tsp* tsp)
+{
+	tsp->solution_permutation = NULL;
+
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+
+	int res = 0;
+
+	int error;
+	CPXENVptr env = CPXopenCPLEX(&error);
+	if (error) {
+		printf("Error creating env: %d\n", error);
+		res = -1;
+		goto free_cplex;
+	}
+	CPXLPptr lp = CPXcreateprob(env, &error, "tsp");
+	if (error) {
+		printf("Error creating lp: %d\n", error);
+		res = -1;
+		goto free_prob;
+	}
+
+	if ((error = tsp_build_lpmodel(tsp, env, lp))) {
+		printf("Erorr building model\n");
+		res = -1;
+		goto free_prob;
+	}
+
+#ifdef DEBUG
+	CPXwriteprob(env, lp, "prob.lp", NULL);
+#endif
+
+	tsp_starttimer(tsp);
+	// set cplex parameters
+	CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
+#ifdef DEBUG
+	CPXsetintparam(env, CPXPARAM_ScreenOutput, CPX_ON);
+#endif
+	int ncols = CPXgetnumcols(env, lp);
+
+	struct callback_generate_sec_params params = {
+	    .tsp = tsp,
+	    .ncols = ncols,
+	};
+
+	CPXLONG contextid = CPX_CALLBACKCONTEXT_CANDIDATE;
+	if (CPXcallbacksetfunc(env, lp, contextid, callback_generate_sec, &params)) {
+		fprintf(stderr, "Can't set callback function!\n");
+		res = -1;
+		goto free_prob;
+	}
+	if (CPXmipopt(env, lp)) {
+		fprintf(stderr, "Failed to solve the problem\n");
+		res = -1;
+		goto free_prob;
+	}
+
+	// TODO check if cplex exited due to time limit reached
+
+	double objval;
+	CPXgetobjval(env, lp, &objval);
+	tsp->solution_value = objval;
+
+	if (tsp_allocate_solution(tsp))
+		res = -1;
+
+	if (tsp_cplex_savesolution(tsp, env, lp)) {
+		fprintf(stderr, "Can't get solution of lp\n");
+		res = -1;
+	}
+
 free_prob:
 	CPXfreeprob(env, &lp);
 free_cplex:

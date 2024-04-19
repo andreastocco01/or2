@@ -139,7 +139,7 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 				break; // local minimum
 
 			int isnewbest = tsp_2opt_swap_save(tsp, current_solution, &current_solution_value, best_i,
-							  best_j, best_delta);
+							   best_j, best_delta);
 			if (isnewbest)
 				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
 			eventlog_logdouble("new_current", current_iteration, current_solution_value);
