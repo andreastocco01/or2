@@ -7,10 +7,10 @@ executable_name = "./main"
 pfflag = "--parsefriendly"
 timelimit = "120"
 parallel_tasks = 1
-nnodes = 50
+nnodes = 200
 ninstances = 5
 configs = [3, 4]
-cost_or_time = 1 # 0 for time, 1 for cost 
+cost_or_time = 0 # 0 for time, 1 for cost 
 
 def divide_list_into_blocks(lst, n):
     return [lst[i:i+n] for i in range(0, len(lst), n)]
@@ -48,7 +48,11 @@ blocks = divide_list_into_blocks(tasks, parallel_tasks)
 
 done = dict()
 
+blockscount = len(blocks)
+counter = 1
+
 for block in blocks:
+    print("Running block {}/{}".format(counter, blockscount));
     commands = []
     for task in block:
         command = build_command(task)
@@ -66,6 +70,8 @@ for block in blocks:
     zipped = zip(block, results)
     for el in zipped:
         done[el[0]] = el[1]
+
+    counter += 1
 
 
 f = open(output_file, "w")
