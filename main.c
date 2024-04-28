@@ -83,7 +83,10 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_benders(tsp, 1);
 	}
 	if (config == 4) {
-		return tsp_solve_branchcut(tsp);
+		return tsp_solve_branchcut(tsp, 0);
+	}
+	if (config == 5) {
+		return tsp_solve_branchcut(tsp, 1);
 	}
 	return -1;
 }

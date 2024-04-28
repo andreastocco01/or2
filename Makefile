@@ -23,7 +23,8 @@ BUILD_OBJS = tsp.o \
 	tsp_vns.o \
 	eventlog.o \
 	tsp_instance.o \
-	chrono.o
+	chrono.o \
+	mincut.o
 
 all: main
 

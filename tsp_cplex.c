@@ -1,6 +1,8 @@
 #include "tsp_cplex.h"
 #include "tsp.h"
+#include "tsp_greedy.h"
 #include "util.h"
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -113,6 +115,22 @@ int tsp_cplex_savesolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 out:
 	free(vars);
 	return res;
+}
+
+int tsp_perm_to_cplex(const struct tsp* tsp, const int* perm, double* cplex_sol, int ncols)
+{
+	for (int i = 0; i < ncols; i++)
+		cplex_sol[i] = 0.0;
+
+	for (int i = 0; i + 1 < tsp->nnodes; i++) {
+		int j = i + 1;
+		int pos = xpos(perm[i], perm[j], tsp);
+		cplex_sol[pos] = 1.0;
+	}
+
+	cplex_sol[xpos(perm[0], perm[tsp->nnodes-1], tsp)] = 1.0;
+
+	return 0;
 }
 
 #define EPS 1e-5
@@ -598,7 +616,22 @@ free_buffers:
 	return res;
 }
 
-int tsp_solve_branchcut(struct tsp* tsp)
+int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
+{
+	int beg = 0;
+	int* varindices = malloc(sizeof(int) * ncols);
+	for(int i=0 ; i<ncols ;i++) {
+		varindices[i] = i;
+	}
+	char* name = "Heuristic start";
+	/* int effort = CPX_MIPSTART_NOCHECK; */
+	int effort = CPX_MIPSTART_AUTO;
+	int res = CPXaddmipstarts(env, lp, 1, ncols, &beg, varindices, solution, &effort, &name);
+	free(varindices);
+	return res;
+}
+
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 {
 	tsp->solution_permutation = NULL;
 
@@ -653,6 +686,27 @@ int tsp_solve_branchcut(struct tsp* tsp)
 		res = -1;
 		goto free_prob;
 	}
+
+
+	if(warmstart) {
+		// warm start: find a solution using an heuristic and pass it to CPLEX
+
+		int greedyres = tsp_solve_multigreedy(tsp);
+		if (greedyres) {
+			fprintf(stderr, "Can't generate heuristic\n");
+		} else {
+			fprintf(stderr, "Generated heuristic with cost %lf\n", tsp->solution_value);
+		}
+
+		double* warm_solution = malloc(sizeof(double) * ncols);
+		tsp_perm_to_cplex(tsp, tsp->solution_permutation, warm_solution, ncols);
+		int addwarmres = cplex_add_start(env, lp, warm_solution, ncols);
+		if(addwarmres) {
+			fprintf(stderr, "Can't add mip start\n");
+		}
+		free(warm_solution);
+	}
+
 	if (CPXmipopt(env, lp)) {
 		fprintf(stderr, "Failed to solve the problem\n");
 		res = -1;
