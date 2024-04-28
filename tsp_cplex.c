@@ -670,6 +670,12 @@ int violated_cut_callback(double cut_value, int number_nodes, int* members, void
 
 static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void* userhandle)
 {
+	CPXINT nodeid;
+	CPXcallbackgetinfoint(context, CPXCALLBACKINFO_NODEUID, &nodeid);
+	if(!(nodeid % 10))
+		return 0; // so the callback is executed 1/10 of the times
+
+
 	int res = 0;
 	const struct callback_generate_sec_params* params = (const struct callback_generate_sec_params*)userhandle;
 	const struct tsp* tsp = params->tsp;
