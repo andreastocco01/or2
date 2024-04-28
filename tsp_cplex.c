@@ -667,9 +667,7 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 	CPXwriteprob(env, lp, "prob.lp", NULL);
 #endif
 
-	tsp_starttimer(tsp);
 	// set cplex parameters
-	CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 #ifdef DEBUG
 	CPXsetintparam(env, CPXPARAM_ScreenOutput, CPX_ON);
 #endif
@@ -689,6 +687,8 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 
 
 	if(warmstart) {
+		int total = tsp->timelimit_secs;
+		tsp->timelimit_secs = total / 10;
 		// warm start: find a solution using an heuristic and pass it to CPLEX
 
 		int greedyres = tsp_solve_multigreedy(tsp);
@@ -705,7 +705,12 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 			fprintf(stderr, "Can't add mip start\n");
 		}
 		free(warm_solution);
+		tsp->timelimit_secs = total - tsp->timelimit_secs;
+		printf("setting timelimit to %d\n", tsp->timelimit_secs);
 	}
+
+	tsp_starttimer(tsp);
+	CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 
 	if (CPXmipopt(env, lp)) {
 		fprintf(stderr, "Failed to solve the problem\n");
