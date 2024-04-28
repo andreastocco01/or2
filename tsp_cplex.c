@@ -1,4 +1,5 @@
 #include "tsp_cplex.h"
+#include "mincut.h"
 #include "tsp.h"
 #include "tsp_greedy.h"
 #include "util.h"
@@ -128,7 +129,7 @@ int tsp_perm_to_cplex(const struct tsp* tsp, const int* perm, double* cplex_sol,
 		cplex_sol[pos] = 1.0;
 	}
 
-	cplex_sol[xpos(perm[0], perm[tsp->nnodes-1], tsp)] = 1.0;
+	cplex_sol[xpos(perm[0], perm[tsp->nnodes - 1], tsp)] = 1.0;
 
 	return 0;
 }
@@ -616,11 +617,152 @@ free_buffers:
 	return res;
 }
 
+struct violated_cut_callback_data {
+	const struct callback_generate_sec_params* params;
+	CPXCALLBACKCONTEXTptr context;
+};
+
+int add_cut_by_members(const struct tsp* tsp, CPXCALLBACKCONTEXTptr context, int* members, int membercount)
+{
+	int res = 0;
+#ifdef DEBUG
+	/* printf("Add cut for: "); */
+	/* for (int i = 0; i < membercount; i++) { */
+	/* 	printf("%d-", members[i]); */
+	/* } */
+	/* printf("\n"); */
+#endif
+	int max_edges = membercount * membercount; // TODO this is TOO generous
+	char sense = 'L';
+	int izero = 0;
+	int purgeable = CPX_USECUT_PURGE;
+	double rhs = membercount - 1.0;
+	int nnz = 0;
+	int* index = malloc(sizeof(int) * max_edges);
+	double* value = malloc(sizeof(double) * max_edges);
+	for (int i = 0; i < membercount; i++) {
+		for (int j = i + 1; j < membercount; j++) {
+			int node_i = members[i];
+			int node_j = members[j];
+			index[nnz] = xpos(node_i, node_j, tsp);
+			value[nnz] = 1.0;
+			nnz++;
+		}
+	}
+	int valid_only_local = 0;
+	int addres = CPXcallbackaddusercuts(context, 1, nnz, &rhs, &sense, &izero, index, value, &purgeable,
+					    &valid_only_local);
+	if (addres)
+		res = -1;
+	free(index);
+	free(value);
+	return 0;
+}
+
+int violated_cut_callback(double cut_value, int number_nodes, int* members, void* userhandle)
+{
+	const struct violated_cut_callback_data* data = (const struct violated_cut_callback_data*)userhandle;
+	const struct callback_generate_sec_params* params = data->params;
+	const struct tsp* tsp = params->tsp;
+	add_cut_by_members(tsp, data->context, members, number_nodes);
+	return 0;
+}
+
+static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void* userhandle)
+{
+	int res = 0;
+	const struct callback_generate_sec_params* params = (const struct callback_generate_sec_params*)userhandle;
+	const struct tsp* tsp = params->tsp;
+
+	// allocate buffers
+	double* xstar = malloc(sizeof(double) * params->ncols);
+	int* succ = malloc(sizeof(int) * tsp->nnodes);
+	int* comp = malloc(sizeof(int) * tsp->nnodes);
+	double objval = CPX_INFBOUND;
+
+	// retreive candidate solution
+	if (CPXcallbackgetrelaxationpoint(context, xstar, 0, params->ncols - 1, &objval)) {
+		fprintf(stderr, "callbackgetrelaxationpoint failed!\n");
+		res = -1; // triggers an error 1006 in cplex.
+		goto free_buffers;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "Value of candidate is %lf\n", objval);
+#endif
+
+	// input parameters
+	int ncount = tsp->nnodes;
+	int ecount = params->ncols;
+	int* elist = malloc(sizeof(int) * ecount *
+			    2); // I need 2 integers for each edge, representing the nodes it connects
+	// TODO this can be done once for all the callbacks since
+	// it will be always the same!
+	for (int i = 0; i < tsp->nnodes; i++) {
+		for (int j = i + 1; j < tsp->nnodes; j++) {
+			int pos = xpos(i, j, tsp);
+			elist[pos * 2] = i;
+			elist[pos * 2 + 1] = j;
+		}
+	}
+	double* x = xstar; // Value of each edge
+	// output parameters
+	int ncomp;
+	int* compscount;
+	int* comps;
+	int connected_components = CCcut_connect_components(ncount, ecount, elist, x, &ncomp, &compscount, &comps);
+	if (connected_components) {
+		printf("Find connected components failed\n");
+		return -1;
+	}
+
+	/* printf("Connected components are %d\n", ncomp); */
+	/* for(int i=0 ; i < ncomp ; i++) */
+	/* 	printf("%d - %d\n", i, compscount[i]); */
+
+	printf("ncomp = %d\n", ncomp);
+	if (ncomp == 1) {
+		struct violated_cut_callback_data data = {.context = context, .params = params};
+		CCcut_violated_cuts(ncount, ecount, elist, xstar, 1.9, violated_cut_callback, &data);
+	} else {
+		int counter = 0;
+		for (int i = 0; i < ncomp; i++) {
+			/* From the concorde documentation: */
+			/* comps will return the nodes in the components (it will be an */
+			/* ncount array, with the first compscount[0] elements making up */
+			/* the first component, etc.) */
+			add_cut_by_members(tsp, context, comps + counter, compscount[i]);
+			counter += compscount[i];
+		}
+	}
+
+	free(elist);
+	/* free(x); */
+
+free_buffers:
+	free(xstar);
+	free(succ);
+	free(comp);
+
+	return res;
+}
+
+static int CPXPUBLIC callback_dispatch(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void* userhandle)
+{
+	if (contextid == CPX_CALLBACKCONTEXT_CANDIDATE) {
+		return callback_generate_sec(context, contextid, userhandle);
+	}
+	if (contextid == CPX_CALLBACKCONTEXT_RELAXATION) {
+		return callback_fraccut(context, contextid, userhandle);
+	}
+
+	return -1;
+}
+
 int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
 {
 	int beg = 0;
 	int* varindices = malloc(sizeof(int) * ncols);
-	for(int i=0 ; i<ncols ;i++) {
+	for (int i = 0; i < ncols; i++) {
 		varindices[i] = i;
 	}
 	char* name = "Heuristic start";
@@ -631,7 +773,7 @@ int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
 	return res;
 }
 
-int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
 {
 	tsp->solution_permutation = NULL;
 
@@ -679,14 +821,15 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 	};
 
 	CPXLONG contextid = CPX_CALLBACKCONTEXT_CANDIDATE;
-	if (CPXcallbacksetfunc(env, lp, contextid, callback_generate_sec, &params)) {
+	if (fraccut)
+		contextid |= CPX_CALLBACKCONTEXT_RELAXATION;
+	if (CPXcallbacksetfunc(env, lp, contextid, callback_dispatch, &params)) {
 		fprintf(stderr, "Can't set callback function!\n");
 		res = -1;
 		goto free_prob;
 	}
 
-
-	if(warmstart) {
+	if (warmstart) {
 		int total = tsp->timelimit_secs;
 		tsp->timelimit_secs = total / 10;
 		// warm start: find a solution using an heuristic and pass it to CPLEX
@@ -701,7 +844,7 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart)
 		double* warm_solution = malloc(sizeof(double) * ncols);
 		tsp_perm_to_cplex(tsp, tsp->solution_permutation, warm_solution, ncols);
 		int addwarmres = cplex_add_start(env, lp, warm_solution, ncols);
-		if(addwarmres) {
+		if (addwarmres) {
 			fprintf(stderr, "Can't add mip start\n");
 		}
 		free(warm_solution);
