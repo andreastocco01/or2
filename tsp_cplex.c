@@ -636,6 +636,7 @@ int add_cut_by_members(const struct tsp* tsp, CPXCALLBACKCONTEXTptr context, int
 	char sense = 'L';
 	int izero = 0;
 	int purgeable = CPX_USECUT_PURGE;
+	/* int purgeable = CPX_USECUT_FORCE; */
 	double rhs = membercount - 1.0;
 	int nnz = 0;
 	int* index = malloc(sizeof(int) * max_edges);
@@ -672,9 +673,8 @@ static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG con
 {
 	CPXINT nodeid;
 	CPXcallbackgetinfoint(context, CPXCALLBACKINFO_NODEUID, &nodeid);
-	if(!(nodeid % 10))
+	if (!(nodeid % 10))
 		return 0; // so the callback is executed 1/10 of the times
-
 
 	int res = 0;
 	const struct callback_generate_sec_params* params = (const struct callback_generate_sec_params*)userhandle;
@@ -725,7 +725,9 @@ static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG con
 	/* for(int i=0 ; i < ncomp ; i++) */
 	/* 	printf("%d - %d\n", i, compscount[i]); */
 
-	printf("ncomp = %d\n", ncomp);
+#ifdef DEBUG
+	fprintf(stderr, "ncomp = %d\n", ncomp);
+#endif
 	if (ncomp == 1) {
 		struct violated_cut_callback_data data = {.context = context, .params = params};
 		CCcut_violated_cuts(ncount, ecount, elist, xstar, 1.9, violated_cut_callback, &data);
