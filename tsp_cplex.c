@@ -656,7 +656,7 @@ int add_cut_by_members(const struct tsp* tsp, CPXCALLBACKCONTEXTptr context, int
 		res = -1;
 	free(index);
 	free(value);
-	return 0;
+	return res;
 }
 
 int violated_cut_callback(double cut_value, int number_nodes, int* members, void* userhandle)
