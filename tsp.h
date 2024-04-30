@@ -12,8 +12,6 @@
 #define DEBUGOUT_PATCHED        DEBUGOUT_BASE "patched_%04d.csv"
 #define DEBUGOUT_PATCHED2OPT    DEBUGOUT_BASE "patched_2opt_%04d.csv"
 
-#include <time.h>
-
 struct point {
 	double x;
 	double y;
@@ -52,6 +50,7 @@ typedef double (*tsp_costfunction)(double xi, double xj, double yi, double yj);
 int nint(double x);
 
 double tsp_costfunction_att(double xi, double xj, double yi, double yj);
+double tsp_costfunction_euc2dint(double xi, double xj, double yi, double yj);
 double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj);
 
 int tsp_solve_cplex(struct tsp* tsp);

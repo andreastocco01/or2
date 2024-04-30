@@ -336,6 +336,15 @@ double tsp_costfunction_att(double xi, double xj, double yi, double yj)
 	return dij;
 }
 
+double tsp_costfunction_euc2dint(double xi, double xj, double yi, double yj)
+{
+	double deltax = (xi - xj);
+	double deltay = (yi - yj);
+	double sqdist = deltax * deltax + deltay * deltay;
+	int arr = (sqrt(sqdist) + 0.5);
+	return arr;
+}
+
 double tsp_costfunction_euclidian(double xi, double xj, double yi, double yj)
 {
 	double deltax = (xi - xj);
