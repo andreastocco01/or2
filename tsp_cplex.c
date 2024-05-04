@@ -673,7 +673,7 @@ static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG con
 {
 	CPXINT nodeid;
 	CPXcallbackgetinfoint(context, CPXCALLBACKINFO_NODEUID, &nodeid);
-	if (!(nodeid % 10))
+	if (nodeid % 10)
 		return 0; // so the callback is executed 1/10 of the times
 
 	int res = 0;
@@ -857,7 +857,7 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
 		}
 		free(warm_solution);
 		tsp->timelimit_secs = total - tsp->timelimit_secs;
-		printf("setting timelimit to %d\n", tsp->timelimit_secs);
+		fprintf(stderr, "setting timelimit to %d\n", tsp->timelimit_secs);
 	}
 
 	tsp_starttimer(tsp);

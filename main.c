@@ -89,6 +89,9 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_branchcut(tsp, 1, 0);
 	}
 	if (config == 6) {
+		return tsp_solve_branchcut(tsp, 1, 1);
+	}
+	if (config == 7) {
 		return tsp_solve_branchcut(tsp, 0, 1);
 	}
 	return -1;
