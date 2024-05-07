@@ -665,8 +665,7 @@ int violated_cut_callback(double cut_value, int number_nodes, int* members, void
 	const struct violated_cut_callback_data* data = (const struct violated_cut_callback_data*)userhandle;
 	const struct callback_generate_sec_params* params = data->params;
 	const struct tsp* tsp = params->tsp;
-	add_cut_by_members(tsp, data->context, members, number_nodes);
-	return 0;
+	return add_cut_by_members(tsp, data->context, members, number_nodes);
 }
 
 static int CPXPUBLIC callback_fraccut(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void* userhandle)
@@ -869,7 +868,8 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
 		goto free_prob;
 	}
 
-	// TODO check if cplex exited due to time limit reached
+	// TODO check the status
+
 
 	double objval;
 	CPXgetobjval(env, lp, &objval);
