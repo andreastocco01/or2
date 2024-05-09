@@ -1,4 +1,5 @@
 #include "tsp_cplex.h"
+#include "ilcplex/cplex.h"
 #include "mincut.h"
 #include "tsp.h"
 #include "tsp_greedy.h"
@@ -575,6 +576,9 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 	double* xstar = malloc(sizeof(double) * params->ncols);
 	int* succ = malloc(sizeof(int) * tsp->nnodes);
 	int* comp = malloc(sizeof(int) * tsp->nnodes);
+	int* patched = malloc(sizeof(int) * tsp->nnodes);
+	int* perm = malloc(sizeof(int) * tsp->nnodes);
+	double* cplex_solution = malloc(sizeof(double) * params->ncols);
 	int ncomp;
 	double objval = CPX_INFBOUND;
 
@@ -610,7 +614,54 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 		goto free_buffers;
 	}
 
+	// patch the solution
+	tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
+
+	// convert from successors to permutation
+	if (tsp_succ_to_perm(tsp, patched, perm)) {
+		fprintf(stderr, "Can't convert solution\n");
+		res = -1;
+		goto free_buffers;
+	}
+
+	// perform 2opt
+	double cost = tsp_recompute_solution_arg(tsp, perm);
+	tsp_2opt_swap_arg(tsp, perm, &cost);
+
+	// convert from permutation to cplex format
+	tsp_perm_to_cplex(tsp, perm, cplex_solution, params->ncols);
+
+	print_array_double(cplex_solution, params->ncols);
+
+	int cnt = 0;
+	double* val = malloc(sizeof(double) * params->ncols);
+	int* ind = malloc(sizeof(int) * params->ncols);
+	for (int i = 0; i < params->ncols; i++) {
+		if (cplex_solution[i] != 0) {
+			val[cnt] = cplex_solution[i];
+			ind[cnt] = i;
+			cnt++;
+		}
+	}
+
+	print_array_double(val, params->ncols);
+	print_array_int(ind, params->ncols);
+	printf("%d\n", cnt);
+	printf("%f\n", cost);
+
+	int err;
+	if ((err = CPXcallbackpostheursoln(context, cnt, ind, val, cost, CPXCALLBACKSOLUTION_CHECKFEAS))) {
+		fprintf(stderr, "Failed to add heuristic solution: %d\n", err);
+		res = -1;
+		goto free_buffers;
+	}
+	free(val);
+	free(ind);
+
 free_buffers:
+	free(cplex_solution);
+	free(perm);
+	free(patched);
 	free(xstar);
 	free(succ);
 	free(comp);
@@ -869,7 +920,6 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
 	}
 
 	// TODO check the status
-
 
 	double objval;
 	CPXgetobjval(env, lp, &objval);
