@@ -576,10 +576,10 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 	double* xstar = malloc(sizeof(double) * params->ncols);
 	int* succ = malloc(sizeof(int) * tsp->nnodes);
 	int* comp = malloc(sizeof(int) * tsp->nnodes);
+	int ncomp;
 	int* patched = malloc(sizeof(int) * tsp->nnodes);
 	int* perm = malloc(sizeof(int) * tsp->nnodes);
 	double* cplex_solution = malloc(sizeof(double) * params->ncols);
-	int ncomp;
 	double objval = CPX_INFBOUND;
 
 	// retreive candidate solution
@@ -629,33 +629,47 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 	tsp_2opt_swap_arg(tsp, perm, &cost);
 
 	// convert from permutation to cplex format
-	tsp_perm_to_cplex(tsp, perm, cplex_solution, params->ncols);
-
-	print_array_double(cplex_solution, params->ncols);
-
-	int cnt = 0;
-	double* val = malloc(sizeof(double) * params->ncols);
-	int* ind = malloc(sizeof(int) * params->ncols);
-	for (int i = 0; i < params->ncols; i++) {
-		if (cplex_solution[i] != 0) {
-			val[cnt] = cplex_solution[i];
-			ind[cnt] = i;
-			cnt++;
-		}
+	if (tsp_perm_to_cplex(tsp, perm, cplex_solution, params->ncols)) {
+		fprintf(stderr, "Failed to convert from perm to cplex\n");
+		res = -1;
+		goto free_buffers;
 	}
 
-	print_array_double(val, params->ncols);
-	print_array_int(ind, params->ncols);
-	printf("%d\n", cnt);
-	printf("%f\n", cost);
+	// print_array_double(cplex_solution, params->ncols);
+
+	// int cnt = 0;
+	// double* val = malloc(sizeof(double) * params->ncols);
+	// int* ind = malloc(sizeof(int) * params->ncols);
+	// for (int i = 0; i < params->ncols; i++) {
+	// 	if (cplex_solution[i] != 0) {
+	// 		val[cnt] = cplex_solution[i];
+	// 		ind[cnt] = i;
+	// 		cnt++;
+	// 	}
+	// }
+
+	// print_array_double(val, params->ncols);
+	// print_array_int(ind, params->ncols);
+	// printf("%d\n", cnt);
+	// printf("%f\n", cost);
+
+	int* ind = malloc(sizeof(int) * params->ncols);
+	for (int i = 0; i < params->ncols; i++) {
+		ind[i] = i;
+	}
 
 	int err;
-	if ((err = CPXcallbackpostheursoln(context, cnt, ind, val, cost, CPXCALLBACKSOLUTION_CHECKFEAS))) {
+	if ((err = CPXcallbackpostheursoln(context, params->ncols, ind, cplex_solution, cost,
+					   CPXCALLBACKSOLUTION_NOCHECK))) {
 		fprintf(stderr, "Failed to add heuristic solution: %d\n", err);
 		res = -1;
 		goto free_buffers;
 	}
-	free(val);
+
+#ifdef DEBUG
+	printf("Heuristic solution added\n");
+#endif
+	// free(val);
 	free(ind);
 
 free_buffers:
