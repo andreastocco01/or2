@@ -99,9 +99,9 @@ void debug_print_coords(struct tsp* tsp);
  * Compute the delta that would be obtained by applying
  * the 2opt procedure on the given indices
  * */
-double compute_delta(struct tsp* tsp, int* solution, int i, int j);
+double compute_delta(const struct tsp* tsp, int* solution, int i, int j);
 
-int tsp_2opt_swap_arg(struct tsp* tsp, int* permutation, double* permutation_cost);
+int tsp_2opt_swap_arg(const struct tsp* tsp, int* permutation, double* permutation_cost);
 
 /**
  * Executes a 2-opt swap and updates the current solution.
@@ -120,7 +120,7 @@ int tsp_2opt_swap_save(struct tsp* tsp,
  *
  * returns the value of the delta
  * */
-double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* best_j);
+double tsp_2opt_findbestswap(const struct tsp* tsp, int* solution, int* best_i, int* best_j);
 
 /**
  * Execute the 2opt swap operation on a solution
@@ -130,7 +130,7 @@ void tsp_2opt_swap(int left, int right, int* solution);
 /**
  * Compute the cost of a solution passed as argument
  * */
-double tsp_recompute_solution_arg(struct tsp* tsp, int* solution);
+double tsp_recompute_solution_arg(const struct tsp* tsp, int* solution);
 
 /**
  * Compute the cost of the solution inside the struct
@@ -194,7 +194,7 @@ double tsp_getremainingseconds(struct tsp* tsp);
  *
  * Returns 0 if success, 1 if fails.
  * */
-int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm);
+int tsp_succ_to_perm(const struct tsp* tsp, const int* succ, int* perm);
 
 void tsp_print_perm_file(struct tsp* tsp, int* permutation, char* filename);
 

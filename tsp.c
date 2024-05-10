@@ -191,7 +191,7 @@ int tsp_compute_costs(struct tsp* tsp, tsp_costfunction costfunction)
 	return 0;
 }
 
-double compute_delta(struct tsp* tsp, int* solution, int i, int j)
+double compute_delta(const struct tsp* tsp, int* solution, int i, int j)
 {
 	double
 	    distance_prev = tsp->cost_matrix[flatten_coords(solution[i], solution[i + 1], tsp->nnodes)] +
@@ -218,7 +218,7 @@ int tsp_2opt_swap_save(struct tsp* tsp,
 	return 0;
 }
 
-double tsp_recompute_solution_arg(struct tsp* tsp, int* solution)
+double tsp_recompute_solution_arg(const struct tsp* tsp, int* solution)
 {
 	if (solution == NULL)
 		return -1;
@@ -293,7 +293,7 @@ int tsp_is_solution(struct tsp* tsp)
 	return tsp_is_solution_arg(tsp->solution_permutation, tsp->nnodes);
 }
 
-double tsp_2opt_findbestswap(struct tsp* tsp, int* solution, int* best_i, int* best_j)
+double tsp_2opt_findbestswap(const struct tsp* tsp, int* solution, int* best_i, int* best_j)
 {
 	double best_delta = -10e30;
 	for (int i = 0; i < tsp->nnodes - 2; i++) {
@@ -385,7 +385,7 @@ double tsp_getremainingseconds(struct tsp* tsp)
 	return ((double)tsp->timelimit_secs) - elapsedseconds;
 }
 
-int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm)
+int tsp_succ_to_perm(const struct tsp* tsp, const int* succ, int* perm)
 {
 	int* visited = calloc(tsp->nnodes, sizeof(int));
 	int perm_pointer = 0;
@@ -419,7 +419,7 @@ int tsp_succ_to_perm(struct tsp* tsp, const int* succ, int* perm)
 	return res;
 }
 
-int tsp_2opt_swap_arg(struct tsp* tsp, int* permutation, double* permutation_cost)
+int tsp_2opt_swap_arg(const struct tsp* tsp, int* permutation, double* permutation_cost)
 {
 	while (1) {
 		int best_i, best_j;

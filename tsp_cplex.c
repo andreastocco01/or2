@@ -281,7 +281,7 @@ void tsp_print_loops_file(struct tsp* tsp, int* succ, char* filename)
 	free(visited);
 }
 
-void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int ncomp, int* succout)
+void tsp_cplex_patchonce(const struct tsp* tsp, const int* succin, int* start, int ncomp, int* succout)
 {
 	// find the best patch
 	double best_delta = 10e30;
@@ -331,7 +331,7 @@ void tsp_cplex_patchonce(struct tsp* tsp, const int* succin, int* start, int nco
 	start[ncomp] = temp;
 }
 
-void tsp_compute_comp_start(struct tsp* tsp, int* comp, int ncomp, int* start)
+void tsp_compute_comp_start(const struct tsp* tsp, int* comp, int ncomp, int* start)
 {
 	// initialize start
 	for (int i = 0; i < ncomp + 1; i++)
@@ -344,7 +344,7 @@ void tsp_compute_comp_start(struct tsp* tsp, int* comp, int ncomp, int* start)
 	}
 }
 
-void tsp_cplex_patch_comp(struct tsp* tsp, const int* succin, int* comp, int ncomp, int* succout)
+void tsp_cplex_patch_comp(const struct tsp* tsp, const int* succin, int* comp, int ncomp, int* succout)
 {
 	int* start = malloc(sizeof(int) * (ncomp + 1));
 	tsp_compute_comp_start(tsp, comp, ncomp, start);
@@ -521,6 +521,7 @@ free_cplex:
 struct callback_generate_sec_params {
 	const struct tsp* tsp;
 	int ncols;
+	int post_heuristic;
 };
 
 static int callback_generate_sec_addsec(CPXCALLBACKCONTEXTptr context,
@@ -614,63 +615,66 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 		goto free_buffers;
 	}
 
-	// patch the solution
-	tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
+	if (params->post_heuristic) {
 
-	// convert from successors to permutation
-	if (tsp_succ_to_perm(tsp, patched, perm)) {
-		fprintf(stderr, "Can't convert solution\n");
-		res = -1;
-		goto free_buffers;
-	}
+		// patch the solution
+		tsp_cplex_patch_comp(tsp, succ, comp, ncomp, patched);
 
-	// perform 2opt
-	double cost = tsp_recompute_solution_arg(tsp, perm);
-	tsp_2opt_swap_arg(tsp, perm, &cost);
+		// convert from successors to permutation
+		if (tsp_succ_to_perm(tsp, patched, perm)) {
+			fprintf(stderr, "Can't convert solution\n");
+			res = -1;
+			goto free_buffers;
+		}
 
-	// convert from permutation to cplex format
-	if (tsp_perm_to_cplex(tsp, perm, cplex_solution, params->ncols)) {
-		fprintf(stderr, "Failed to convert from perm to cplex\n");
-		res = -1;
-		goto free_buffers;
-	}
+		// perform 2opt
+		double cost = tsp_recompute_solution_arg(tsp, perm);
+		tsp_2opt_swap_arg(tsp, perm, &cost);
 
-	// print_array_double(cplex_solution, params->ncols);
+		// convert from permutation to cplex format
+		if (tsp_perm_to_cplex(tsp, perm, cplex_solution, params->ncols)) {
+			fprintf(stderr, "Failed to convert from perm to cplex\n");
+			res = -1;
+			goto free_buffers;
+		}
 
-	// int cnt = 0;
-	// double* val = malloc(sizeof(double) * params->ncols);
-	// int* ind = malloc(sizeof(int) * params->ncols);
-	// for (int i = 0; i < params->ncols; i++) {
-	// 	if (cplex_solution[i] != 0) {
-	// 		val[cnt] = cplex_solution[i];
-	// 		ind[cnt] = i;
-	// 		cnt++;
-	// 	}
-	// }
+		// print_array_double(cplex_solution, params->ncols);
 
-	// print_array_double(val, params->ncols);
-	// print_array_int(ind, params->ncols);
-	// printf("%d\n", cnt);
-	// printf("%f\n", cost);
+		// int cnt = 0;
+		// double* val = malloc(sizeof(double) * params->ncols);
+		// int* ind = malloc(sizeof(int) * params->ncols);
+		// for (int i = 0; i < params->ncols; i++) {
+		// 	if (cplex_solution[i] != 0) {
+		// 		val[cnt] = cplex_solution[i];
+		// 		ind[cnt] = i;
+		// 		cnt++;
+		// 	}
+		// }
 
-	int* ind = malloc(sizeof(int) * params->ncols);
-	for (int i = 0; i < params->ncols; i++) {
-		ind[i] = i;
-	}
+		// print_array_double(val, params->ncols);
+		// print_array_int(ind, params->ncols);
+		// printf("%d\n", cnt);
+		// printf("%f\n", cost);
 
-	int err;
-	if ((err = CPXcallbackpostheursoln(context, params->ncols, ind, cplex_solution, cost,
-					   CPXCALLBACKSOLUTION_NOCHECK))) {
-		fprintf(stderr, "Failed to add heuristic solution: %d\n", err);
-		res = -1;
-		goto free_buffers;
-	}
+		int* ind = malloc(sizeof(int) * params->ncols);
+		for (int i = 0; i < params->ncols; i++) {
+			ind[i] = i;
+		}
+
+		int err;
+		if ((err = CPXcallbackpostheursoln(context, params->ncols, ind, cplex_solution, cost,
+						   CPXCALLBACKSOLUTION_NOCHECK))) {
+			fprintf(stderr, "Failed to add heuristic solution: %d\n", err);
+			res = -1;
+			goto free_buffers;
+		}
 
 #ifdef DEBUG
-	printf("Heuristic solution added\n");
+		printf("Heuristic solution added\n");
 #endif
-	// free(val);
-	free(ind);
+		// free(val);
+		free(ind);
+	}
 
 free_buffers:
 	free(cplex_solution);
@@ -845,7 +849,7 @@ int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
 	return res;
 }
 
-int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic)
 {
 	tsp->solution_permutation = NULL;
 
@@ -890,6 +894,7 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut)
 	struct callback_generate_sec_params params = {
 	    .tsp = tsp,
 	    .ncols = ncols,
+	    .post_heuristic = post_heuristic,
 	};
 
 	CPXLONG contextid = CPX_CALLBACKCONTEXT_CANDIDATE;
