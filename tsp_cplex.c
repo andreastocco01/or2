@@ -638,24 +638,6 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 			goto free_buffers;
 		}
 
-		// print_array_double(cplex_solution, params->ncols);
-
-		// int cnt = 0;
-		// double* val = malloc(sizeof(double) * params->ncols);
-		// int* ind = malloc(sizeof(int) * params->ncols);
-		// for (int i = 0; i < params->ncols; i++) {
-		// 	if (cplex_solution[i] != 0) {
-		// 		val[cnt] = cplex_solution[i];
-		// 		ind[cnt] = i;
-		// 		cnt++;
-		// 	}
-		// }
-
-		// print_array_double(val, params->ncols);
-		// print_array_int(ind, params->ncols);
-		// printf("%d\n", cnt);
-		// printf("%f\n", cost);
-
 		int* ind = malloc(sizeof(int) * params->ncols);
 		for (int i = 0; i < params->ncols; i++) {
 			ind[i] = i;
