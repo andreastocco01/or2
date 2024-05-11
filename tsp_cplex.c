@@ -661,9 +661,9 @@ static int CPXPUBLIC callback_generate_sec(CPXCALLBACKCONTEXTptr context, CPXLON
 			ind[i] = i;
 		}
 
-		int err;
-		if ((err = CPXcallbackpostheursoln(context, params->ncols, ind, cplex_solution, cost,
-						   CPXCALLBACKSOLUTION_NOCHECK))) {
+		int err = CPXcallbackpostheursoln(context, params->ncols, ind, cplex_solution, cost,
+						  CPXCALLBACKSOLUTION_NOCHECK);
+		if (err) {
 			fprintf(stderr, "Failed to add heuristic solution: %d\n", err);
 			res = -1;
 			goto free_buffers;
