@@ -320,6 +320,26 @@ It is important to know that the number of SECs is exponential in the number of
 the nodes. Hence, it is infeasible to generate all of them from the beginning
 with the size of the instances we are interested in. We will show more than
 one way to add them dynamically.
+
+\subsection{Benders' loops}
+The first technique we will explore is the so called ``Benders' loops'' technique.
+The basic idea behind this approach is the iterated use of a MIP solver (like CPLEX)
+as a black-box. More precisely, we will start by providing the solver with
+a model lacking all the separation constraints. The solution of this model,
+with all probability, is going to contain more than one loop. We will then
+generate some constraints "cutting" the solution we have found.
+The model, updated with the new constraints, is then passed to the solver
+and solved again. This loop will be repeated until a solution composed by
+only one component is found.
+The process is described in Figure~\ref{fig:benders}.
+
+\begin{figure}[h]
+        \caption{Solving using Benders' loops}
+        \label{fig:benders}
+        \centering
+        \includegraphics[width=340pt]{assets/bendersloops.drawio.pdf}
+\end{figure}
+
 \section{Results}
 
 \end{document}
