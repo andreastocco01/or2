@@ -22,17 +22,17 @@
 \begin{abstract}
 	The Traveling Salesman Problem (TSP) is one of the most intensively studied problems in optimization.
 	It asks the following question:\\\\
-	\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route 
+	\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route
 	that visits each city exactly once and returns to the origin city?}\\\\
 	TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact algorithms} to solve it.
-	In this thesis we are going to show and compare the performances of these algorithms. 
+	In this thesis we are going to show and compare the performances of these algorithms.
 \end{abstract}
 
 \section{Introduction}
-In this study we focus on evaluating the performance of two heuristic algorithms: the \textit{Greedy} algorithm with \textit{2-opt} 
+In this study we focus on evaluating the performance of two heuristic algorithms: the \textit{Greedy} algorithm with \textit{2-opt}
 optimization and the \textit{Tabu Search} algorithm.
 The Greedy algorithm, starting from every possible node of the instance, tries to find the optimal solution always updating the path
-with the closest node. To improve the performance of this algorithm, after that, we apply also the 2-opt algorithm, to remove 
+with the closest node. To improve the performance of this algorithm, after that, we apply also the 2-opt algorithm, to remove
 the intersection between the edges of the path.
 On the other hand, the Tabu Search algorithm, starting from a random node, tries to `move`... TODO
 
@@ -272,7 +272,54 @@ Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
 \end{algorithmic}
 \end{algorithm}
 
+\clearpage
+
 \section{Exact Methods}
+Although, as we will see, a good heuristic can achieve very good results, it is also
+important to consider approaches that lead to an optimal solution of the
+TSP problem.
+
+All of the techniques that we will cover are based on integer linear programming. It is
+hence useful to provide an integer linear formulation for the problem.
+Many formulations exist, but the one we will focus on is the one proposed by
+Dantzig, Fulkerson and Johnson. % TODO cite https://pubsonline.informs.org/doi/10.1287/opre.2.4.393
+
+Initally we define an undirected complete graph $G=(V, E)$.
+We will the use $c_e : E \rightarrow \mathbb{R}^+$ to indicate the cost of
+an edge.
+One of the ways to compute this cost function is to place all the points
+on a 2d surface and compute their eucledian distance.
+
+The variables of this model are
+\begin{equation*}
+        x_e =
+        \left\{
+                \begin{array}{l}
+                1 \text{ the path uses edge $e$}\\
+                0 \text{ otherwise }
+        \end{array}
+        \right.
+\end{equation*}
+
+The model, that makes use of the subtour elimination constraints, is the
+following
+\begin{equation}
+  \begin{aligned}
+\min & \sum_{e \in E} c_e x_e \\
+\text{s.t.}
+& \sum_{e \in \delta(h)} x_{e} = 2 \quad \forall h \in V \\
+& \sum_{e \in E(S)} x_{e} \leq |S| - 1 \quad \forall S \subset V : |S| \geq 3 \\
+& x_{e} \in \{0, 1\} \quad \forall e \in E.
+\end{aligned}
+\end{equation}
+$\delta(h)$, where $h$ is a node, is defined as the set of edges that are
+incident to $h$. $E(S)$, where $S$ is a set of nodes, is the est of all the
+the edges with both extremities in $S$.
+
+It is important to know that the number of SECs is exponential in the number of
+the nodes. Hence, it is infeasible to generate all of them from the beginning
+with the size of the instances we are interested in. We will show more than
+one way to add them dynamically.
 \section{Results}
 
 \end{document}
