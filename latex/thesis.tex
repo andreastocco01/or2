@@ -33,7 +33,7 @@
 TODO
 
 \section{Heuristics}
-Heuristics are algorithms to determine a near-optimal solution to an optimization problem. In certain scenarios, 
+Heuristics are algorithms to determine a near-optimal solution to an optimization problem. In certain scenarios,
 exact methods aren't able to provide the optimal solution in a reasonable amount of time or they can't find it
 at all. In contrast, a heuristic is generally capable of offering a solution that is more or less close to
 the optimal one.
@@ -221,7 +221,7 @@ A small tenure can be problematic because we cannot escape the local minimum far
 tabu list. Having a variable tenure can sometimes, on the long run, avoid the drawbacks of a fixed approach.
 
 \subsection{VNS (Variable Neighborhood Search)}
-In \textit{Tabu Search} we have seen two different phases: 
+In \textit{Tabu Search} we have seen two different phases:
 \begin{itemize}
 	\item the \textit{Intensification Phase} to move towards a better solution
 	\item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
@@ -382,6 +382,17 @@ Figure~\ref{fig:callback}.
         \centering
         \includegraphics[width=340pt]{assets/callback.drawio.pdf}
 \end{figure}
+
+As we can see in the the diagram, we will need a way to generate valid cuts
+whenever the MIP solver has a new canditate solution. To do this we ``install''
+a callback. CPLEX allows us to pass a function to it, that will be called when
+a specific condition is met. In our case we will use one that is called when CPLEX
+has found a new candidate for an integer-feasible solution.
+% TODO maybe be more specific about the name of the condition
+
+Inside this function we will count the number of components. If the number of
+components is greater then one, we will generate the corresponding subtour
+elimination constraints and reject the solution.
 
 \section{Results}
 \label{sec:results}
