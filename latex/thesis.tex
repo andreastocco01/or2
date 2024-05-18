@@ -21,20 +21,16 @@
 
 \begin{abstract}
 	The Traveling Salesman Problem (TSP) is one of the most intensively studied problems in optimization.
-	It asks the following question:\\\\
+	It asks the following question:
 	\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route
-	that visits each city exactly once and returns to the origin city?}\\\\
-	TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact algorithms} to solve it.
-	In this thesis we are going to show and compare the performances of these algorithms.
+	that visits each city exactly once and returns to the origin city?}
+	TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact ways} to solve it.
+	In this thesis we are going to show and compare the performances of these
+        techniques.
 \end{abstract}
 
 \section{Introduction}
-In this study we focus on evaluating the performance of two heuristic algorithms: the \textit{Greedy} algorithm with \textit{2-opt}
-optimization and the \textit{Tabu Search} algorithm.
-The Greedy algorithm, starting from every possible node of the instance, tries to find the optimal solution always updating the path
-with the closest node. To improve the performance of this algorithm, after that, we apply also the 2-opt algorithm, to remove
-the intersection between the edges of the path.
-On the other hand, the Tabu Search algorithm, starting from a random node, tries to `move`... TODO
+TODO
 
 \section{Heuristics}
 Heuristics are algorithms to determine a near-optimal solution to an optimization problem. In certain scenarios, 
@@ -318,11 +314,15 @@ the edges with both extremities in $S$.
 
 It is important to know that the number of SECs is exponential in the number of
 the nodes. Hence, it is infeasible to generate all of them from the beginning
-with the size of the instances we are interested in. We will show more than
-one way to add them dynamically.
+with the size of the instances we are interested in.
 
+The techniques that will be shown in this section are different ways to generate
+the subtour elimination constraints. We will use CPLEX to solve the MIP
+problems.
+% TODO more on cplex
 \subsection{Benders' loops}
-The first technique we will explore is the so called ``Benders' loops'' technique.
+\label{ssec:benders}
+The first technique we will explore is the so-called ``Benders' loops'' technique.
 The basic idea behind this approach is the iterated use of a MIP solver (like CPLEX)
 as a black-box. More precisely, we will start by providing the solver with
 a model lacking all the separation constraints. The solution of this model,
@@ -340,6 +340,50 @@ The process is described in Figure~\ref{fig:benders}.
         \includegraphics[width=340pt]{assets/bendersloops.drawio.pdf}
 \end{figure}
 
+It is very important to note that the ``optimal solution'' output of the
+MIP solver is not the optimal solution of the TSP problem (exception made
+for the last iteration of the loop). That solution is optimal only for the
+current set of subtour elimination constraints.
+
+As we will see in Section~\ref{sec:results}, although this method allows us to
+solve some instances it has a major flow. By using the MIP solver as a black
+box, we have to restart the all the process every time a new solution (that
+contains subtours) is found. This creates on big problem: the branch-and-bound
+tree will be discarded and the search for the optimal solution will start again.
+Even though throwing away the search tree can be beneficial sometimes % TODO add dyamic search citation
+it needs to be done following some precise criteria and at the correct time.
+
+\subsubsection{Patching}
+
+% TODO talk about patching
+
+\subsection{Callback}
+The technique that will be presented in this section solves the problem
+described in Section~\ref{ssec:benders} by generating the constraints when
+the MIP solver finds a new canditate solution. In order to achieve this,
+CPLEX provides us a C interface that we can use to control the execution
+of the branch-and-cut.
+
+The process will go as follows: first, we will provide the solver with the
+ILP model, without the cuts. Whenever the solver finds a candidate solution,
+the execution will pass to a function that we have defined. This function
+will count the number of tours present in the solution. If this number is $1$,
+hence the solution is feasbile, we return from the function and pass the
+execution back to the solver. If the ``tour'' is composed by many subtours,
+we will generate the approriate cuts before returning the exectution to
+cplex.
+
+It is possible to see a visual description of the process in
+Figure~\ref{fig:callback}.
+
+\begin{figure}[h]
+        \caption{Solving using candidate callback}
+        \label{fig:callback}
+        \centering
+        \includegraphics[width=340pt]{assets/callback.drawio.pdf}
+\end{figure}
+
 \section{Results}
+\label{sec:results}
 
 \end{document}
