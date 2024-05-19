@@ -18,7 +18,6 @@ int fix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, double percentage, in
 	srand(tsp->seed);
 	char bound;
 	double bound_value;
-	print_array_double(cplex_solution, ncols);
 	for (int i = 0; i < ncols; i++) {
 		double r = ((double)rand()) / RAND_MAX;
 		if (r <= percentage) {
