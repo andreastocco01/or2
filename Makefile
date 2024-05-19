@@ -24,7 +24,8 @@ BUILD_OBJS = tsp.o \
 	eventlog.o \
 	tsp_instance.o \
 	chrono.o \
-	mincut.o
+	mincut.o \
+	tsp_diving.o
 
 all: main
 

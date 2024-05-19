@@ -7,7 +7,7 @@
 int tsp_build_lpmodel(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
 int tsp_cplex_savesolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
 int tsp_solve_benders(struct tsp* tsp, int patching);
-int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic);
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic, int using_matheuristic);
 
 /**
  * Converts a solution from the "permutation" format to the cplex format
@@ -17,5 +17,6 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_he
  * Returns 0 if success, 1 if fails.
  * */
 int tsp_perm_to_cplex(const struct tsp* tsp, const int* perm, double* cplex_sol, int ncols);
+int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
 
 #endif

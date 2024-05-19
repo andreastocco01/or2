@@ -831,7 +831,34 @@ int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
 	return res;
 }
 
-int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic)
+int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
+{
+	int total = tsp->timelimit_secs;
+	tsp->timelimit_secs = total / 10;
+	// warm start: find a solution using an heuristic and pass it to CPLEX
+
+	int greedyres = tsp_solve_multigreedy(tsp);
+	if (greedyres) {
+		fprintf(stderr, "Can't generate heuristic\n");
+		return 1;
+	} else {
+		fprintf(stderr, "Generated heuristic with cost %lf\n", tsp->solution_value);
+	}
+
+	int ncols = CPXgetnumcols(env, lp);
+	double* warm_solution = malloc(sizeof(double) * ncols);
+	tsp_perm_to_cplex(tsp, tsp->solution_permutation, warm_solution, ncols);
+	int addwarmres = cplex_add_start(env, lp, warm_solution, ncols);
+	if (addwarmres) {
+		fprintf(stderr, "Can't add mip start\n");
+	}
+	free(warm_solution);
+	tsp->timelimit_secs = total - tsp->timelimit_secs;
+	fprintf(stderr, "setting timelimit to %d\n", tsp->timelimit_secs);
+	return 0;
+}
+
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic, int using_matheuristic)
 {
 	tsp->solution_permutation = NULL;
 
@@ -889,29 +916,14 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_he
 	}
 
 	if (warmstart) {
-		int total = tsp->timelimit_secs;
-		tsp->timelimit_secs = total / 10;
-		// warm start: find a solution using an heuristic and pass it to CPLEX
-
-		int greedyres = tsp_solve_multigreedy(tsp);
-		if (greedyres) {
-			fprintf(stderr, "Can't generate heuristic\n");
-		} else {
-			fprintf(stderr, "Generated heuristic with cost %lf\n", tsp->solution_value);
+		if (cplex_warm_start(tsp, env, lp)) {
+			res = -1;
+			goto free_prob;
 		}
-
-		double* warm_solution = malloc(sizeof(double) * ncols);
-		tsp_perm_to_cplex(tsp, tsp->solution_permutation, warm_solution, ncols);
-		int addwarmres = cplex_add_start(env, lp, warm_solution, ncols);
-		if (addwarmres) {
-			fprintf(stderr, "Can't add mip start\n");
-		}
-		free(warm_solution);
-		tsp->timelimit_secs = total - tsp->timelimit_secs;
-		fprintf(stderr, "setting timelimit to %d\n", tsp->timelimit_secs);
 	}
 
-	tsp_starttimer(tsp);
+	if (!using_matheuristic)
+		tsp_starttimer(tsp);
 	CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 
 	if (CPXmipopt(env, lp)) {
