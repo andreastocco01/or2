@@ -2,22 +2,44 @@
 #include "ilcplex/cplex.h"
 #include "tsp.h"
 #include "tsp_cplex.h"
+#include "util.h"
 #include <stdlib.h>
 #include <string.h>
 
-int fix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, double percentage)
+int fix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, double percentage, int* solution_permutation)
 {
 	int ncols = CPXgetnumcols(env, lp);
-
+	double* cplex_solution = malloc(sizeof(double) * ncols);
+	if (tsp_perm_to_cplex(tsp, solution_permutation, cplex_solution, ncols)) {
+		fprintf(stderr, "Failed to convert from perm to cplex\n");
+		free(cplex_solution);
+		return 1;
+	}
 	srand(tsp->seed);
-	char bound = 'L';
-	double bound_value = 1.0;
+	char bound;
+	double bound_value;
+	print_array_double(cplex_solution, ncols);
 	for (int i = 0; i < ncols; i++) {
-		if (rand() >= percentage && CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
-			printf("Can't fix the bound\n");
-			return 1;
+		double r = ((double)rand()) / RAND_MAX;
+		if (r <= percentage) {
+			if (cplex_solution[i] > 0.1) {
+				bound = 'L';
+				bound_value = 1.0;
+				if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
+					printf("Can't fix the bound\n");
+					return 1;
+				}
+			} else {
+				bound = 'U';
+				bound_value = 0.0;
+				if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
+					printf("Can't fix the bound\n");
+					return 1;
+				}
+			}
 		}
 	}
+	free(cplex_solution);
 	return 0;
 }
 
@@ -25,9 +47,17 @@ int unfix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 {
 	int ncols = CPXgetnumcols(env, lp);
 
-	char bound = 'L';
-	double bound_value = 0.0;
+	char bound;
+	double bound_value;
 	for (int i = 0; i < ncols; i++) {
+		bound = 'L';
+		bound_value = 0.0;
+		if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
+			printf("Can't fix the bound\n");
+			return 1;
+		}
+		bound = 'U';
+		bound_value = 1.0;
 		if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
 			printf("Can't fix the bound\n");
 			return 1;
@@ -76,7 +106,9 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 
 	tsp_starttimer(tsp);
 	int* best_solution = malloc(sizeof(int) * tsp->nnodes);
+	int* starting_solution = malloc(sizeof(int) * tsp->nnodes);
 	memcpy(best_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
+	memcpy(starting_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
 	double best_obj = tsp->solution_value;
 
 	while (1) {
@@ -87,13 +119,13 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 		}
 
 		// fix edges
-		if (fix_edges(tsp, env, lp, percentage)) {
+		if (fix_edges(tsp, env, lp, percentage, starting_solution)) {
 			printf("Unable to fix edges\n");
 			res = -1;
 			goto free_prob;
 		}
 
-		if (tsp_solve_branchcut(tsp, 0, 1, 1, 1) != 0) {
+		if (tsp_solve_branchcut_matheuristic(tsp, env, lp, 0, 1, 1) != 0) {
 			printf("Unable to solve branch and cut\n");
 			res = -1;
 			goto free_prob;

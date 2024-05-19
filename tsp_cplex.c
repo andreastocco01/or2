@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 int xpos(int i, int j, const struct tsp* tsp)
 {
@@ -858,7 +859,7 @@ int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	return 0;
 }
 
-int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic, int using_matheuristic)
+int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic)
 {
 	tsp->solution_permutation = NULL;
 
@@ -922,8 +923,7 @@ int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_he
 		}
 	}
 
-	if (!using_matheuristic)
-		tsp_starttimer(tsp);
+	tsp_starttimer(tsp);
 	CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 
 	if (CPXmipopt(env, lp)) {
@@ -950,5 +950,78 @@ free_prob:
 	CPXfreeprob(env, &lp);
 free_cplex:
 	CPXcloseCPLEX(&env);
+	return res;
+}
+
+int tsp_solve_branchcut_matheuristic(struct tsp* tsp,
+				     CPXENVptr env,
+				     CPXLPptr lp,
+				     int warmstart,
+				     int fraccut,
+				     int post_heuristic)
+{
+	tsp->solution_permutation = NULL;
+
+	if (!tsp->cost_matrix)
+		return -1;
+
+	if (!tsp->nnodes)
+		return -1;
+
+	int res = 0;
+
+#ifdef DEBUG
+	CPXwriteprob(env, lp, "prob.lp", NULL);
+#endif
+
+	// set cplex parameters
+#ifdef DEBUG
+	CPXsetintparam(env, CPXPARAM_ScreenOutput, CPX_ON);
+#endif
+	int ncols = CPXgetnumcols(env, lp);
+
+	struct callback_generate_sec_params params = {
+	    .tsp = tsp,
+	    .ncols = ncols,
+	    .post_heuristic = post_heuristic,
+	};
+
+	CPXLONG contextid = CPX_CALLBACKCONTEXT_CANDIDATE;
+	if (fraccut)
+		contextid |= CPX_CALLBACKCONTEXT_RELAXATION;
+	if (CPXcallbacksetfunc(env, lp, contextid, callback_dispatch, &params)) {
+		fprintf(stderr, "Can't set callback function!\n");
+		res = -1;
+		goto end;
+	}
+
+	if (warmstart) {
+		if (cplex_warm_start(tsp, env, lp)) {
+			res = -1;
+			goto end;
+		}
+	}
+
+	if (CPXmipopt(env, lp)) {
+		fprintf(stderr, "Failed to solve the problem\n");
+		res = -1;
+		goto end;
+	}
+
+	// TODO check the status
+
+	double objval;
+	CPXgetobjval(env, lp, &objval);
+	tsp->solution_value = objval;
+
+	if (tsp_allocate_solution(tsp))
+		res = -1;
+
+	if (tsp_cplex_savesolution(tsp, env, lp)) {
+		fprintf(stderr, "Can't get solution of lp\n");
+		res = -1;
+	}
+
+end:
 	return res;
 }
