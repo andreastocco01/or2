@@ -24,5 +24,6 @@ int tsp_solve_branchcut_matheuristic(struct tsp* tsp,
  * */
 int tsp_perm_to_cplex(const struct tsp* tsp, const int* perm, double* cplex_sol, int ncols);
 int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
+int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols);
 
 #endif

@@ -834,7 +834,7 @@ int cplex_add_start(CPXENVptr env, CPXLPptr lp, double* solution, int ncols)
 
 int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 {
-	int total = tsp->timelimit_secs;
+	double total = tsp->timelimit_secs;
 	tsp->timelimit_secs = total / 10;
 	// warm start: find a solution using an heuristic and pass it to CPLEX
 
@@ -855,7 +855,7 @@ int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	}
 	free(warm_solution);
 	tsp->timelimit_secs = total - tsp->timelimit_secs;
-	fprintf(stderr, "setting timelimit to %d\n", tsp->timelimit_secs);
+	fprintf(stderr, "setting timelimit to %f\n", tsp->timelimit_secs);
 	return 0;
 }
 

@@ -113,19 +113,18 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 	while (1) {
 		CPXsetdblparam(env, CPXPARAM_TimeLimit, tsp_getremainingseconds(tsp));
 		if (tsp_shouldstop(tsp)) {
-			res = -1;
 			goto time_limit_reached;
 		}
 
 		// fix edges
 		if (fix_edges(tsp, env, lp, percentage, starting_solution)) {
-			printf("Unable to fix edges\n");
+			fprintf(stderr, "Unable to fix edges\n");
 			res = -1;
 			goto free_prob;
 		}
 
 		if (tsp_solve_branchcut_matheuristic(tsp, env, lp, 0, 1, 1) != 0) {
-			printf("Unable to solve branch and cut\n");
+			fprintf(stderr, "Unable to solve branch and cut\n");
 			res = -1;
 			goto free_prob;
 		}
@@ -137,7 +136,7 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 
 		// unfix edges
 		if (unfix_edges(tsp, env, lp)) {
-			printf("Unable to unfix edges\n");
+			fprintf(stderr, "Unable to unfix edges\n");
 			res = -1;
 			goto free_prob;
 		}
