@@ -21,7 +21,7 @@ int fix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, double percentage, in
 	for (int i = 0; i < ncols; i++) {
 		double r = ((double)rand()) / RAND_MAX;
 		if (r <= percentage) {
-			if (cplex_solution[i] > 0.1) {
+			if (cplex_solution[i] > 0.5) {
 				bound = 'L';
 				bound_value = 1.0;
 				if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
@@ -104,10 +104,11 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 	}
 
 	tsp_starttimer(tsp);
+
+	int ncols = CPXgetnumcols(env, lp);
 	int* best_solution = malloc(sizeof(int) * tsp->nnodes);
-	int* starting_solution = malloc(sizeof(int) * tsp->nnodes);
+	double* cplex_best_solution = malloc(sizeof(double) * ncols);
 	memcpy(best_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
-	memcpy(starting_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
 	double best_obj = tsp->solution_value;
 
 	while (1) {
@@ -117,7 +118,7 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 		}
 
 		// fix edges
-		if (fix_edges(tsp, env, lp, percentage, starting_solution)) {
+		if (fix_edges(tsp, env, lp, percentage, best_solution)) {
 			fprintf(stderr, "Unable to fix edges\n");
 			res = -1;
 			goto free_prob;
@@ -129,9 +130,11 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 			goto free_prob;
 		}
 
+		int improved = 0;
 		if (tsp->solution_value < best_obj) {
 			memcpy(best_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
 			best_obj = tsp->solution_value;
+			improved = 1;
 		}
 
 		// unfix edges
@@ -140,11 +143,18 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 			res = -1;
 			goto free_prob;
 		}
+
+		if (improved) {
+			tsp_perm_to_cplex(tsp, best_solution, cplex_best_solution, ncols);
+			cplex_add_start(env, lp, cplex_best_solution, ncols);
+		}
 	}
 
 time_limit_reached:
 	memcpy(tsp->solution_permutation, best_solution, sizeof(int) * tsp->nnodes);
 	tsp->solution_value = best_obj;
+	free(cplex_best_solution);
+	free(best_solution);
 free_prob:
 	CPXfreeprob(env, &lp);
 free_cplex:
