@@ -19,22 +19,17 @@ int fix_edges(struct tsp* tsp, CPXENVptr env, CPXLPptr lp, double percentage, in
 	char bound;
 	double bound_value;
 	for (int i = 0; i < ncols; i++) {
+
+		if (cplex_solution[i] <= 0.5)
+			continue;
+
 		double r = ((double)rand()) / RAND_MAX;
 		if (r <= percentage) {
-			if (cplex_solution[i] > 0.5) {
-				bound = 'L';
-				bound_value = 1.0;
-				if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
-					printf("Can't fix the bound\n");
-					return 1;
-				}
-			} else {
-				bound = 'U';
-				bound_value = 0.0;
-				if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
-					printf("Can't fix the bound\n");
-					return 1;
-				}
+			bound = 'L';
+			bound_value = 1.0;
+			if (CPXchgbds(env, lp, 1, &i, &bound, &bound_value) != 0) {
+				printf("Can't fix the bound\n");
+				return 1;
 			}
 		}
 	}

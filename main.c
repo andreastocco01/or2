@@ -108,7 +108,7 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_branchcut(tsp, 0, 1, 1);
 	}
 	if (config == 12) {
-		return tsp_solve_diving(tsp, 0.9);
+		return tsp_solve_diving(tsp, 0.5);
 	}
 	return -1;
 }
