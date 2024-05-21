@@ -124,17 +124,17 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 			goto free_prob;
 		}
 
-		if (tsp_solve_branchcut_matheuristic(tsp, env, lp, 0, 1, 1) != 0) {
+		if (tsp_solve_branchcut_for_matheuristic(tsp, env, lp, 0, 1, 1) != 0) {
 			fprintf(stderr, "Unable to solve branch and cut\n");
 			res = -1;
 			goto free_prob;
 		}
 
-		int improved = 0;
 		if (tsp->solution_value < best_obj) {
 			memcpy(best_solution, tsp->solution_permutation, sizeof(int) * tsp->nnodes);
 			best_obj = tsp->solution_value;
-			improved = 1;
+			tsp_perm_to_cplex(tsp, best_solution, cplex_best_solution, ncols);
+			cplex_add_start(env, lp, cplex_best_solution, ncols);
 		}
 
 		// unfix edges
@@ -142,11 +142,6 @@ int tsp_solve_diving(struct tsp* tsp, double percentage)
 			fprintf(stderr, "Unable to unfix edges\n");
 			res = -1;
 			goto free_prob;
-		}
-
-		if (improved) {
-			tsp_perm_to_cplex(tsp, best_solution, cplex_best_solution, ncols);
-			cplex_add_start(env, lp, cplex_best_solution, ncols);
 		}
 	}
 

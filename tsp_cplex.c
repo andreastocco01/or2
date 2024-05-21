@@ -953,12 +953,12 @@ free_cplex:
 	return res;
 }
 
-int tsp_solve_branchcut_matheuristic(struct tsp* tsp,
-				     CPXENVptr env,
-				     CPXLPptr lp,
-				     int warmstart,
-				     int fraccut,
-				     int post_heuristic)
+int tsp_solve_branchcut_for_matheuristic(struct tsp* tsp,
+					 CPXENVptr env,
+					 CPXLPptr lp,
+					 int warmstart,
+					 int fraccut,
+					 int post_heuristic)
 {
 	tsp->solution_permutation = NULL;
 
