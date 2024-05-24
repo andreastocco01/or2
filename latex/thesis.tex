@@ -82,10 +82,14 @@ the nearest unvisited one. Algorithm~\ref{alg:greedy} shows the pseudocode of th
 
 \end{algorithmic}
 \end{algorithm}
-Repeating this procedure for every possible starting node, we'll be able to find the best
-achievable solution.
-However, the solution found by this algorithm could have a lot of `intersections`
-(TODO explain what intersections are maybe with a figure)
+If we run this approach on an instance having the cities on a 2d plane and using the
+eucledian distance as the cost of the edges, we will se, with a very high probability, an
+high number of edges crossing.
+It is possible to prove that an optimal solution, in this context, should not contain any crossing
+between edges.
+This fact can give us the intuition that a very simple yet clever technique could be used
+to drastically improve our solution. This technique, known as \textit{2-opt}, will be covered
+in the next section.
 
 \subsection{2-opt}
 The 2-opt algorithm is an optimization technique that can be used to improve a sub-optimal solution.
