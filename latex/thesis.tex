@@ -484,6 +484,23 @@ variables set to $1$ in a solution. This allows us to put $n$ directly into the 
 of the constraint and avoid building a more complicated cut where we consider the difference
 of variables set to $1$ between the input heuristic solution and the solution of the model.
 
+In its original version the Local Branching constraint introduced by Fischetti, that
+could be written as
+\begin{equation*}
+\sum_{i \in I: \hat{x}_i = 0} x_i + \sum_{i \in I: \hat{x}_i = 1} (1 - x_i) \leq k \text{,}
+\end{equation*}
+limits the Hamming distance between the heuristic and the solution we will find to
+a value $k$.
+
+This can be seen as a technique to use the MIP solver as a black box to find
+the best $k$-opt moves in a feasible solution.
+
+This leaves us with one hyperparameter to tune: the value of $k$ for each iteration.
+Our approach in this report will be to decide an initial value of $k$ that we will call
+$k_{0}$. The first iteration of the local branching will use $k_{1} = k_{0}$.
+We will keep running the solver with the same value of $k$ until no improved
+solution can be found. At this point, say iteration $t$, we increment $k$ by a delta:
+$k_{t+1} = k_{t} + \Delta k$. This process will continue until we reach the timelimit.
 
 \newpage
 
