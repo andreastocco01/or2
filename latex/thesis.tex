@@ -8,10 +8,11 @@
 \usepackage{subcaption}
 \usepackage{import}
 \usepackage{subcaption}
+\usepackage{mathtools}
 
 \graphicspath{./assets/}
 
-\title{Performance Analysis of TSP Solving Algorithms}
+\title{Performance Analysis of TSP Solving Techniques}
 \author{Basaglia Alberto, Stocco Andrea}
 \date{\today}
 
@@ -20,17 +21,28 @@
 \maketitle
 
 \begin{abstract}
-	The Traveling Salesman Problem (TSP) is one of the most intensively studied problems in optimization.
-	It asks the following question:
-	\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route
-	that visits each city exactly once and returns to the origin city?}
-	TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact ways} to solve it.
-	In this thesis we are going to show and compare the performances of these
-        techniques.
+The Traveling Salesman Problem (TSP) is definitely one of the most intensively studied problems in optimization.
+It asks the following question:
+\textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route
+that visits each city exactly once and returns to the origin city?}
+TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact methods} to solve it.
+In this report we are going to show and compare the performances of these
+techniques.
 \end{abstract}
 
 \section{Introduction}
-TODO
+The Traveling Salesman Problem is for sure one of the most intensively studied problems in
+optimization. The TSP asks the question of what is the shortest path that visits exactly
+once all the nodes in a graph.
+We can also define it as finding the shortest Hamiltonian path of a graph.
+
+The state of the art for solving the TSP problem nowadays is definitely the Concorde
+software. Concorde was created by  D. Applegate, R.E. Bixby, V. Chvátal, and W.J. Cook.
+It employs advanced combinatorial optimization techniques, linear programming, and cutting-plane methods~\cite{applegate1998solution}\cite{tuHu2022analyzing}.
+
+The objective of this report is not to invent some new techniques that can compete with Concorde,
+but instead to cover basic approaches, that can be implemented without much effort, and still lead
+to good results.
 
 \section{Heuristics}
 Heuristics are algorithms to determine a near-optimal solution to an optimization problem. In certain scenarios,
@@ -43,7 +55,7 @@ acceptable in some instances.
 \subsection{Greedy}
 A greedy algorithm is a heuristic that attempts to find an optimal solution by selecting the best possible choice at each iteration.
 For instance, in our case, when determining the next node to visit, the greedy algorithm will always choose
-the nearest unvisited one. Algorithm \ref{alg:greedy} shows the pseudocode of this procedure
+the nearest unvisited one. Algorithm~\ref{alg:greedy} shows the pseudocode of this procedure
 
 \begin{algorithm}[h]
 \caption{Greedy}
@@ -394,7 +406,123 @@ Inside this function we will count the number of components. If the number of
 components is greater then one, we will generate the corresponding subtour
 elimination constraints and reject the solution.
 
+\newpage
+
+\section{Matheuristics}
+In this section we will explore another set of techniques that we will call
+\textit{matheuristics}.
+The core idea behind these techniques is to use heuristics in conjunction with the
+mathematical models that one would normally use to solve the problem optimally.
+One of the advantages of such approach is that they can be applied to different problems,
+with little to none needed adaptations.
+
+What is important to note here is that matheuristics isn't a new class of techniques
+for solving optimization problems but it is instead a nomenclature that was given
+to the concept of using mathematical tools to design heuristics~\cite{boschetti2022matheuristics}.
+
+The term was coined to give a name to the first edition of a workshop in Bertinoro, Italy
+in 2006.
+
+In this report we will focus on two matheuristic techniques.
+The first one that will be explored is Diving, while the second one is Local Branching.
+
+As we will see in Section~\ref{sec:results}, these techniques will be used to solve
+heuristically instances bigger than what we will be able to solve optimally using approaches
+based on the branch-and-cut.
+
+\subsection{Diving}
+The first technique that we are going to explore is \textit{Diving}.
+
+\textit{Diving} is a refinement algorithm, meaning that it is a way to improve a feasible
+sub-optimal solution.
+
+The idea goes as follows: we start from a solution (that can be obtained with an heuristic or in
+the worst case generated randomly) and we fix part of the selected edges. The fixing of the
+edges will be done by adding constraints to the model, allowing us to use the MIP solver
+as a black box.
+
+We can fix all the edges
+\begin{equation*}
+  x_{e}=1 \quad \forall e \in \tilde{E}
+\end{equation*}
+where
+\begin{equation*}
+  \tilde{E} \subset E^{H} \coloneq \left\{ e \in E : x_{e}^{H} = 1 \right\}
+\end{equation*}
+meaning that the edges we fix are a subset of the edges that are part of the heuristic solution.
+
+What is left now is deciding how many and which edges to fix. The approach that will be explored
+in this report is choosing a number of edges (which will become an hyperparameter of our system)
+and select the edges to fix randomly.
+
+\subsection{Local Branching}
+The second approach this report will focus on is \textit{Local Branching}.
+
+\textit{Local Branching} was initially introduced in a paper by Fischetti and Lodi~\cite{fischetti2003local} and was then applied by many other researchers over the following
+years.
+
+The idea behind this technique is to decide the number of edges to fix, like we did for Diving,
+but then leaving the choice of \textit{what edges} to the MIP solver.
+
+This is possible thanks to the Local Branching constraints, which, in their simplified
+asymmetric version are constructed like this
+
+\begin{equation*}
+  \sum_{e : x_{e}^{H}=1} x_{e} \geq n - k
+\end{equation*}
+
+This forces at least $n-k$ edges of the heuristic solution we apply this method on to be
+set to $1$ in the solution of the model this constraint is part of.
+
+We say that this is an \textit{asymmetric} version because the ``original'' Local Branching
+constraint would consider also the variables set to $0$ becoming $1$.
+In the TSP problem it would make no sense to add such constraints since every feasible
+solution has the same number of variables set to $1$.
+
+The \textit{simplified} comes instead from the fact that we know a priori the number of
+variables set to $1$ in a solution. This allows us to put $n$ directly into the right-hand-side
+of the constraint and avoid building a more complicated cut where we consider the difference
+of variables set to $1$ between the input heuristic solution and the solution of the model.
+
+
+\newpage
+
 \section{Results}
 \label{sec:results}
+This section is structured as follows; first we will try to optimize the hyperparameters
+of the approaches that have some. Then, we will compare methods among them, searching for the
+best one.
+
+Naturally the main difference we have among the approaches that we present is if we are computing
+and optimal solution or we are applying an heuristic. In the former case, the metric we are going
+to compare our systems on is the time it took them to arrive to the optimal solution.
+For the latter we instead fix a time limit (the maximum time we allow our system to run for) and
+we seek the system that found the best solution (in our case the smallest one, since the TSP
+is a minimization problem).
+
+Before going through the experiments that were performed, it can be useful to discuss some
+parameters that will be used in this section.
+The instances will be generated randomly and we will refer to them using the seed we
+initialize our number generator with. For reproducibility reasons, they were exported
+and are available here: %TODO insert link with the instances.
+The size of the instances will be
+\begin{itemize}
+  \item $300$ for the optimal methods
+  \item $1000$ for matheuristics
+  \item $1500$ for heuristics
+\end{itemize}
+
+For what concernes the value of the time limit, we will use $120$ seconds for all the
+experiments.
+
+To make comparisons a little bit more statistically valid all the systems will be run on
+$20$ different instances of the same size. We will then take the results for each instance
+and plot the Performance Profile. All our considerations will be based on these plots.
+
+
+\newpage
+
+\bibliographystyle{plain}
+\bibliography{thesis}
 
 \end{document}

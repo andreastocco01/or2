@@ -7,10 +7,10 @@ executable_name = "./main"
 pfflag = "--parsefriendly"
 timelimit = "60"
 parallel_tasks = 1
-nnodes = 300
+nnodes = 1000
 ninstances = 5
-configs = [0, 1, 2, 3, 12]
-cost_or_time = 0 # 0 for time, 1 for cost 
+configs = [2, 12]
+cost_or_time = 1 # 0 for time, 1 for cost 
 
 def divide_list_into_blocks(lst, n):
     return [lst[i:i+n] for i in range(0, len(lst), n)]
