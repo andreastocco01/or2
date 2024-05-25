@@ -2,7 +2,6 @@
 #include "ilcplex/cplex.h"
 #include "tsp.h"
 #include "tsp_cplex.h"
-#include "util.h"
 #include <stdlib.h>
 #include <string.h>
 
