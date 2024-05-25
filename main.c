@@ -4,6 +4,7 @@
 #include "tsp_diving.h"
 #include "tsp_greedy.h"
 #include "tsp_instance.h"
+#include "tsp_localbranching.h"
 #include "tsp_tabu.h"
 #include "tsp_vns.h"
 #include <signal.h>
@@ -108,7 +109,10 @@ int run_experiment(struct tsp* tsp, int config)
 		return tsp_solve_branchcut(tsp, 0, 1, 1);
 	}
 	if (config == 12) {
-		return tsp_solve_diving(tsp, 0.5);
+		return tsp_solve_diving(tsp, 0.6);
+	}
+	if (config == 13) {
+		return tsp_solve_localbranching(tsp, 10, 5);
 	}
 	return -1;
 }

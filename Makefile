@@ -25,7 +25,8 @@ BUILD_OBJS = tsp.o \
 	tsp_instance.o \
 	chrono.o \
 	mincut.o \
-	tsp_diving.o
+	tsp_diving.o \
+	tsp_localbranching.o
 
 all: main
 
