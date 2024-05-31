@@ -9,11 +9,11 @@ int tsp_cplex_savesolution(struct tsp* tsp, CPXENVptr env, CPXLPptr lp);
 int tsp_solve_benders(struct tsp* tsp, int patching);
 int tsp_solve_branchcut(struct tsp* tsp, int warmstart, int fraccut, int post_heuristic);
 int tsp_solve_branchcut_for_matheuristic(struct tsp* tsp,
-				     CPXENVptr env,
-				     CPXLPptr lp,
-				     int warmstart,
-				     int fraccut,
-				     int post_heuristic);
+					 CPXENVptr env,
+					 CPXLPptr lp,
+					 int warmstart,
+					 int fraccut,
+					 int post_heuristic);
 
 /**
  * Converts a solution from the "permutation" format to the cplex format
