@@ -393,7 +393,7 @@ The idea behind this algorithm is to find a way to merge together all the compon
 so that, at each iteration of the Bender's loop, we have a solution composed of only one component.
 In this way, if we exit the Bender's loop because of the time limit, we'll always be able to return a
 correct solution to the problem.
-Figure \ref{fig:patching} shows 
+Figure \ref{fig:patching} shows an example of patching.
 
 \begin{figure}[H]
         \caption{Example of patching}
@@ -412,6 +412,30 @@ Figure \ref{fig:patching} shows
                 \caption{Patched solution}
         \end{subfigure}
 \end{figure}
+
+The Patching Heuristic aims to find the optimal way to merge two different components. As shown 
+in Figure \ref{fig:patching}, the patched solution is the one that minimizes the cost of the
+resulting single component.
+An abstract description of the techinque is presented in Algorithm \ref{alg:patching}.
+
+\begin{algorithm}[ht]
+\caption{Bender's loop + Patching Heuristic}
+\label{alg:patching}
+\begin{algorithmic}
+\Procedure{benders+patching}{$model$}
+        \While{$!stop$}
+                \State $solution \gets \Call{mipsolver}{model}$
+                \If{$\Call{components}{solution} > 1$}
+                        \State $model \gets model \cup SEC$
+                        \State $solution \gets \Call{patchcomponents}{solution}$
+                \Else
+                        \State $break$
+                \EndIf
+        \EndWhile
+        \State \Return $solution$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Callback}
 The technique that will be presented in this section solves the problem
