@@ -386,8 +386,32 @@ Even though throwing away the search tree can be beneficial sometimes, % TODO ad
 it needs to be done following some precise criteria and at the correct time.
 
 \subsubsection{Patching}
+At the end of the Bender's loop we are guaranteed to obtain a solution to the TSP problem.
+However, if we exit the loop because of the time limit, we'll return a solution containing more than
+one loop. To solve this problem we implemented the so-called `Patching Heuristic'.
+The idea behind this algorithm is to find a way to merge together all the components returned by the MIP solver
+so that, at each iteration of the Bender's loop, we have a solution composed of only one component.
+In this way, if we exit the Bender's loop because of the time limit, we'll always be able to return a
+correct solution to the problem.
+Figure \ref{fig:patching} shows 
 
-% TODO talk about patching
+\begin{figure}[H]
+        \caption{Example of patching}
+        \label{fig:patching}
+        \centering
+        \begin{subfigure}{.5\textwidth}
+                \centering
+                \def\svgwidth{.7\linewidth}
+                \import{assets}{pre_patching.pdf_tex}
+                \caption{MIP solver solution}
+        \end{subfigure}%
+        \begin{subfigure}{.5\textwidth}
+                \centering
+                \def\svgwidth{.7\linewidth}
+                \import{assets}{post_patching.pdf_tex}
+                \caption{Patched solution}
+        \end{subfigure}
+\end{figure}
 
 \subsection{Callback}
 The technique that will be presented in this section solves the problem
