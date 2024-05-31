@@ -518,10 +518,40 @@ where
   \tilde{E} \subset E^{H} \coloneq \left\{ e \in E : x_{e}^{H} = 1 \right\}
 \end{equation*}
 meaning that the edges we fix are a subset of the edges that are part of the heuristic solution.
+It is important to note that only the edges with a value of 1 are fixed. This is because fixing
+edges to zero is equivalent to instructing CPLEX to use less optimal edges, which could lead to a suboptimal solution.
 
 What is left now is deciding how many and which edges to fix. The approach that will be explored
 in this report is choosing a number of edges (which will become an hyperparameter of our system)
 and select the edges to fix randomly.
+
+Algorithm \ref{alg:diving} shows an abstract implementation of the procedure.  
+
+\begin{algorithm}[ht]
+\caption{Diving}
+\label{alg:diving}
+\begin{algorithmic}
+\Procedure{diving}{$model$}
+        \State $bestsolution \gets \Call{greedy2opt}$
+        \While{$!stop$}
+                \State $\Call{fixedges}{model}$
+                \State $solution \gets \Call{mipsolver+callback}{model}$
+                \If{$\Call{cost}{solution} < \Call{cost}{bestsolution}$}
+                        \State $bestsolution \gets solution$
+                \EndIf
+                \State $\Call{unfixedges}{model}$
+        \EndWhile
+        \State \Return $bestsolution$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[H]
+        \caption{Diving}
+        \label{fig:diving}
+        \centering
+        \includegraphics[width=340pt]{assets/diving.drawio.pdf}
+\end{figure}
 
 \subsection{Local Branching}
 The second approach this report will focus on is \textit{Local Branching}.
