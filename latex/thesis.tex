@@ -10,6 +10,9 @@
 \usepackage{subcaption}
 \usepackage{mathtools}
 
+\usepackage{fancyhdr}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
 \graphicspath{./assets/}
 
 \title{Performance Analysis of TSP Solving Techniques}
@@ -17,6 +20,7 @@
 \date{\today}
 
 \begin{document}
+\pagestyle{fancy}
 
 \maketitle
 
@@ -65,24 +69,21 @@ the nearest unvisited one. Algorithm~\ref{alg:greedy} shows the pseudocode of th
 \label{alg:greedy}
 \hspace*{0.5em} \textbf{Output}: $solution$
 \begin{algorithmic}
-  \Procedure{greedy}{$startingnode, nnodes$}
-
+\Procedure{greedy}{$startingnode, nnodes$}
 	\State $solution \gets {0, 1, \dots, nnodes - 1}$
 	\State $solution \gets \Call{swap}{solution, 0, startingnode}$
-    \For{$i \gets 0$ to $nnodes - 1$}
-		\State $mindist \gets \infty$
-		\State $minindex \gets -1$
-		\For{$j \gets i + 1$ to $nnodes$}
-			\If{$dist(i, j) < mindist$}
-				\State $mindist \gets dist(i, j)$
-				\State $minindex \gets j$
-			\EndIf
-		\EndFor
-		\State $solution \gets \Call{swap}{solution, i + 1, minindex}$
-    \EndFor
-
-  \EndProcedure
-
+        \For{$i \gets 0$ to $nnodes - 1$}
+                \State $mindist \gets \infty$
+                \State $minindex \gets -1$
+                \For{$j \gets i + 1$ to $nnodes$}
+                        \If{$dist(i, j) < mindist$}
+                                \State $mindist \gets dist(i, j)$
+                                \State $minindex \gets j$
+                        \EndIf
+                \EndFor
+                \State $solution \gets \Call{swap}{solution, i + 1, minindex}$
+        \EndFor
+\EndProcedure
 \end{algorithmic}
 \end{algorithm}
 If we run this approach on an instance having the cities on a 2d plane and using the
@@ -144,17 +145,17 @@ best one. This approach won't be covered in this report.
 \label{alg:best2optswap}
 \hspace*{0.5em} \textbf{Output}: $bestsolution$
 \begin{algorithmic}
-	\Procedure{best2optswap}{$solution, nnodes$}
-	    \State $bestsolution \gets solution$
-	    \For{$i \gets 0$ to $nnodes - 2$}
-	        \For{$j \gets i + 2$ to $nnodes$}
-	            \State $newsolution \gets \Call{reversesubsequence}{solution, i + 1, j}$
-	            \If{$\Call{cost}{newsolution} < \Call{cost}{bestsolution}$}
-	                \State $bestsolution \gets newsolution$
-	            \EndIf
-	        \EndFor
-	    \EndFor
-	\EndProcedure
+\Procedure{best2optswap}{$solution, nnodes$}
+\State $bestsolution \gets solution$
+        \For{$i \gets 0$ to $nnodes - 2$}
+                \For{$j \gets i + 2$ to $nnodes$}
+                        \State $newsolution \gets \Call{reversesubsequence}{solution, i + 1, j}$
+                        \If{$\Call{cost}{newsolution} < \Call{cost}{bestsolution}$}
+                                \State $bestsolution \gets newsolution$
+                        \EndIf
+                \EndFor
+        \EndFor
+\EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
@@ -163,26 +164,25 @@ best one. This approach won't be covered in this report.
 \label{alg:greedy_2opt}
 \hspace*{0.5em} \textbf{Output}: $solution$
 \begin{algorithmic}
-  \Procedure{greedy2opt}{$nnodes$}
-	\State $solution \gets \emptyset$
-	\State $solutioncost \gets \infty$
-	\ForAll{$node \in tsp$}
-		\State $currentsolution \gets \Call{greedy}{node, nnodes}$
-		\While{$true$}
-			\State $2optsolution \gets \Call{best2optswap}{currentsolution, nnodes}$
-			\If{$\Call{cost}{2optsolution} < \Call{cost}{currentsolution}$}
-				\State $currentsolution \gets 2optsolution$
-			\Else
-				\State $break$
-			\EndIf
-		\EndWhile
-		\If{$\Call{cost}{currentsolution} < solutioncost$}
-			\State $solution \gets currentsolution$
-			\State $solutioncost \gets \Call{cost}{currentsolution}$
-		\EndIf
-	\EndFor
-  \EndProcedure
-
+\Procedure{greedy2opt}{$nnodes$}
+        \State $solution \gets \emptyset$
+        \State $solutioncost \gets \infty$
+        \ForAll{$node \in tsp$}
+                \State $currentsolution \gets \Call{greedy}{node, nnodes}$
+                \While{$true$}
+                        \State $2optsolution \gets \Call{best2optswap}{currentsolution, nnodes}$
+                        \If{$\Call{cost}{2optsolution} < \Call{cost}{currentsolution}$}
+                                \State $currentsolution \gets 2optsolution$
+                        \Else
+                                \State $break$
+                        \EndIf
+                \EndWhile
+                \If{$\Call{cost}{currentsolution} < solutioncost$}
+                        \State $solution \gets currentsolution$
+                        \State $solutioncost \gets \Call{cost}{currentsolution}$
+                \EndIf
+        \EndFor
+\EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
@@ -258,9 +258,9 @@ tabu list. Having a variable tenure can sometimes, on the long run, avoid the dr
 \subsection{VNS (Variable Neighborhood Search)}
 In \textit{Tabu Search} we have seen two different phases:
 \begin{itemize}
-	\item the \textit{Intensification Phase} to move towards a better solution
-	\item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
-	non-tabu moves
+        \item the \textit{Intensification Phase} to move towards a better solution
+        \item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
+        non-tabu moves
 \end{itemize}
 With this approach, we may spend a considerable amount of time without achieving any improvement in
 solution quality (Diversification Phase). One potential solution could involve restarting from a random
@@ -278,28 +278,25 @@ This is a simplified version of the algorithm; state-of-the-art techniques also 
 of nodes (e.g., 4-opt, 5-opt, etc.) instead of multiple 3-opt operations.
 Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
 
-\begin{algorithm}[h]
+\begin{algorithm}[ht]
 \caption{VNS}
 \label{alg:vns}
 \begin{algorithmic}
-  \Procedure{vns}{$solution$}
-    \State\Call{greedy}{solution}
-
-    \While{$!stop$}
-        \State $move \gets \Call{findbest2optswap}{solution}$
-        \State $delta \gets \Call{delta}{move}$
-        \If{$delta \leq 0$}
-			\For{$\Call{random}{range}$}
-				\State $move \gets \Call{find3optswap}{solution}$
-		        \State $solution \gets \Call{apply}{solution, move}$
-			\EndFor
-		\Else
-			\State $solution \gets \Call{apply}{solution, move}$
-		\EndIf
-    \EndWhile
-
-  \EndProcedure
-
+\Procedure{vns}{$solution$}
+        \State\Call{greedy}{solution}
+        \While{$!stop$}
+                \State $move \gets \Call{findbest2optswap}{solution}$
+                \State $delta \gets \Call{delta}{move}$
+                \If{$delta \leq 0$}
+                        \For{$\Call{random}{range}$}
+                                \State $move \gets \Call{find3optswap}{solution}$
+                                \State $solution \gets \Call{apply}{solution, move}$
+                        \EndFor
+                \Else
+                        \State $solution \gets \Call{apply}{solution, move}$
+                \EndIf
+        \EndWhile
+\EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
@@ -368,7 +365,7 @@ and solved again. This loop will be repeated until a solution composed by
 only one component is found.
 The process is described in Figure~\ref{fig:benders}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
         \caption{Solving using Benders' loops}
         \label{fig:benders}
         \centering
@@ -411,7 +408,7 @@ cplex.
 It is possible to see a visual description of the process in
 Figure~\ref{fig:callback}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
         \caption{Solving using candidate callback}
         \label{fig:callback}
         \centering
