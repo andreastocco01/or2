@@ -36,6 +36,9 @@ optimization. The TSP asks the question of what is the shortest path that visits
 once all the nodes in a graph.
 We can also define it as finding the shortest Hamiltonian path of a graph.
 
+The problem was formulated mathematically by the Irish mathematician William Rowan
+Hamilton and by the British mathematician Thomas Kirkman in the 19th century~\cite{biggs1986graph}.
+
 The state of the art for solving the TSP problem nowadays is definitely the Concorde
 software. Concorde was created by  D. Applegate, R.E. Bixby, V. Chvátal, and W.J. Cook.
 It employs advanced combinatorial optimization techniques, linear programming, and cutting-plane methods~\cite{applegate1998solution}\cite{tuHu2022analyzing}.
@@ -53,11 +56,11 @@ While there is no assurance regarding the optimality of the provided solution, i
 acceptable in some instances.
 
 \subsection{Greedy}
-A greedy algorithm is a heuristic that attempts to find an optimal solution by selecting the best possible choice at each iteration.
+A greedy algorithm is a heuristic that attempts to find an optimal solution by selecting the locally best possible choice at each iteration.
 For instance, in our case, when determining the next node to visit, the greedy algorithm will always choose
 the nearest unvisited one. Algorithm~\ref{alg:greedy} shows the pseudocode of this procedure
 
-\begin{algorithm}[h]
+\begin{algorithm}[ht]
 \caption{Greedy}
 \label{alg:greedy}
 \hspace*{0.5em} \textbf{Output}: $solution$
@@ -91,14 +94,20 @@ This fact can give us the intuition that a very simple yet clever technique coul
 to drastically improve our solution. This technique, known as \textit{2-opt}, will be covered
 in the next section.
 
+Another important point to discuss is the node the algorithm is started on.
+One of the strategies we could think of would be to generate one randomly.
+Although feasible, in our experiment we decided to run the greedy procedure
+on all the possible starting nodes and then keep the best.
+
+
 \subsection{2-opt}
 The 2-opt algorithm is an optimization technique that can be used to improve a sub-optimal solution.
 It evaluates the possibility of removing two edges in the tour and reconnecting the now disconnected nodes in the other way.
 This process aims to improve the cost of the tour by eliminating inefficient segments while preserving the overall tour structure. By
 iteratively exploring these adjustments and accepting them if they result in a shorter tour cost, the algorithm gradually refines
-the solution. This iterative refinement continues until no further improvements can be made, resulting in a more
+the solution. This iterative refinement continues until no further improvements can be made, resulting in a
 solution closer to the optimal one for the given problem instance.
-Although it is not the only possible situation where a 2-opt move could be
+Although it is not the only possible situation where a 2-opt move is
 beneficial, figure~\ref{fig:2optmove} illustrates an example of such a move.
 
 \begin{figure}[H]
@@ -123,9 +132,14 @@ It's easy to see that the removal of the crossing edges is beneficial to the
 cost of the solution.
 
 Algorithm \ref{alg:greedy_2opt} shows a possible implementation of this procedure to improve
-the solution found by greedy.
+the solution found with the greedy approach. In this case, as discussed in the
+previous section, the greedy procedure is executed for every possible node.
+Then, for each of the solutions, the \textit{2-opt} procedure is applied.
+Another approach, that would use \textit{2-opt} only once instead of $n$ times, would be
+to compute greedy on all the starting nodes first, and then \textit{2-opt} only on the
+best one. This approach won't be covered in this report.
 
-\begin{algorithm}[h]
+\begin{algorithm}[ht]
 \caption{Best 2-opt Swap}
 \label{alg:best2optswap}
 \hspace*{0.5em} \textbf{Output}: $bestsolution$
@@ -144,7 +158,7 @@ the solution found by greedy.
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[h]
+\begin{algorithm}[ht]
 \caption{Greedy + 2-opt}
 \label{alg:greedy_2opt}
 \hspace*{0.5em} \textbf{Output}: $solution$
@@ -172,13 +186,18 @@ the solution found by greedy.
 \end{algorithmic}
 \end{algorithm}
 
+\clearpage
+
 \section{Metaheuristics}
 A metaheuristic is a versatile problem-solving approach characterized by its iterative nature and adaptability across various optimization problems. Unlike specific algorithms tailored to particular problems, metaheuristics serve as overarching strategies that guide subordinate heuristics to efficiently explore and exploit solution spaces. They intelligently combine different concepts to navigate through search spaces, aiming to find near-optimal solutions effectively.
 In our experiments, we will adopt metaheuristic using \textit{2-opt} as the underlying
 heuristic. We will prove that simple but very clever ideas (like Tabu Search and VNS) combined with the previously seen heuristics allow us to get solutions very close to the optimal ones.
 
 \subsection{Tabu Search}
-Tabu Search is a metaheuristic algorithm that efficiently explores the solution space by intelligently navigating through a neighborhood of solutions while maintaining a short-term memory to avoid revisiting previously visited or less promising solutions. The algorithm is particularly effective for combinatorial optimization problems like the Traveling Salesman Problem (TSP).
+Tabu Search is a metaheuristic that efficiently explores the solution space by intelligently navigating through a neighborhood of solutions while maintaining a short-term memory to avoid revisiting previously visited or less promising solutions. The algorithm is particularly effective for combinatorial optimization problems like the Traveling Salesman Problem (TSP).
+
+This technique was introducted by Fred W. Glover in 1986 and then formalized
+in 1989~\cite{Glover:TabuSearch}.
 
 By design, this procedure will initially head directly towards a local minimum, thanks to the underlying heuristic. The only purpose of this metaheuristic is then to escape it and, hopefully, converge to a better minimum.
 
@@ -191,7 +210,7 @@ solution.
 Algorithm~\ref{alg:tabu} shows a very abstract description of the procedure we use in practice. The first solution is found using a greedy method (the closest neighbor apporach) and then \textit{2-opt} is used for the intensification phase. It is important to notice that $delta$ is
 how much the solution cost would improve (decrease by).
 
-\begin{algorithm}[h]
+\begin{algorithm}[ht]
 \caption{Tabu Search}
 \label{alg:tabu}
 \begin{algorithmic}
@@ -243,14 +262,14 @@ In \textit{Tabu Search} we have seen two different phases:
 	\item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
 	non-tabu moves
 \end{itemize}
-With this approach, we may spend a considerable amount of time without achieving any improvement in 
-solution quality (Diversification Phase). One potential solution could involve restarting from a random 
-point each time we encounter a local minimum (Multistart). However, this approach would significantly 
-prolong the Intensification Phase. Moreover, when encountering a local minimum, it is probable 
+With this approach, we may spend a considerable amount of time without achieving any improvement in
+solution quality (Diversification Phase). One potential solution could involve restarting from a random
+point each time we encounter a local minimum (Multistart). However, this approach would significantly
+prolong the Intensification Phase. Moreover, when encountering a local minimum, it is probable
 that the solution obtained is not entirely incorrect but requires adjustment in some aspect.
-VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as 
+VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as
 opposed to restarting from a completely different starting point.
-With this approach, we transition from one solution to a better one using the 2-opt method until reaching 
+With this approach, we transition from one solution to a better one using the 2-opt method until reaching
 a local minimum. Subsequently, we perform a random number of permutations involving three nodes (3-opt)
 to navigate away from the minimum. This approach also ensures that we never revert to a previously visited
 solution in the last 2-opt application, as it cannot be achieved through a sequence of permutations of
@@ -363,10 +382,10 @@ current set of subtour elimination constraints.
 
 As we will see in Section~\ref{sec:results}, although this method allows us to
 solve some instances it has a major flow. By using the MIP solver as a black
-box, we have to restart the all the process every time a new solution (that
+box, we have to restart all the process every time a new solution (that
 contains subtours) is found. This creates on big problem: the branch-and-bound
 tree will be discarded and the search for the optimal solution will start again.
-Even though throwing away the search tree can be beneficial sometimes % TODO add dyamic search citation
+Even though throwing away the search tree can be beneficial sometimes, % TODO add dyamic search citation
 it needs to be done following some precise criteria and at the correct time.
 
 \subsubsection{Patching}
@@ -413,7 +432,7 @@ elimination constraints and reject the solution.
 \newpage
 
 \section{Matheuristics}
-In this section we will explore another set of techniques that we will call
+In this section we will explore another useful set of techniques that we will call
 \textit{matheuristics}.
 The core idea behind these techniques is to use heuristics in conjunction with the
 mathematical models that one would normally use to solve the problem optimally.
