@@ -24,20 +24,29 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.77593294"
-     inkscape:cx="139.83167"
-     inkscape:cy="448.49237"
-     inkscape:window-width="1916"
-     inkscape:window-height="1051"
+     inkscape:cx="139.18729"
+     inkscape:cy="449.13675"
+     inkscape:window-width="1920"
+     inkscape:window-height="1080"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer3" />
   <defs
      id="defs2" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 11.571988,80.085194 16.767133,28.352866 41.061568,8.13708 40.267521,-10.2393 18.83938,23.68024 28.77966,1.34778 29.12612,-18.3735 L 169.0653,82.51064 131.56957,87.558538 91.418954,67.703194 78.830582,38.943851 33.934611,52.216375 Z"
+       id="path7088" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Layer 2">
     <circle
        style="fill:#b3b3b3;fill-opacity:1;stroke-width:0.264583;stroke:#000000;stroke-opacity:1"
        id="path3991"
@@ -110,9 +119,5 @@
        cx="109.79794"
        cy="106.38806"
        r="2.689399" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 11.571988,80.085194 16.767133,28.352866 41.061568,8.13708 40.267521,-10.2393 18.83938,23.68024 28.77966,1.34778 29.12612,-18.3735 L 169.0653,82.51064 131.56957,87.558538 91.418954,67.703194 78.830582,38.943851 33.934611,52.216375 Z"
-       id="path7088" />
   </g>
 </svg>

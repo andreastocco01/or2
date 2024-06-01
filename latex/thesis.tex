@@ -525,26 +525,7 @@ What is left now is deciding how many and which edges to fix. The approach that 
 in this report is choosing a number of edges (which will become an hyperparameter of our system)
 and select the edges to fix randomly.
 
-Algorithm \ref{alg:diving} shows an abstract implementation of the procedure.  
-
-\begin{algorithm}[ht]
-\caption{Diving}
-\label{alg:diving}
-\begin{algorithmic}
-\Procedure{diving}{$model$}
-        \State $bestsolution \gets \Call{greedy2opt}$
-        \While{$!stop$}
-                \State $\Call{fixedges}{model}$
-                \State $solution \gets \Call{mipsolver+callback}{model}$
-                \If{$\Call{cost}{solution} < \Call{cost}{bestsolution}$}
-                        \State $bestsolution \gets solution$
-                \EndIf
-                \State $\Call{unfixedges}{model}$
-        \EndWhile
-        \State \Return $bestsolution$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+Figure \ref{fig:diving} shows a description of the process.  
 
 \begin{figure}[H]
         \caption{Diving}

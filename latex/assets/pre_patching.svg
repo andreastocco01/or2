@@ -24,20 +24,33 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.77593294"
-     inkscape:cx="139.83167"
-     inkscape:cy="448.49237"
-     inkscape:window-width="1916"
-     inkscape:window-height="1051"
+     inkscape:cx="-16.754025"
+     inkscape:cy="449.13675"
+     inkscape:window-width="1920"
+     inkscape:window-height="1080"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer2" />
   <defs
      id="defs2" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 11.26372,80.206736 34.10135,52.199069 78.922129,39.664868 91.650778,67.846131 68.812064,115.86211 28.52745,108.32159 Z"
+       id="path4327" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 109.88867,106.3224 21.94157,-18.510214 37.64381,-5.389698 17.16629,30.954392 -29.09007,18.20439 -29.54213,-1.92357 z"
+       id="path5707" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
     <circle
        style="fill:#b3b3b3;fill-opacity:1;stroke-width:0.264583;stroke:#000000;stroke-opacity:1"
        id="path3991"
@@ -74,10 +87,6 @@
        cx="11.423084"
        cy="80.302521"
        r="2.689399" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 11.26372,80.206736 34.10135,52.199069 78.922129,39.664868 91.650778,67.846131 68.812064,115.86211 28.52745,108.32159 Z"
-       id="path4327" />
     <circle
        style="fill:#b3b3b3;fill-opacity:1;stroke:#000000;stroke-width:0.264583;stroke-opacity:1"
        id="path3991-6-3"
@@ -114,9 +123,5 @@
        cx="109.79794"
        cy="106.38806"
        r="2.689399" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 109.88867,106.3224 21.94157,-18.510214 37.64381,-5.389698 17.16629,30.954392 -29.09007,18.20439 -29.54213,-1.92357 z"
-       id="path5707" />
   </g>
 </svg>
