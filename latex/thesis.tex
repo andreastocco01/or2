@@ -416,6 +416,15 @@ Figure \ref{fig:patching} shows an example of patching.
 The Patching Heuristic aims to find the optimal way to merge two different components. As shown 
 in Figure \ref{fig:patching}, the patched solution is the one that minimizes the cost of the
 resulting single component.
+
+The solution to the TSP is an \textit{undirected graph} because
+we are considering instances of the \textit{symmetric TSP} problem.
+However, in our implementation, such solution is stored as a permutation of the nodes and
+so, implicitly, we have a \textit{directed graph} as solution to the problem.
+If we have two loops running in opposite directions, it could be that the
+patched solution is not the optimal one (because of an intersection of the newly added edges).
+To address this issue, after each patching step we apply a 2-opt optimization to refine the solution. 
+ 
 An abstract description of the techinque is presented in Algorithm \ref{alg:patching}.
 
 \begin{algorithm}[ht]
