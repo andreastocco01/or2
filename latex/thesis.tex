@@ -425,12 +425,11 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
 \Procedure{benders+patching}{$model$}
         \While{$!stop$}
                 \State $solution \gets \Call{mipsolver}{model}$
-                \If{$\Call{components}{solution} > 1$}
-                        \State $model \gets model \cup SEC$
-                        \State $solution \gets \Call{patchcomponents}{solution}$
-                \Else
+                \If{$\Call{components}{solution} == 1$}
                         \State $break$
                 \EndIf
+                \State $model \gets model \cup SEC$
+                \State $solution \gets \Call{patchcomponents}{solution}$
         \EndWhile
         \State \Return $solution$
 \EndProcedure
