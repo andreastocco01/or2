@@ -71,47 +71,132 @@ int plot_instance(struct tsp* tsp)
 
 int run_experiment(struct tsp* tsp, int config)
 {
-	// add more configurations here
+	// multigreedy
 	if (config == 0) {
-		return tsp_solve_multigreedy(tsp, 0);
+		return tsp_solve_multigreedy(tsp, 0); // multigreedy
 	}
 	if (config == 1) {
+		return tsp_solve_multigreedy(tsp, 1); // multigreedy + 2opt
+	}
+
+	// vns
+	if (config == 2) {
+		// TODO set best range vns_setrange(, );
 		return tsp_solve_vns(tsp);
 	}
-	if (config == 2) {
-		return tsp_solve_tabu(tsp, tenure_sin);
-	}
+
+	// tabu fixed tenure
 	if (config == 3) {
-		return tsp_solve_benders(tsp, 1);
+		tenure_fixed_setdivisor(100);
+		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 4) {
-		return tsp_solve_branchcut(tsp, 0, 0, 0);
+		tenure_fixed_setdivisor(50);
+		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 5) {
-		return tsp_solve_branchcut(tsp, 1, 0, 0);
+		tenure_fixed_setdivisor(25);
+		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 6) {
-		return tsp_solve_branchcut(tsp, 1, 1, 0);
+		tenure_fixed_setdivisor(10);
+		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
+
+	// tabu sin tenure
 	if (config == 7) {
-		return tsp_solve_branchcut(tsp, 0, 1, 0);
+		tenure_sin_setdivisor(1000);
+		tenure_sin_setscale(10);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 8) {
-		return tsp_solve_branchcut(tsp, 0, 0, 1);
+		tenure_sin_setdivisor(1000);
+		tenure_sin_setscale(20);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 9) {
-		return tsp_solve_branchcut(tsp, 1, 0, 1);
+		tenure_sin_setdivisor(500);
+		tenure_sin_setscale(10);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 10) {
-		return tsp_solve_branchcut(tsp, 1, 1, 1);
+		tenure_sin_setdivisor(500);
+		tenure_sin_setscale(20);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 11) {
-		return tsp_solve_branchcut(tsp, 0, 1, 1);
+		tenure_sin_setdivisor(200);
+		tenure_sin_setscale(10);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 12) {
-		return tsp_solve_diving(tsp, 0.6);
+		tenure_sin_setdivisor(200);
+		tenure_sin_setscale(20);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 13) {
+		tenure_sin_setdivisor(100);
+		tenure_sin_setscale(10);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
+	}
+	if (config == 14) {
+		tenure_sin_setdivisor(100);
+		tenure_sin_setscale(20);
+		// TODO set min to best fixed tenure / 2
+		return tsp_solve_tabu(tsp, tenure_sin);
+	}
+
+	// benders
+	if (config == 15) {
+		return tsp_solve_benders(tsp, 1);
+	}
+
+	// branch and cut
+	if (config == 16) {
+		return tsp_solve_branchcut(tsp, 0, 0, 0);
+	}
+	if (config == 17) {
+		return tsp_solve_branchcut(tsp, 1, 0, 0);
+	}
+	if (config == 18) {
+		return tsp_solve_branchcut(tsp, 1, 1, 0);
+	}
+	if (config == 19) {
+		return tsp_solve_branchcut(tsp, 0, 1, 0);
+	}
+	if (config == 20) {
+		return tsp_solve_branchcut(tsp, 0, 0, 1);
+	}
+	if (config == 21) {
+		return tsp_solve_branchcut(tsp, 1, 0, 1);
+	}
+	if (config == 22) {
+		return tsp_solve_branchcut(tsp, 1, 1, 1);
+	}
+	if (config == 23) {
+		return tsp_solve_branchcut(tsp, 0, 1, 1);
+	}
+
+	// diving
+	if (config == 24) {
+		return tsp_solve_diving(tsp, 0.9);
+	}
+	if (config == 25) {
+		return tsp_solve_diving(tsp, 0.7);
+	}
+	if (config == 26) {
+		return tsp_solve_diving(tsp, 0.5);
+	}
+
+	// local branching
+	if (config == 27) {
 		return tsp_solve_localbranching(tsp, 10, 5);
 	}
 	return -1;
