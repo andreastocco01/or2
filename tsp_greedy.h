@@ -15,6 +15,6 @@ int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, d
  *
  * TODO should this be moved to another file?
  * */
-int tsp_solve_multigreedy(struct tsp* tsp);
+int tsp_solve_multigreedy(struct tsp* tsp, int use2opt);
 
 #endif

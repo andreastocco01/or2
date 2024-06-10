@@ -61,7 +61,7 @@ int tsp_solve_greedy(struct tsp* tsp, int starting_node, int* output_solution, d
 	return 0;
 }
 
-int tsp_solve_multigreedy(struct tsp* tsp)
+int tsp_solve_multigreedy(struct tsp* tsp, int use2opt)
 {
 	if (tsp_allocate_solution(tsp))
 		return -1;
@@ -105,19 +105,21 @@ int tsp_solve_multigreedy(struct tsp* tsp)
 			eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
 		}
 		eventlog_logdouble("new_current", current_iteration, current_solution_value);
-		while (1) {
-			if (tsp_shouldstop(tsp))
-				goto free_solution_buffers;
-			current_iteration++;
-			int best_i, best_j;
-			double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
-			if (best_delta <= 0)
-				break;
-			int isnewbest = tsp_2opt_swap_save(tsp, current_solution, &current_solution_value, best_i,
-							   best_j, best_delta);
-			if (isnewbest)
-				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
-			eventlog_logdouble("new_current", current_iteration, current_solution_value);
+		if (use2opt) {
+			while (1) {
+				if (tsp_shouldstop(tsp))
+					goto free_solution_buffers;
+				current_iteration++;
+				int best_i, best_j;
+				double best_delta = tsp_2opt_findbestswap(tsp, current_solution, &best_i, &best_j);
+				if (best_delta <= 0)
+					break;
+				int isnewbest = tsp_2opt_swap_save(tsp, current_solution, &current_solution_value,
+								   best_i, best_j, best_delta);
+				if (isnewbest)
+					eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
+				eventlog_logdouble("new_current", current_iteration, current_solution_value);
+			}
 		}
 	}
 

@@ -73,7 +73,7 @@ int run_experiment(struct tsp* tsp, int config)
 {
 	// add more configurations here
 	if (config == 0) {
-		return tsp_solve_multigreedy(tsp);
+		return tsp_solve_multigreedy(tsp, 0);
 	}
 	if (config == 1) {
 		return tsp_solve_vns(tsp);

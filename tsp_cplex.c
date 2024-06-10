@@ -838,7 +838,7 @@ int cplex_warm_start(struct tsp* tsp, CPXENVptr env, CPXLPptr lp)
 	tsp->timelimit_secs = total / 10;
 	// warm start: find a solution using an heuristic and pass it to CPLEX
 
-	int greedyres = tsp_solve_multigreedy(tsp);
+	int greedyres = tsp_solve_multigreedy(tsp, 1);
 	if (greedyres) {
 		fprintf(stderr, "Can't generate heuristic\n");
 		return 1;
