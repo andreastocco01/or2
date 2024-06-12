@@ -21,15 +21,15 @@ void tenure_setmin(int min)
 	tenure_min = min;
 }
 
-int tenure_fixed_divisor = 10;
+double tenure_fixed_divisor = 10.0;
 
 int tenure_fixed(int nnodes, int iteration)
 {
-	int computed = nnodes / tenure_fixed_divisor;
+	int computed = ((double)nnodes) / tenure_fixed_divisor;
 	return max(computed, tenure_min);
 }
 
-void tenure_fixed_setdivisor(int divisor)
+void tenure_fixed_setdivisor(double divisor)
 {
 	tenure_fixed_divisor = divisor;
 }

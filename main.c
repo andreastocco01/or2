@@ -80,30 +80,54 @@ int run_experiment(struct tsp* tsp, int config)
 	}
 
 	// vns
-	if (config == 2) {
-		// TODO set best range vns_setrange(, );
+	if (config == 200) {
+		vns_setrange(1, 8);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 201) {
+		vns_setrange(1, 4);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 202) {
+		vns_setrange(1, 2);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 203) {
+		vns_setrange(2, 4);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 204) {
+		vns_setrange(4, 8);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 205) {
+		vns_setrange(4, 6);
+		return tsp_solve_vns(tsp);
+	}
+	if (config == 206) {
+		vns_setrange(6, 8);
 		return tsp_solve_vns(tsp);
 	}
 
 	// tabu fixed tenure
 	if (config == 3) {
-		tenure_fixed_setdivisor(100);
+		tenure_fixed_setdivisor(2.4);
 		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 4) {
-		tenure_fixed_setdivisor(50);
+		tenure_fixed_setdivisor(2.2);
 		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 5) {
-		tenure_fixed_setdivisor(25);
+		tenure_fixed_setdivisor(2.0);
 		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 6) {
-		tenure_fixed_setdivisor(10);
+		tenure_fixed_setdivisor(1.8);
 		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 	if (config == 7) {
-		tenure_fixed_setdivisor(5);
+		tenure_fixed_setdivisor(1.6);
 		return tsp_solve_tabu(tsp, tenure_fixed);
 	}
 
@@ -111,49 +135,41 @@ int run_experiment(struct tsp* tsp, int config)
 	if (config == 8) {
 		tenure_sin_setdivisor(200);
 		tenure_sin_setscale(10);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 9) {
 		tenure_sin_setdivisor(200);
 		tenure_sin_setscale(20);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 10) {
 		tenure_sin_setdivisor(100);
 		tenure_sin_setscale(10);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 11) {
 		tenure_sin_setdivisor(100);
 		tenure_sin_setscale(20);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 12) {
 		tenure_sin_setdivisor(50);
 		tenure_sin_setscale(10);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 13) {
 		tenure_sin_setdivisor(50);
 		tenure_sin_setscale(20);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 14) {
 		tenure_sin_setdivisor(25);
 		tenure_sin_setscale(10);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 	if (config == 15) {
 		tenure_sin_setdivisor(25);
 		tenure_sin_setscale(20);
-		// TODO set min to best fixed tenure / 2
 		return tsp_solve_tabu(tsp, tenure_sin);
 	}
 
@@ -212,6 +228,9 @@ int run_experiment(struct tsp* tsp, int config)
 	if (config == 31) {
 		return tsp_solve_localbranching(tsp, 10, 5);
 	}
+	if (config == 32) {
+		return tsp_solve_localbranching(tsp, 20, 5);
+	}
 	return -1;
 }
 
@@ -230,6 +249,11 @@ void print_parse_friendly_output(struct tsp* tsp)
 
 int conclude_experiment(struct tsp* tsp, int is_parse_friendly, int do_plot)
 {
+	if (!tsp_is_solution(tsp)) {
+		printf("The computed solution is not a solution!\n");
+		return -1;
+	}
+
 	if (tsp->solution_permutation && !tsp_check_solution(tsp, NULL)) {
 		printf("The computed solution is invalid!\n");
 		return -1;

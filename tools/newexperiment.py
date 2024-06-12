@@ -1,16 +1,32 @@
 #!/usr/bin/env python3
 
 from subprocess import run, PIPE, Popen
+import argparse
+import json
 
-output_file = "out.txt"
-executable_name = "./main"
+parser = argparse.ArgumentParser(description="Run experiments")
+parser.add_argument("--output", type=str, default="out.txt")
+parser.add_argument("--executable", type=str, default="./main")
+parser.add_argument("--timelimit", type=int, default=120)
+parser.add_argument("--ninstances", type=int, default=5)
+parser.add_argument("--nnodes", type=int, default=1000)
+parser.add_argument("--parallel", type=int, default=1)
+parser.add_argument("--costortime", type=str, default="cost", choices=["cost", "time"])
+parser.add_argument("configs", type=str)
+
+args = parser.parse_args()
+
+print(args)
+
+output_file = args.output
+executable_name = args.executable
 pfflag = "--parsefriendly"
-timelimit = "60"
-parallel_tasks = 1
-nnodes = 1000
-ninstances = 5
-configs = [2, 12]
-cost_or_time = 1 # 0 for time, 1 for cost 
+timelimit = "{}".format(args.timelimit)
+parallel_tasks = args.parallel
+nnodes = args.nnodes
+ninstances = args.ninstances
+configs = json.loads(args.configs)
+cost_or_time = 0 if args.costortime == "time" else 1
 
 def divide_list_into_blocks(lst, n):
     return [lst[i:i+n] for i in range(0, len(lst), n)]
@@ -31,7 +47,7 @@ def build_command(parameters):
                 "--nnodes", n]
     return command
 
-def parse_result(result: str) -> (float, float):
+def parse_result(result: str):
     result = result.replace("\n ", "")
     parts = result.split(";")
     time = float(parts[0])
@@ -57,6 +73,7 @@ for block in blocks:
     for task in block:
         command = build_command(task)
         commands.append(command)
+        print("Running: {}".format(command))
     procs = [Popen(i, stdout=PIPE) for i in commands ]
     stdouts = [process.stdout for process in procs]
     for p in procs:

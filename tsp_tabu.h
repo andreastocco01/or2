@@ -10,7 +10,7 @@ void tenure_setmin(int min);
 
 int tenure_fixed(int nnodes, int iteration);
 
-void tenure_fixed_setdivisor(int divisor);
+void tenure_fixed_setdivisor(double divisor);
 
 int tenure_sin(int nnodes, int iteration);
 
