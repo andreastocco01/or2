@@ -284,6 +284,7 @@ prolong the Intensification Phase. Moreover, when encountering a local minimum, 
 that the solution obtained is not entirely incorrect but requires adjustment in some aspect.
 VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as
 opposed to restarting from a completely different starting point.
+This technique was proposed by Mladenovi{\'c} and Hansen in 1997 \cite{mladenovic1997variable}.
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching
 a local minimum. Subsequently, we perform a random number of permutations (called ``kicks'' in the following sections)
 involving three nodes (3-opt) to navigate away from the minimum.
