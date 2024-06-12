@@ -405,7 +405,7 @@ current set of subtour elimination constraints.
 As we will see in Section~\ref{sec:results}, although this method allows us to
 solve some instances it has a major flow. By using the MIP solver as a black
 box, we have to restart all the process every time a new solution (that
-contains subtours) is found. This creates on big problem: the branch-and-bound
+contains subtours) is found. This creates one big problem: the branch-and-bound
 tree will be discarded and the search for the optimal solution will start again.
 Even though throwing away the search tree can be beneficial sometimes, % TODO add dyamic search citation
 it needs to be done following some precise criteria and at the correct time.
@@ -482,7 +482,7 @@ ILP model, without the cuts. Whenever the solver finds a candidate solution,
 the execution will pass to a function that we have defined. This function
 will count the number of tours present in the solution. If this number is $1$,
 hence the solution is feasbile, we return from the function and pass the
-execution back to the solver. If the ``tour'' is composed by many subtours,
+execution back to the solver. If the tour is composed by many subtours,
 we will generate the approriate cuts before returning the exectution to
 cplex.
 
@@ -504,9 +504,26 @@ has found a new candidate for an integer-feasible solution.
 % TODO maybe be more specific about the name of the condition
 
 Inside this function we will count the number of components. If the number of
-components is greater then one, we will generate the corresponding subtour
+components is greater than one, we will generate the corresponding subtour
 elimination constraints and reject the solution.
 
+To improve the effectiveness of the MIP solver, CPLEX offers several
+ways to interact with it.
+
+The first method involves providing the MIP solver with a starting solution, known as ``warm start''.
+CPLEX will process the solution provided before starting the branch-and-cut algorithm. 
+This gives it an incumbent solution, which can help eliminate portions
+of the search space, potentially resulting in smaller branch-and-cut trees.
+
+Another method is ``heuristic solution posting'', where heuristic solutions are provided to the solver
+during the optimization process. Every time a new SEC is generated, we also provide CPLEX with
+the corresponding patched solution. If the patched solution improves the current incumbent, CPLEX
+may use it in future iterations.
+
+The last method we tried was the generation of violeted cuts on the fractional solution
+(not in the integer one as we explained before). //TODO
+
+The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
 \newpage
 
 \section{Matheuristics}
