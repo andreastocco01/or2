@@ -72,7 +72,7 @@ python ../tools/newexperiment.py \
         --executable ../main \
         --timelimit 12 \
         --ninstances 20 \
-        --nnodes 1500 \
+        --nnodes 1000 \
         --parallel 8 \
         --costortime cost \
         "[1,201,203,3,4,10]"

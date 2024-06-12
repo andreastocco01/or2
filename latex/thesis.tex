@@ -687,7 +687,7 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
         \caption{Performance profile of the fixed tabu search on the parameter $\alpha_0$}
         \label{fig:ht_fixten}
         \centering
-        \includegraphics[width=340pt]{assets/ht_greedy.pdf}
+        \includegraphics[width=340pt]{assets/ht_fixten.pdf}
 \end{figure}
 
 \clearpage
@@ -710,7 +710,7 @@ Then we can compute the value of the tenure:
 
 \begin{equation*}
         T = \max \left\{
-                \sin \left( \frac{i}{\alpha_2} \right) \cdot scale + 2 scale ,
+                \sin \left( \frac{i}{\alpha_2} \right) \cdot s + 2 s ,
                 T_{min}
         \right\}
 \end{equation*}
@@ -718,13 +718,59 @@ Then we can compute the value of the tenure:
 The performance profile for this parameter is presented in Figure~\ref{fig:ht_fixten}.
 
 \begin{figure*}[ht]
-        \caption{Performance profile of the sinusoidal tabu search on the parameters $\left(\alpha_0, \alpha_1\right)$}
+        \caption{Performance profile of the sinusoidal tabu search on the parameters $\left(\alpha_1; \alpha_2\right)$}
         \label{fig:ht_sinten}
         \centering
-        \includegraphics[width=340pt]{assets/ht_greedy.pdf}
+        \includegraphics[width=340pt]{assets/ht_sinten.pdf}
 \end{figure*}
 
+\clearpage
 
+\subsubsection{VNS}
+The parameter we have to tune for the VNS is the number of ``kicks'' we apply
+after reaching a local minimum. Since in our implementation we generate a
+random number of kicks to be applied, we have two parameters to tune: the
+minimum the maximum number of kicks.
+The performance profile for this experiment is shown in Figure~\ref{fig:ht_vns}.
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the VNS on the parameters $\left(min; max\right)$}
+        \label{fig:ht_vns}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_vns.pdf}
+\end{figure*}
+
+\clearpage
+\subsubsection{Fast-heuristic}
+Since for the next experiments we will need an heuristic to run for a tenth of
+the total available timelimit, we are going to discuss what is the best
+procedure we can use to find the first heuristic solution. The total available
+runtime is $120$ seconds, so we will compare the heuristics we discussed so far
+on a $12$ seconds timelimit.
+
+Since this heuristics will be used as an initial phase for matheuristic,
+the experiments were run with $1000$ nodes.
+
+To avoid comparing all the heuristics again, we picked one or two (in the case
+a clear winner is not present) from every approach.
+
+The label in the legend should be interpreted as the name of the method (as
+covered in the previous sections) followed by the parameters, if present.
+\textit{tabu\_f} refers to the tabu search using a fixed tenure while
+\textit{tabu\_s} refers to the sinusoidal tenure version.
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the heuristics with $12$ seconds}
+        \label{fig:ht_best12}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_best12.pdf}
+\end{figure*}
+
+From the plot we can see that the two best performing approaches are the greedy
+with 2-opt and tabu search with a sinusoidal tenure with parameters
+$\left(\alpha_1; \alpha_2\right) = \left(10;100\right)$.
+By interpreting this plot, we decided to use greedy in conjunction with 2-opt
+as the initial heuristic for the next experiments.
 
 
 \clearpage
