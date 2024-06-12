@@ -12,15 +12,15 @@
 #        "[0,1]"
 
 #vns_200-201-202-203-204-205-206
-python ../tools/newexperiment.py \
-        --output vns.txt \
-        --executable ../main \
-        --timelimit 120 \
-        --ninstances 20 \
-        --nnodes 1500 \
-        --parallel 8 \
-        --costortime cost \
-        "[200,201,202,203,204,205,206]"
+# python ../tools/newexperiment.py \
+#         --output vns.txt \
+#         --executable ../main \
+#         --timelimit 120 \
+#         --ninstances 20 \
+#         --nnodes 1500 \
+#         --parallel 8 \
+#         --costortime cost \
+#         "[200,201,202,203,204,205,206]"
 
 #fixten_3-4-5-6-7
 # python ../tools/newexperiment.py \
@@ -65,3 +65,14 @@ python ../tools/newexperiment.py \
 #         --parallel 1 \
 #         --costortime cost \
 #         "[25,26,27,28,29,30]"
+
+#bestheu12_1-201-203-3-4-10
+python ../tools/newexperiment.py \
+        --output bestheu12.txt \
+        --executable ../main \
+        --timelimit 12 \
+        --ninstances 20 \
+        --nnodes 1500 \
+        --parallel 8 \
+        --costortime cost \
+        "[1,201,203,3,4,10]"
