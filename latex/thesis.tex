@@ -570,6 +570,7 @@ where
 meaning that the edges we fix are a subset of the edges that are part of the heuristic solution.
 It is important to note that only the edges with a value of 1 are fixed. This is because fixing
 edges to zero is equivalent to instructing CPLEX to use less optimal edges, which could lead to a suboptimal solution.
+//TODO explain better
 
 What is left now is deciding how many and which edges to fix. The approach that will be explored
 in this report is choosing a number of edges (which will become an hyperparameter of our system)
@@ -686,6 +687,8 @@ solution we can find.
         \includegraphics[width=340pt]{assets/ht_greedy.pdf}
 \end{figure}
 
+Specifically, integrating the 2-opt algorithm resulted in a notable improvement of 12\% in solution cost.
+
 \clearpage
 
 \subsubsection{Tabu search}
@@ -716,6 +719,9 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
         \centering
         \includegraphics[width=340pt]{assets/ht_fixten.pdf}
 \end{figure}
+
+Although all parameters yield very similar performances, the tabu search with $\alpha_0 = 2.2$
+appears slightly superior to the others. Therefore, we will adopt this parameter for the subsequent results.
 
 \clearpage
 
@@ -751,6 +757,10 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
         \includegraphics[width=340pt]{assets/ht_sinten.pdf}
 \end{figure*}
 
+Tabu search with sinusoidal tenure parameters (10;100) and (10;200) exhibit significantly better performance compared to the others.
+The set of parameters (10;100) appears slightly superior to the other one. Therefore, we'll use these parameter for the
+subsequent results. 
+
 \clearpage
 
 \subsubsection{VNS}
@@ -766,6 +776,9 @@ The performance profile for this experiment is shown in Figure~\ref{fig:ht_vns}.
         \centering
         \includegraphics[width=340pt]{assets/ht_vns.pdf}
 \end{figure*}
+
+In this scenario, the performance of all parameters is quiete comparable. For the following results, we decided to use
+VNS with parameter (2;4) as it demonstrates better performance across most cases.
 
 \clearpage
 \subsubsection{Fast-heuristic}
