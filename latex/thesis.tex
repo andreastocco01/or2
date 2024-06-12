@@ -274,7 +274,7 @@ The purple line is the value of the tenure.
 In \textit{Tabu Search} we have seen two different phases:
 \begin{itemize}
         \item the \textit{Intensification Phase} to move towards a better solution
-        \item the \textit{Diversification Phase} in which we try to `escape` from a local minimum using only
+        \item the \textit{Diversification Phase} in which we try to ``escape'' from a local minimum using only
         non-tabu moves
 \end{itemize}
 With this approach, we may spend a considerable amount of time without achieving any improvement in
@@ -285,8 +285,9 @@ that the solution obtained is not entirely incorrect but requires adjustment in 
 VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as
 opposed to restarting from a completely different starting point.
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching
-a local minimum. Subsequently, we perform a random number of permutations involving three nodes (3-opt)
-to navigate away from the minimum. This approach also ensures that we never revert to a previously visited
+a local minimum. Subsequently, we perform a random number of permutations (called ``kicks'' in the following sections)
+involving three nodes (3-opt) to navigate away from the minimum.
+This approach also ensures that we never revert to a previously visited
 solution in the last 2-opt application, as it cannot be achieved through a sequence of permutations of
 three nodes.
 This is a simplified version of the algorithm; state-of-the-art techniques also allow for larger permutations
@@ -314,6 +315,14 @@ Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
+
+The number of kicks is chosen randomly within a range, making the minimum and the maximum number
+of kicks the only hyperparameters of this algorithm.
+Tuning these hyperparameters can lead to better performance of the algorithm. Performing too many
+kicks might result in restarting the intensification phase with a completely different solution,
+prolonging the time spent during this phase, while performing
+too few might not sufficiently change the solution, preventing us from visiting several different local minima.
+The tuning of these hyperparameters will be discussed in Section \ref{sec:results}.
 
 \clearpage
 
@@ -403,7 +412,7 @@ it needs to be done following some precise criteria and at the correct time.
 \subsubsection{Patching}
 At the end of the Bender's loop we are guaranteed to obtain a solution to the TSP problem.
 However, if we exit the loop because of the time limit, we'll return a solution containing more than
-one loop. To solve this problem we implemented the so-called `Patching Heuristic'.
+one loop. To solve this problem we implemented the so-called ``Patching Heuristic''.
 The idea behind this algorithm is to find a way to merge together all the components returned by the MIP solver
 so that, at each iteration of the Bender's loop, we have a solution composed of only one component.
 In this way, if we exit the Bender's loop because of the time limit, we'll always be able to return a
