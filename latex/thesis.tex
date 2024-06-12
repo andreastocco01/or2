@@ -9,6 +9,8 @@
 \usepackage{import}
 \usepackage{subcaption}
 \usepackage{mathtools}
+\usepackage[bookmarks]{hyperref}
+
 
 \usepackage{fancyhdr}
 \usepackage[a4paper, total={6in, 8in}]{geometry}
@@ -20,9 +22,10 @@
 \date{\today}
 
 \begin{document}
-\pagestyle{fancy}
 
 \maketitle
+
+\newpage
 
 \begin{abstract}
 The Traveling Salesman Problem (TSP) is definitely one of the most intensively studied problems in optimization.
@@ -33,6 +36,14 @@ TSP is computationally difficult (NP-Hard), but there exist many \textit{heurist
 In this report we are going to show and compare the performances of these
 techniques.
 \end{abstract}
+
+\newpage
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\pagestyle{fancy}
 
 \section{Introduction}
 The Traveling Salesman Problem is for sure one of the most intensively studied problems in
@@ -470,7 +481,7 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Callback}
+\subsection{Branch-and-cut}
 The technique that will be presented in this section solves the problem
 described in Section~\ref{ssec:benders} by generating the constraints when
 the MIP solver finds a new canditate solution. In order to achieve this,
@@ -511,7 +522,7 @@ To improve the effectiveness of the MIP solver, CPLEX offers several
 ways to interact with it.
 
 The first method involves providing the MIP solver with a starting solution, known as ``warm start''.
-CPLEX will process the solution provided before starting the branch-and-cut algorithm. 
+CPLEX will process the solution provided before starting the branch-and-cut algorithm.
 This gives it an incumbent solution, which can help eliminate portions
 of the search space, potentially resulting in smaller branch-and-cut trees.
 
@@ -766,7 +777,7 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
 
 Tabu search with sinusoidal tenure parameters (10;100) and (10;200) exhibit significantly better performance compared to the others.
 The set of parameters (10;100) appears slightly superior to the other one. Therefore, we'll use these parameter for the
-subsequent results. 
+subsequent results.
 
 \clearpage
 
@@ -819,9 +830,46 @@ $\left(\alpha_1; \alpha_2\right) = \left(10;100\right)$.
 By interpreting this plot, we decided to use greedy in conjunction with 2-opt
 as the initial heuristic for the next experiments.
 
+\clearpage
+\subsubsection{Diving}
+
+%TODO regenerate plot and add legend
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the diving}
+        \label{fig:ht_diving}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_diving.pdf}
+\end{figure*}
+
 
 \clearpage
 \newpage
+\subsection{Best heuristic}
+
+In this section we will show a comparison between the best hyperparameters
+configuration for the presented techniques.
+
+\begin{figure*}[ht]
+        \caption{Performance profile among the different approaches}
+        \label{fig:res_bestheu}
+        \centering
+        \includegraphics[width=340pt]{assets/res_bestheu.pdf}
+\end{figure*}
+
+\clearpage
+\newpage
+
+\subsection{Best exact method}
+
+%%TODO write explaination of what the different methods are
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the various branch-and-cut techniques}
+        \label{fig:ht_bec}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_bec.pdf}
+\end{figure*}
 
 \bibliographystyle{plain}
 \bibliography{thesis}

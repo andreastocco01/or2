@@ -67,12 +67,23 @@
 #         "[25,26,27,28,29,30]"
 
 #bestheu12_1-201-203-3-4-10
-python ../tools/newexperiment.py \
-        --output bestheu12.txt \
-        --executable ../main \
-        --timelimit 12 \
-        --ninstances 20 \
-        --nnodes 1000 \
-        --parallel 8 \
-        --costortime cost \
-        "[1,201,203,3,4,10]"
+# python ../tools/newexperiment.py \
+#         --output bestheu12.txt \
+#         --executable ../main \
+#         --timelimit 12 \
+#         --ninstances 20 \
+#         --nnodes 1000 \
+#         --parallel 8 \
+#         --costortime cost \
+#         "[1,201,203,3,4,10]"
+
+#bestheu_
+# python ../tools/newexperiment.py \
+#         --output bestheu.txt \
+#         --executable ../main \
+#         --timelimit 120 \
+#         --ninstances 20 \
+#         --nnodes 1500 \
+#         --parallel 8 \
+#         --costortime cost \
+#         "[1,4,10,203]"
