@@ -143,6 +143,11 @@ int tsp_solve_tabu(struct tsp* tsp, tsp_tenure tenure)
 			if (isnewbest)
 				eventlog_logdouble("new_incumbent", current_iteration, current_solution_value);
 			eventlog_logdouble("new_current", current_iteration, current_solution_value);
+
+			// output this even tho it is not changed in order
+			// to plot a better chart
+			ten = tenure(tsp->nnodes, current_iteration);
+			eventlog_logdouble("tenure", current_iteration, ten);
 		}
 
 		// Diversification phase

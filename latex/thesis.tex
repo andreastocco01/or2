@@ -250,10 +250,25 @@ from the tabu list all moves that weren't added in the last $100$ iterations.
 This \textit{hyperparameter} is crucial for the effectiveness of the method. In our implementation we experimented with a fixed tenure (dependent on the number of
 nodes of the instance) and with some functions of the number of the current iteration. Some good results were obtained with a sinusoidal function.
 
-This approach using variable values for the tenure can be quite effective compared to a fixed one as we will se in the chapted dedicated to experimental results.
+This approach using variable values for the tenure can be quite effective compared to a fixed one as we will se in the chapter dedicated to experimental results.
 An intuition behind this can be given by the fact that varying the tenure can be beneficial to the search of a new minimum because it tries to solve both the problems of having a tenure that is too big and one that is too small.
-A small tenure can be problematic because we cannot escape the local minimum far enough. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
+A small tenure can be problematic because we cannot escape the local minimum enough. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
 tabu list. Having a variable tenure can sometimes, on the long run, avoid the drawbacks of a fixed approach.
+
+Figure~\ref{fig:sin_ten} shows an example of the solving procedure using
+a sinusoidal tenure.
+The blue line shows the cost of the current solution. The orange line represents
+the incumbent and a cross is drawn when a new incumbent is found.
+The purple line is the value of the tenure.
+
+\begin{figure}[ht]
+        \caption{Example of variable tenure}
+        \label{fig:sin_ten}
+        \centering
+        \includegraphics[width=400pt]{assets/sin_ten.pdf}
+\end{figure}
+
+\clearpage
 
 \subsection{VNS (Variable Neighborhood Search)}
 In \textit{Tabu Search} we have seen two different phases:
@@ -413,7 +428,7 @@ Figure \ref{fig:patching} shows an example of patching.
         \end{subfigure}
 \end{figure}
 
-The Patching Heuristic aims to find the optimal way to merge two different components. As shown 
+The Patching Heuristic aims to find the optimal way to merge two different components. As shown
 in Figure \ref{fig:patching}, the patched solution is the one that minimizes the cost of the
 resulting single component.
 
@@ -423,8 +438,8 @@ However, in our implementation, such solution is stored as a permutation of the 
 so, implicitly, we have a \textit{directed graph} as solution to the problem.
 If we have two loops running in opposite directions, it could be that the
 patched solution is not the optimal one (because of an intersection of the newly added edges).
-To address this issue, after each patching step we apply a 2-opt optimization to refine the solution. 
- 
+To address this issue, after each patching step we apply a 2-opt optimization to refine the solution.
+
 An abstract description of the techinque is presented in Algorithm \ref{alg:patching}.
 
 \begin{algorithm}[ht]
@@ -533,7 +548,7 @@ What is left now is deciding how many and which edges to fix. The approach that 
 in this report is choosing a number of edges (which will become an hyperparameter of our system)
 and select the edges to fix randomly.
 
-Figure \ref{fig:diving} shows a description of the process.  
+Figure \ref{fig:diving} shows a description of the process.
 
 \begin{figure}[H]
         \caption{Diving}
@@ -555,7 +570,7 @@ This is possible thanks to the Local Branching constraints, which, in their simp
 asymmetric version are constructed like this
 
 \begin{equation*}
-  \sum_{e : x_{e}^{H}=1} x_{e} \geq n - k
+        \sum_{e : x_{e}^{H}=1} x_{e} \geq n - k
 \end{equation*}
 
 This forces at least $n-k$ edges of the heuristic solution we apply this method on to be
@@ -611,19 +626,108 @@ initialize our number generator with. For reproducibility reasons, they were exp
 and are available here: %TODO insert link with the instances.
 The size of the instances will be
 \begin{itemize}
-  \item $300$ for the optimal methods
-  \item $1000$ for matheuristics
-  \item $1500$ for heuristics
+        \item $300$ for the optimal methods
+        \item $1000$ for matheuristics
+        \item $1500$ for heuristics
 \end{itemize}
 
 For what concernes the value of the time limit, we will use $120$ seconds for all the
 experiments.
 
-To make comparisons a little bit more statistically valid all the systems will be run on
+To make comparisons a little bit more statistically valid, all the systems will be run on
 $20$ different instances of the same size. We will then take the results for each instance
 and plot the Performance Profile. All our considerations will be based on these plots.
 
+%TODO briefly explain how the performance profile works
+%TODO briefly explain what distance metric we are using
 
+\subsection{Hyperparameters tuning}
+Before comparing the methods with each other, it is useful to discuss some
+of the hyperparameters these approaches require.
+
+\subsubsection{Greedy}
+With regard to the greedy approach, the hyperparameter we should tune is
+deciding whether or not to use the 2-opt procedure. We can see the plot
+in Figure~\ref{fig:ht_greedy}. From this performance profile we can conclude
+that using the 2-opt procedure is beneficial to the cost of the best
+solution we can find.
+
+\begin{figure}[ht]
+        \caption{Performance profile of the greedy approaches}
+        \label{fig:ht_greedy}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_greedy.pdf}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Tabu search}
+On the subject of tabu search, there are a few hyperparameters we need to tune.
+First of all we need to discuss what the size of the tenure will be. In our
+experiments we will explore two different approaches: the first one will use
+a fixed value of the tenure for the whole experiment. The second approach we
+will cover is to use a sinusoidal value for the tenure.
+
+In the first case there will be only the value of the fixed tenure to tune.
+The size of the tenure $T$ is computed as follows.
+
+\begin{equation*}
+        T = \max \left\{
+                \frac{n}{\alpha_0} ,
+                T_{min}
+        \right\}
+\end{equation*}
+where $n$ is the number of nodes, $T_{min}$ is the minimum value for the tenure
+and $\alpha_0$ is the parameter we want to tune. The value of $T_{min}$ is arbitrarily
+set to $10$.
+
+The performance profile for this parameter is presented in Figure~\ref{fig:ht_fixten}.
+
+\begin{figure}[ht]
+        \caption{Performance profile of the fixed tabu search on the parameter $\alpha_0$}
+        \label{fig:ht_fixten}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_greedy.pdf}
+\end{figure}
+
+\clearpage
+
+With regard to the second approach, we have more than one parameter. First of
+all we will need to decide the parameters for the sinusoidal function. In our
+case the value of the tenure $T$ will be computed on the base of the current
+iteration $i$. We will also include the number of nodes $n$ and two parameters
+that we will use to scale the sinusoidal function, $\alpha_1$ and $\alpha_2$.
+Another parameter that will be used is a minimum value for the tenure,
+indicated with $T_{min}$. In our experiment we set this value to $10$.
+
+First of all we compute the value of the scale $s$:
+
+\begin{equation*}
+        s = \frac{n}{\alpha_1}
+\end{equation*}
+
+Then we can compute the value of the tenure:
+
+\begin{equation*}
+        T = \max \left\{
+                \sin \left( \frac{i}{\alpha_2} \right) \cdot scale + 2 scale ,
+                T_{min}
+        \right\}
+\end{equation*}
+
+The performance profile for this parameter is presented in Figure~\ref{fig:ht_fixten}.
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the sinusoidal tabu search on the parameters $\left(\alpha_0, \alpha_1\right)$}
+        \label{fig:ht_sinten}
+        \centering
+        \includegraphics[width=340pt]{assets/ht_greedy.pdf}
+\end{figure*}
+
+
+
+
+\clearpage
 \newpage
 
 \bibliographystyle{plain}

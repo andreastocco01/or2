@@ -14,18 +14,18 @@ def plot_data(file_path):
 
     # Plot the data for new_current and new_incumbent events
     fig, ax1 = plt.subplots(figsize=(10, 6))
-    ax1.plot(current_data['time'], current_data['value'], marker='o', linestyle='-', label='new_current', markersize=0)
-    ax1.plot(incumbent_data['time'], incumbent_data['value'], marker='x', linestyle='--', label='new_incumbent')
+    ax1.plot(current_data['time'], current_data['value'], marker='o', linestyle='-', label='current', markersize=0)
+    ax1.plot(incumbent_data['time'], incumbent_data['value'], marker='x', linestyle='--', label='incumbent')
 
     # Add labels and title for the first y-axis
-    ax1.set_xlabel('Time')
-    ax1.set_ylabel('Value (new_current, new_incumbent)')
-    ax1.set_title('Plot of Data')
+    ax1.set_xlabel('iteration')
+    # ax1.set_ylabel('Value (new_current, new_incumbent)')
+    # ax1.set_title('Plot of Data')
 
     # Plot the data for the tenure event on a secondary y-axis
     ax2 = ax1.twinx()
     ax2.plot(tenure_data['time'], tenure_data['value'], marker='s', linestyle='-.', color='m', label='tenure', markersize=0)
-    ax2.set_ylabel('Value (tenure)')
+    # ax2.set_ylabel('Value (tenure)')
 
     # Add legend for both y-axes
     ax1.legend(loc='upper left')
@@ -33,7 +33,8 @@ def plot_data(file_path):
 
     # Show plot
     plt.grid(True)
-    plt.show()
+
+    plt.savefig("out.pdf")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
