@@ -20,7 +20,7 @@
 %%   \import{<path to file>}{<filename>.pdf_tex}
 %% Alternatively, one can specify
 %%   \graphicspath{{<path to file>/}}
-%%
+%% 
 %% For more information, please see info/svg-inkscape on CTAN:
 %%   http://tug.ctan.org/tex-archive/info/svg-inkscape
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{288.4209137bp}%
+    \setlength{\unitlength}{287.44922447bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,7 +50,7 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.63634139)%
+  \begin{picture}(1,0.63467434)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{2opt-post.pdf}}%
