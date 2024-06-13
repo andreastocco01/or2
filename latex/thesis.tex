@@ -873,9 +873,11 @@ CPLEX more degrees of freedom leads to the best performance.
 
 \clearpage
 \subsubsection{Local branching}
-
-%TODO regenerate plot and add legend
-% the number shown is the starting k, delta is always 5
+As we mentioned in Section \ref{fig:ht_localb}, the local branching algorithm depends on two hyperparameters:
+the initial number $k_0$ of edges to be fixed and the $\Delta k$ used to increment the generic
+$k_t$ when an improved solution is found.
+Figure \ref{fig:ht_localb} shows the performance profile for tuning $k_0$.
+For simplicity, $\Delta k$ is arbitrarily set to 5.
 
 \begin{figure*}[ht]
         \caption{Performance profile of Local Branching}
@@ -884,13 +886,17 @@ CPLEX more degrees of freedom leads to the best performance.
         \includegraphics[width=340pt]{assets/ht_localb.pdf}
 \end{figure*}
 
+The best performance is obtained by setting $k_0 = 10$, so we will use this parameter
+to compare it with the other matheuristics.
 
 \clearpage
 \newpage
 \subsection{Best heuristic}
 
-In this section we will show a comparison between the best hyperparameters
-configuration for the presented techniques.
+In this section we will show a comparison between the best hyperparameter
+configuration for the presented heuristic techniques.
+Figure \ref{fig:res_bestheu} depicts the performance profile among
+all the heuristic algorithms discussed previously.
 
 \begin{figure*}[ht]
         \caption{Performance profile among the different approaches}
@@ -898,6 +904,12 @@ configuration for the presented techniques.
         \centering
         \includegraphics[width=340pt]{assets/res_bestheu.pdf}
 \end{figure*}
+
+Greedy + 2-opt and Tabu search with sinusoidal tenure exhibit very similar performance
+across most instances, while VNS and Tabu search with fixed tenure are less effective.
+In the end, the Tabu search with sinusoidal tenure stands out as the best heuristic
+because it consistently performs above the other curves across nearly all
+instances.
 
 \clearpage
 \newpage
