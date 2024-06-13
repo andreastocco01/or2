@@ -980,26 +980,6 @@ instances.
 \clearpage
 \newpage
 
-\subsection{Best matheuristic}
-In this section we'll show a comparison between all the matheuristic algorithms
-we presented.
-Figure \ref{fig:math_vs_tabu} shows the performance profile of these techniques.
-For reference, it shows also what the best heuristic (Tabu Search with sinusoidal tenure)
-would have performed compared with the matheuristic algorithms.
-
-\begin{figure*}[ht]
-        \caption{Performance profile of the various matheuristic techniques, along with the best heuristic}
-        \label{fig:math_vs_tabu}
-        \centering
-        \includegraphics[width=340pt]{assets/math_vs_tabu.pdf}
-\end{figure*}
-
-The matheuristic algorithms outperform the Tabu Search.
-Among them, the diving methods demonstrate superior performance compared to the local branching method.
-
-\clearpage
-\newpage
-
 \subsection{Best exact method}
 In this section we will show a comparison between all the exact methods
 we discussed previously.
@@ -1023,6 +1003,26 @@ Every branch-and-cut variation have better performance compared to the Benders'
 loop technique. While warm start does not significally improve the performance of the
 branch-and-cut, fractional cuts and heristic solution posting variations show better results.
 The combination of all these techniques proves to be the most effective.
+
+\clearpage
+\newpage
+
+\subsection{Best matheuristic}
+In this section we'll show a comparison between all the matheuristic algorithms
+we presented.
+Figure \ref{fig:math_vs_tabu} shows the performance profile of these techniques.
+For reference, it shows also what the best heuristic (Tabu Search with sinusoidal tenure)
+would have performed compared with the matheuristic algorithms.
+
+\begin{figure*}[ht]
+        \caption{Performance profile of the various matheuristic techniques, along with the best heuristic}
+        \label{fig:math_vs_tabu}
+        \centering
+        \includegraphics[width=340pt]{assets/math_vs_tabu.pdf}
+\end{figure*}
+
+The matheuristic algorithms outperform the Tabu Search.
+Among them, the diving methods demonstrate superior performance compared to the local branching method.
 
 \clearpage
 \newpage
