@@ -272,6 +272,10 @@ The blue line shows the cost of the current solution. The orange line represents
 the incumbent and a cross is drawn when a new incumbent is found.
 The purple line is the value of the tenure.
 
+At the beginning of the solving procedure it is possible to see that the solution
+cost improves very quickly. That is due to the 2-opt procedure being applied
+until a local minimum is found.
+
 \begin{figure}[ht]
         \caption{Example of variable tenure}
         \label{fig:sin_ten}
@@ -335,6 +339,17 @@ kicks might result in restarting the intensification phase with a completely dif
 prolonging the time spent during this phase, while performing
 too few might not sufficiently change the solution, preventing us from visiting several different local minima.
 The tuning of these hyperparameters will be discussed in Section \ref{sec:results}.
+
+In Figure~\ref{fig:vns} it is possible to see an example of the solving procedure
+using VNS. In this plot it is possible to see that, after the solver gets
+stuck in a local minimum, it can ``escape'' it after a series of kicks.
+
+\begin{figure}[ht]
+        \caption{Example of VNS}
+        \label{fig:vns}
+        \centering
+        \includegraphics[width=400pt]{assets/vns.pdf}
+\end{figure}
 
 \clearpage
 

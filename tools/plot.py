@@ -23,16 +23,17 @@ def plot_data(file_path):
     # ax1.set_title('Plot of Data')
 
     # Plot the data for the tenure event on a secondary y-axis
-    ax2 = ax1.twinx()
-    ax2.plot(tenure_data['time'], tenure_data['value'], marker='s', linestyle='-.', color='m', label='tenure', markersize=0)
+    #ax2 = ax1.twinx()
+    #ax2.plot(tenure_data['time'], tenure_data['value'], marker='s', linestyle='-.', color='m', label='tenure', markersize=0)
     # ax2.set_ylabel('Value (tenure)')
 
     # Add legend for both y-axes
     ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+    #ax2.legend(loc='upper right')
 
     # Show plot
-    plt.grid(True)
+    plt.grid(axis='y')
+    # plt.show()
 
     plt.savefig("out.pdf")
 
