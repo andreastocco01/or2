@@ -854,6 +854,10 @@ as the initial heuristic for the next experiments.
 
 \clearpage
 \subsubsection{Diving}
+With regard to the diving algorithm, we need to tune the percentage of edges to fix
+in the starting solution provided by the greedy + 2-opt algorithm
+to enable the MIP solver to handle the otherwise too large problem.
+The results are shown in the performance profile in Figure \ref{fig:ht_diving} 
 
 \begin{figure*}[ht]
         \caption{Performance profile of Diving}
@@ -861,6 +865,11 @@ as the initial heuristic for the next experiments.
         \centering
         \includegraphics[width=340pt]{assets/ht_diving.pdf}
 \end{figure*}
+
+Fixing too many edges (80\%, 90\%) leads to the worst performance. This may be because
+the MIP solver struggles to find a good solution due to the limited degrees of
+freedom we allow it. Instead, reducing the problem size by 40\% and hence giving
+CPLEX more degrees of freedom leads to the best performance.
 
 \clearpage
 \subsubsection{Local branching}
