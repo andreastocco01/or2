@@ -503,6 +503,7 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
 \begin{algorithm}[ht]
 \caption{Bender's loop + Patching Heuristic}
 \label{alg:patching}
+\hspace*{0.5em} \textbf{Output}: $solution$
 \begin{algorithmic}
 \Procedure{benders+patching}{$model$}
         \While{$!stop$}
@@ -513,7 +514,6 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
                 \State $model \gets model \cup SEC$
                 \State $solution \gets \Call{patchcomponents}{solution}$
         \EndWhile
-        \State \Return $solution$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
