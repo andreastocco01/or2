@@ -915,8 +915,16 @@ instances.
 \newpage
 
 \subsection{Best exact method}
-
-%%TODO write explaination of what the different methods are
+In this section we will show a comparison between all the exact methods
+we discussed previously.
+The following clarifies the meaning of the curve labels shown in Figure \ref{fig:ht_bec}:
+\begin{itemize}
+\item base: branch-and-cut
+\item warm: branch-and-cut with warm start
+\item frac: branch-and-cut with fractional cuts
+\item post: branch-and-cut with heuristic solution posting during the execution
+\item bl: Benders' loop
+\end{itemize}
 
 \begin{figure*}[ht]
         \caption{Performance profile of the various branch-and-cut techniques}
@@ -924,6 +932,11 @@ instances.
         \centering
         \includegraphics[width=340pt]{assets/ht_bec.pdf}
 \end{figure*}
+
+Every branch-and-cut variation have better performance compared to the Benders'
+loop technique. While warm start does not significally improve the performance of the
+branch-and-cut, fractional cuts and heristic solution posting variations show better results.
+The combination of all these techniques proves to be the most effective.
 
 \clearpage
 \newpage
