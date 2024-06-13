@@ -518,7 +518,11 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Branch-and-cut}
+\subsection{Opening CPLEX}
+The title of this section refers to the fact that, to improve what we did in the
+previous section, we use and approach where we need to interact with CPLEX and
+control its exectuion.
+
 The technique that will be presented in this section solves the problem
 described in Section~\ref{ssec:benders} by generating the constraints when
 the MIP solver finds a new canditate solution. In order to achieve this,
@@ -527,24 +531,9 @@ of the branch-and-cut.
 
 The process will go as follows: first, we will provide the solver with the
 ILP model, without the cuts. Whenever the solver finds a candidate solution,
-the execution will pass to a function that we have defined. This function
-will count the number of tours present in the solution. If this number is $1$,
-hence the solution is feasbile, we return from the function and pass the
-execution back to the solver. If the tour is composed by many subtours,
-we will generate the approriate cuts before returning the exectution to
-cplex.
+the execution will be passed to a function that we have defined.
 
-It is possible to see a visual description of the process in
-Figure~\ref{fig:callback}.
-
-\begin{figure}[ht]
-        \caption{Solving using candidate callback}
-        \label{fig:callback}
-        \centering
-        \includegraphics[width=340pt]{assets/callback.drawio.pdf}
-\end{figure}
-
-As we can see in the the diagram, we will need a way to generate valid cuts
+We will need a way to generate valid cuts
 whenever the MIP solver has a new canditate solution. To do this we ``install''
 a callback. CPLEX allows us to pass a function to it, that will be called when
 a specific condition is met. In our case we will use one\footnote{CPX\_CALLBACKCONTEXT\_CANDIDATE} that is called when CPLEX
@@ -554,35 +543,73 @@ Inside this function we will count the number of components. If the number of
 components is greater than one, we will generate the corresponding subtour
 elimination constraints and reject the solution.
 
-To improve the effectiveness of the MIP solver, CPLEX offers several
-ways to interact with it.
+It is possible to see a diagram of such process in Figure~\ref{fig:callback}.
 
-The first method involves providing the MIP solver with a starting solution, known as ``warm start''.
-CPLEX will process the solution provided before starting the branch-and-cut algorithm.
-This gives it an incumbent solution, which can help eliminate portions
-of the search space, potentially resulting in smaller branch-and-cut trees.
+\begin{figure}[ht]
+        \caption{Solving using candidate callback}
+        \label{fig:callback}
+        \centering
+        \includegraphics[width=340pt]{assets/callback.drawio.pdf}
+\end{figure}
 
-Another method is ``heuristic solution posting'', where heuristic solutions are provided to the solver
-during the optimization process. Every time a new SEC is generated, we also provide CPLEX with
-the corresponding patched solution. If the patched solution improves the current incumbent, CPLEX
-may use it in future iterations.
+\clearpage
 
-In order to do this we use the same method we have discussed in Section~\ref{sssec:patching}, where
-the loops are ``glued'' in pairs in the locally best way.
+Even though, as we will see in Section~\ref{sec:results}, the method mentioned
+above allows us to obtain satisfying results, there exist ways to improve it
+even more. Three of these methods will be covered in this report.
 
-The last method we tried was the generation of violeted cuts from the fractional solution
-(not in the integer one as we explained before).
+\subsubsection{Warm start}
 
-% It is possible to show that \textit{the separation problem for finding a violated subtour elimination
-% constraint can be reduced to a maximum flow problem} \cite{}.
-We use a routine from the Concorde software to solve the maximum flow problem
-corresponding to the LP relaxation of our TSP problem. This involves functions like \verb|CCconnect_components|,
+The first method involves providing the MIP solver with a starting solution, known as a
+``warm start''.
+CPLEX will save this solution in its ``solution pool'' and will be able to use
+it if it can be useful.
+The MIP solver will process the provided solution before starting the branch-and-cut algorithm,
+giving it an incumbent solution, that can help eliminating portions
+of the search space, potentially resulting in a smaller branch-and-cut tree.
+
+\subsubsection{Solution posting}
+
+The second method is the ``heuristic solution posting'', where heuristic solutions are provided to the solver during the optimization process.
+
+The procedure we developed works as follows: everytime the callback function
+is executed, as we have previously seen, CPLEX will have found a solution
+formed by many subtours. After generating the SECs, we can leverage the
+method we have described in Section~\ref{sssec:patching} to ``glue'' the subcycles
+together and obtain a feasible solution. We will see in
+Section~\ref{sec:results} that \textit{posting} this solution to CPLEX can
+be beneficial to the process.
+
+
+\subsubsection{Fractional cuts}
+The third and last method we tried was the generation of violeted cuts from the relaxed
+solutions CPLEX runs into.
+In order to do so, we use a callback\footnote{CPX\_CALLBACKCONTEXT\_RELAXATION} that is
+invoked whenever CPLEX has found a relaxed solution.
+This solution is usually not integer and, most of the times, comes from the solution
+of a node LP-relaxation.
+
+It is possible to show that \textit{the separation problem for finding a violated subtour elimination
+constraint can be reduced to a maximum flow problem}.
+To accomplish this we used a routine from the Concorde~\cite{applegate1998solution} software to solve such maximum flow problem,
+corresponding to the LP relaxation of our TSP problem.
+
+This procedure involves the function \verb|CCconnect_components|,
 which identifies connected components in the graph, and \verb|CCviolated_cuts|, which generates violated cuts.
-By using these functions we can add SECs derived from the fractional solution of the LP relaxation, rather than from the integer solution.
-Addressing violations in the fractional solutions helps the solver to prune the search space, by eliminating
-suboptimal branches early. Hence the algorithm can converge to the optimal solution more efficiently.
 
-The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
+By using these functions we can add SECs derived from the fractional solution of the an integer relaxation
+of the problem, rather than from the integer solution.
+
+Generating cuts from these solutions can help the solver to narrow down the size of the search space, eliminating
+useless branches early. Hence the algorithm can converge to the optimal solution more efficiently.
+
+Since this procedure is time consuming, we cannot afford to execute it on every
+node of the branch-and-cut tree. Our approach was to apply it only on the
+solutions generated by a subset of the nodes. We arbitrarily decided to perform
+it on a tenth of the nodes, using the modulo operator to decide which ones. In
+our implementation, the relaxed solutions coming from a node with index divisible by $10$,
+will go through this procedure.
+
 \newpage
 
 \section{Matheuristics}
