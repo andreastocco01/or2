@@ -570,11 +570,16 @@ may use it in future iterations.
 In order to do this we use the same method we have discussed in Section~\ref{sssec:patching}, where
 the loops are ``glued'' in pairs in the locally best way.
 
-The last method we tried was the generation of violeted cuts on the fractional solution
+The last method we tried was the generation of violeted cuts from the fractional solution
 (not in the integer one as we explained before).
 
-To accomplish this,
-% TODO more on fractional cuts (speaking of concorde)
+% It is possible to show that \textit{the separation problem for finding a violated subtour elimination
+% constraint can be reduced to a maximum flow problem} \cite{}.
+We use a routine from the Concorde software to solve the the maximum flow problem
+corresponding to the LP relaxation of our TSP problem. This allows us to
+add SECs derived from the fractional solution of the LP relaxation, rather than from the integer solution.
+Addressing violations in the fractional solutions helps the solver to prune the search space, by eliminating
+suboptimal branches early. Hence the algorithm can converge to the optimal solution more efficiently.
 
 The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
 \newpage
