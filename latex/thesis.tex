@@ -210,7 +210,7 @@ Tabu Search is a metaheuristic that efficiently explores the solution space by i
 This technique was introducted by Fred W. Glover in 1986 and then formalized
 in 1989~\cite{Glover:TabuSearch}.
 
-By design, this procedure will initially head directly towards a local minimum, thanks to the underlying heuristic. The only purpose of this metaheuristic is then to escape it and, hopefully, converge to a better minimum.
+By design, this procedure will initially head directly towards a local minimum, thanks to the underlying heuristic. The only purpose of this metaheuristic is then to ``escape'' it and, hopefully, converge to a better minimum.
 
 The search procedure will be alternating between 2 different behaviors by its nature. First of all
 we will identify a phase where the method, starting from a ``bad'' solution, uses the underlying
@@ -289,7 +289,7 @@ until a local minimum is found.
 In \textit{Tabu Search} we have seen two different phases:
 \begin{itemize}
         \item the \textit{Intensification Phase} to move towards a better solution
-        \item the \textit{Diversification Phase} in which we try to ``escape'' from a local minimum using only
+        \item the \textit{Diversification Phase} in which we try to escape from a local minimum using only
         non-tabu moves
 \end{itemize}
 With this approach, we may spend a considerable amount of time without achieving any improvement in
@@ -342,7 +342,7 @@ The tuning of these hyperparameters will be discussed in Section \ref{sec:result
 
 In Figure~\ref{fig:vns} it is possible to see an example of the solving procedure
 using VNS. In this plot it is possible to see that, after the solver gets
-stuck in a local minimum, it can ``escape'' it after a series of kicks.
+stuck in a local minimum, it can escape it after a series of kicks.
 
 \begin{figure}[ht]
         \caption{Example of VNS}
@@ -410,7 +410,7 @@ The basic idea behind this approach is the iterated use of a MIP solver (like CP
 as a black-box. More precisely, we will start by providing the solver with
 a model lacking all the separation constraints. The solution of this model,
 with all probability, is going to contain more than one loop. We will then
-generate some constraints "cutting" the solution we have found.
+generate some constraints ``cutting'' the solution we have found.
 The model, updated with the new constraints, is then passed to the solver
 and solved again. This loop will be repeated until a solution composed by
 only one component is found.
@@ -866,10 +866,10 @@ The results are shown in the performance profile in Figure \ref{fig:ht_diving}
         \includegraphics[width=340pt]{assets/ht_diving.pdf}
 \end{figure*}
 
-Fixing too many edges (80\%, 90\%) leads to the worst performance. This may be because
+Fixing too many edges of the provided solution (80\%, 90\%) leads to the worst performance. This may be because
 the MIP solver struggles to find a good solution due to the limited degrees of
-freedom we allow it. Instead, reducing the problem size by 40\% and hence giving
-CPLEX more degrees of freedom leads to the best performance.
+freedom we allow it. Instead, fixing the 40\% of the edges belonging to the solution, and hence giving
+CPLEX more degrees of freedom, leads to the best performance.
 
 \clearpage
 \subsubsection{Local branching}
