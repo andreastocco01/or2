@@ -23,7 +23,26 @@
 
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+    \centering
+    \vspace*{\fill}
+
+    \vspace*{0.5cm}
+
+    \huge\bfseries
+        Performance Analysis of TSP Solving Techniques
+
+    \vspace*{0.5cm}
+
+    \large Basaglia Alberto and Stocco Andrea
+
+    \vspace*{2cm}
+
+    \includegraphics[width=12cm]{assets/cover.pdf} % also works with logo.pdf
+
+
+    \vspace*{\fill}
+\end{titlepage}
 
 \newpage
 
@@ -37,8 +56,6 @@ In this report we are going to show and compare the performances of these
 techniques.
 \end{abstract}
 
-\newpage
-\maketitle
 \newpage
 \tableofcontents
 \newpage
@@ -556,7 +573,7 @@ the loops are ``glued'' in pairs in the locally best way.
 The last method we tried was the generation of violeted cuts on the fractional solution
 (not in the integer one as we explained before).
 
-To accomplish this, 
+To accomplish this,
 % TODO more on fractional cuts (speaking of concorde)
 
 The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
@@ -706,7 +723,6 @@ To make comparisons a little bit more statistically valid, all the systems will 
 $20$ different instances of the same size. We will then take the results for each instance
 and plot the Performance Profile. All our considerations will be based on these plots.
 
-% TODO briefly explain what distance metric we are using
 It is also important to discuss how the distance between the points in the 2d
 grid was computed: in our experiments we use the ATT formula from the TSPLIB~\cite{reinelt1991tsplib}.
 
@@ -720,7 +736,7 @@ across multiple problem instances.
 In these plots, each algorithm is represented by a line, where a point (x, y) indicates that: \textit{the algorithm achieves
 a solution within a factor of x of the best observed performance for y percentage of the problem set}.
 Therefore, using these plots allows for identifying which algorithm is consistently better across a range
-of problem instances. We will use them widely in the next sections for hyperparameter tuning and 
+of problem instances. We will use them widely in the next sections for hyperparameter tuning and
 to determine the best method among different algorithms.
 To determinte the best algorithm we will use two different metrics based on the type of algorithms
 under study: for heuristics and matheuristics, we use the cost of the solution found as the metric, while
@@ -874,7 +890,7 @@ as the initial heuristic for the next experiments.
 With regard to the diving algorithm, we need to tune the percentage of edges to fix
 in the starting solution provided by the greedy + 2-opt algorithm
 to enable the MIP solver to handle the otherwise too large problem.
-The results are shown in the performance profile in Figure \ref{fig:ht_diving} 
+The results are shown in the performance profile in Figure \ref{fig:ht_diving}
 
 \begin{figure*}[ht]
         \caption{Performance profile of Diving}
