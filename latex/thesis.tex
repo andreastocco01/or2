@@ -706,8 +706,9 @@ a solution within a factor of x of the best observed performance for y percentag
 Therefore, using these plots allows for identifying which algorithm is consistently better across a range
 of problem instances. We will use them widely in the next sections for hyperparameter tuning and 
 to determine the best method among different algorithms.
-
-%TODO briefly explain what distance metric we are using
+To determinte the best algorithm we will use two different metrics based on the type of algorithms
+under study: for heuristics and matheuristics, we use the cost of the solution found as the metric, while
+for the exact methods, we are going to use the time spent to find the optimal solution.
 
 \subsection{Hyperparameters tuning}
 Before comparing the methods with each other, it is useful to discuss some
