@@ -402,7 +402,11 @@ with the size of the instances we are interested in.
 The techniques that will be shown in this section are different ways to generate
 the subtour elimination constraints. We will use CPLEX to solve the MIP
 problems.
-% TODO more on cplex
+
+CPLEX is a high-performance mathematical programming solver for linear
+programming (LP), mixed-integer programming (MIP), and quadratic programming
+(QP). When solving the TSP using CPLEX, we leverage its robust MIP solving
+capabilities to handle the solution of the problem~\cite{cplex-docs}.
 \subsection{Benders' loops}
 \label{ssec:benders}
 The first technique we will explore is the so-called ``Benders' loops'' technique.
@@ -433,10 +437,11 @@ solve some instances it has a major flow. By using the MIP solver as a black
 box, we have to restart all the process every time a new solution (that
 contains subtours) is found. This creates one big problem: the branch-and-bound
 tree will be discarded and the search for the optimal solution will start again.
-Even though throwing away the search tree can be beneficial sometimes, % TODO add dyamic search citation
+Even though throwing away the search tree can be sometimes beneficial~\cite{achterberg2009scip}\cite{achterberg2007constraint},
 it needs to be done following some precise criteria and at the correct time.
 
 \subsubsection{Patching}
+\label{sssec:patching}
 At the end of the Bender's loop we are guaranteed to obtain a solution to the TSP problem.
 However, if we finish the procedure earlier because of the time limit, we'll return a solution containing more than
 one loop. To solve this problem we implemented the so-called ``Patching Heuristic''.
@@ -525,9 +530,8 @@ Figure~\ref{fig:callback}.
 As we can see in the the diagram, we will need a way to generate valid cuts
 whenever the MIP solver has a new canditate solution. To do this we ``install''
 a callback. CPLEX allows us to pass a function to it, that will be called when
-a specific condition is met. In our case we will use one that is called when CPLEX
+a specific condition is met. In our case we will use one\footnote{CPX\_CALLBACKCONTEXT\_CANDIDATE} that is called when CPLEX
 has found a new candidate for an integer-feasible solution.
-% TODO maybe be more specific about the name of the condition
 
 Inside this function we will count the number of components. If the number of
 components is greater than one, we will generate the corresponding subtour
@@ -545,10 +549,14 @@ Another method is ``heuristic solution posting'', where heuristic solutions are 
 during the optimization process. Every time a new SEC is generated, we also provide CPLEX with
 the corresponding patched solution. If the patched solution improves the current incumbent, CPLEX
 may use it in future iterations.
-% TODO more on the patching
+
+In order to do this we use the same method we have discussed in Section~\ref{sssec:patching}, where
+the loops are ``glued'' in pairs in the locally best way.
 
 The last method we tried was the generation of violeted cuts on the fractional solution
 (not in the integer one as we explained before).
+
+To accomplish this, 
 % TODO more on fractional cuts (speaking of concorde)
 
 The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
@@ -697,6 +705,14 @@ experiments.
 To make comparisons a little bit more statistically valid, all the systems will be run on
 $20$ different instances of the same size. We will then take the results for each instance
 and plot the Performance Profile. All our considerations will be based on these plots.
+
+% TODO briefly explain what distance metric we are using
+It is also important to discuss how the distance between the points in the 2d
+grid was computed: in our experiments we use the ATT formula from the TSPLIB~\cite{reinelt1991tsplib}.
+
+\subsection{Experimental Setup}
+All the experiments were run on the same machine equipped with an Intel Core i7 6700k
+and 16GB of RAM. The MIP solver used was IBM ILOG CPLEX 22.1.0~\cite{cplex-docs}.
 
 \subsection{Performance profile}
 Performance profiles are graphical representations used to compare the performance of different algorithms
