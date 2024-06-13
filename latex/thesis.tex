@@ -701,11 +701,12 @@ and plot the Performance Profile. All our considerations will be based on these 
 \subsection{Performance profile}
 Performance profiles are graphical representations used to compare the performance of different algorithms
 across multiple problem instances.
-In these plots, each algorithm has one line, where a point (x, y) indicates that \textit{the algorithm achieves a solution within
-a factor of x of the best observed performance for y percentage of the problem set}.
-Let's see an example to clarify what has just been said.
+In these plots, each algorithm is represented by a line, where a point (x, y) indicates that: \textit{the algorithm achieves
+a solution within a factor of x of the best observed performance for y percentage of the problem set}.
+Therefore, using these plots allows for identifying which algorithm is consistently better across a range
+of problem instances. We will use them widely in the next sections for hyperparameter tuning and 
+to determine the best method among different algorithms.
 
-%TODO briefly explain how the performance profile works
 %TODO briefly explain what distance metric we are using
 
 \subsection{Hyperparameters tuning}
