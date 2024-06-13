@@ -66,6 +66,17 @@
 #         --costortime cost \
 #         "[25,26,27,28,29,30]"
 
+#localb_321-32-31
+python ../tools/newexperiment.py \
+        --output localb.txt \
+        --executable ../main \
+        --timelimit 120 \
+        --ninstances 20 \
+        --nnodes 1000 \
+        --parallel 1 \
+        --costortime cost \
+        "[321,32,31]"
+
 #bestheu12_1-201-203-3-4-10
 # python ../tools/newexperiment.py \
 #         --output bestheu12.txt \

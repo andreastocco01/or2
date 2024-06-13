@@ -229,6 +229,9 @@ int run_experiment(struct tsp* tsp, int config)
 	if (config == 302) {
 		return tsp_solve_diving(tsp, 0.2);
 	}
+	if (config == 303) {
+		return tsp_solve_diving(tsp, 0.1);
+	}
 
 	// local branching
 	if (config == 31) {
@@ -236,6 +239,9 @@ int run_experiment(struct tsp* tsp, int config)
 	}
 	if (config == 32) {
 		return tsp_solve_localbranching(tsp, 20, 5);
+	}
+	if (config == 321) {
+		return tsp_solve_localbranching(tsp, 5, 5);
 	}
 
 	if (config == 33) {
