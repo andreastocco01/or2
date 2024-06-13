@@ -575,9 +575,10 @@ The last method we tried was the generation of violeted cuts from the fractional
 
 % It is possible to show that \textit{the separation problem for finding a violated subtour elimination
 % constraint can be reduced to a maximum flow problem} \cite{}.
-We use a routine from the Concorde software to solve the the maximum flow problem
-corresponding to the LP relaxation of our TSP problem. This allows us to
-add SECs derived from the fractional solution of the LP relaxation, rather than from the integer solution.
+We use a routine from the Concorde software to solve the maximum flow problem
+corresponding to the LP relaxation of our TSP problem. This involves functions like \verb|CCconnect_components|,
+which identifies connected components in the graph, and \verb|CCviolated_cuts|, which generates violated cuts.
+By using these functions we can add SECs derived from the fractional solution of the LP relaxation, rather than from the integer solution.
 Addressing violations in the fractional solutions helps the solver to prune the search space, by eliminating
 suboptimal branches early. Hence the algorithm can converge to the optimal solution more efficiently.
 
@@ -770,7 +771,7 @@ Specifically, integrating the 2-opt algorithm resulted in a notable improvement 
 \clearpage
 
 \subsubsection{Tabu search}
-On the subject of tabu search, there are a few hyperparameters we need to tune:
+On the subject of Tabu Search, there are a few hyperparameters we need to tune:
 we need to discuss what the size of the tenure will be. In our
 experiments we will explore two different approaches: the first one will use
 a fixed value of the tenure for the whole experiment. The second approach we
@@ -792,13 +793,13 @@ set to $10$.
 The performance profile for this parameter is presented in Figure~\ref{fig:ht_fixten}.
 
 \begin{figure}[ht]
-        \caption{Performance profile of the fixed tabu search on the parameter $\alpha_0$}
+        \caption{Performance profile of the fixed Tabu Search on the parameter $\alpha_0$}
         \label{fig:ht_fixten}
         \centering
         \includegraphics[width=340pt]{assets/ht_fixten.pdf}
 \end{figure}
 
-Although all parameters yield very similar performances, the tabu search with $\alpha_0 = 2.2$
+Although all parameters yield very similar performances, the Tabu Search with $\alpha_0 = 2.2$
 appears slightly superior to the others. Therefore, we will adopt this parameter for the subsequent experiments.
 
 \clearpage
@@ -829,13 +830,13 @@ Then we can compute the value of the tenure:
 The performance profile for this parameter is presented in Figure~\ref{fig:ht_fixten}.
 
 \begin{figure*}[ht]
-        \caption{Performance profile of the sinusoidal tabu search on the parameters $\left(\alpha_1; \alpha_2\right)$}
+        \caption{Performance profile of the sinusoidal Tabu Search on the parameters $\left(\alpha_1; \alpha_2\right)$}
         \label{fig:ht_sinten}
         \centering
         \includegraphics[width=340pt]{assets/ht_sinten.pdf}
 \end{figure*}
 
-Tabu search with sinusoidal tenure parameters (10;100) and (10;200) exhibit significantly better performance compared to the others.
+Tabu Search with sinusoidal tenure parameters (10;100) and (10;200) exhibit significantly better performance compared to the others.
 The set of parameters (10;100) appears slightly superior to the other one. Therefore, we'll use these parameter for the
 subsequent results.
 
@@ -874,7 +875,7 @@ a clear winner is not present) from every approach.
 
 The label in the legend should be interpreted as the name of the method (as
 covered in the previous sections) followed by the parameters, if present.
-\textit{tabu\_f} refers to the tabu search using a fixed tenure while
+\textit{tabu\_f} refers to the Tabu Search using a fixed tenure while
 \textit{tabu\_s} refers to the sinusoidal tenure version.
 
 \begin{figure*}[ht]
@@ -885,7 +886,7 @@ covered in the previous sections) followed by the parameters, if present.
 \end{figure*}
 
 From the plot we can see that the two best performing approaches are the greedy
-with 2-opt and tabu search with a sinusoidal tenure with parameters
+with 2-opt and Tabu Search with a sinusoidal tenure with parameters
 $\left(\alpha_1; \alpha_2\right) = \left(10;100\right)$.
 By interpreting this plot, we decided to use greedy in conjunction with 2-opt
 as the initial heuristic for the next experiments.
@@ -943,9 +944,9 @@ all the heuristic algorithms discussed previously.
         \includegraphics[width=340pt]{assets/res_bestheu.pdf}
 \end{figure*}
 
-Greedy + 2-opt and Tabu search with sinusoidal tenure exhibit very similar performance
-across most instances, while VNS and Tabu search with fixed tenure are less effective.
-In the end, the Tabu search with sinusoidal tenure stands out as the best heuristic
+Greedy + 2-opt and Tabu Search with sinusoidal tenure exhibit very similar performance
+across most instances, while VNS and Tabu Search with fixed tenure are less effective.
+In the end, the Tabu Search with sinusoidal tenure stands out as the best heuristic
 because it consistently performs above the other curves across nearly all
 instances.
 
@@ -956,7 +957,7 @@ instances.
 In this section we'll show a comparison between all the matheuristic algorithms
 we presented.
 Figure \ref{fig:math_vs_tabu} shows the performance profile of these techniques.
-For reference, it shows also what the best heuristic (Tabu search with sinusoidal tenure)
+For reference, it shows also what the best heuristic (Tabu Search with sinusoidal tenure)
 would have performed compared with the matheuristic algorithms.
 
 \begin{figure*}[ht]
@@ -966,7 +967,7 @@ would have performed compared with the matheuristic algorithms.
         \includegraphics[width=340pt]{assets/math_vs_tabu.pdf}
 \end{figure*}
 
-The matheuristic algorithms outperform the Tabu search.
+The matheuristic algorithms outperform the Tabu Search.
 Among them, the diving methods demonstrate superior performance compared to the local branching method.
 
 \clearpage
