@@ -255,7 +255,7 @@ move has a negative delta we apply it anyway, adding it to the list of the tabu 
 
 It is then important to define a way to remove moves from the list. In the pseudo-code we define it with a generic ``removeold'' function, in practice there are many ways the remove tabu entries.
 
-We define ``tenure'' of the tabu method the window of iteration in which tabu moves are considered. For example a tenure of $100$ iterations would mean that we remove
+We define ``tenure'' of the tabu method the window of iterations in which tabu moves are considered. For example a tenure of $100$ iterations would mean that we remove
 from the tabu list all moves that weren't added in the last $100$ iterations.
 
 This \textit{hyperparameter} is crucial for the effectiveness of the method. In our implementation we experimented with a fixed tenure (dependent on the number of
@@ -263,8 +263,8 @@ nodes of the instance) and with some functions of the number of the current iter
 
 This approach using variable values for the tenure can be quite effective compared to a fixed one as we will se in the chapter dedicated to experimental results.
 An intuition behind this can be given by the fact that varying the tenure can be beneficial to the search of a new minimum because it tries to solve both the problems of having a tenure that is too big and one that is too small.
-A small tenure can be problematic because we cannot escape the local minimum enough. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
-tabu list. Having a variable tenure can sometimes, on the long run, avoid the drawbacks of a fixed approach.
+A small tenure can be problematic because we cannot escape the local minimum enough to not get back to it. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
+tabu list. Having a variable tenure can, sometimes, on the long run, avoid the drawbacks of a fixed approach.
 
 Figure~\ref{fig:sin_ten} shows an example of the solving procedure using
 a sinusoidal tenure.
@@ -303,7 +303,7 @@ This technique was proposed by Mladenovi{\'c} and Hansen in 1997 \cite{mladenovi
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching
 a local minimum. Subsequently, we perform a random number of permutations (called ``kicks'' in the following sections)
 involving three nodes (3-opt) to navigate away from the minimum.
-This approach also ensures that we never revert to a previously visited
+This approach also ensures that we never return to a previously visited
 solution in the last 2-opt application, as it cannot be achieved through a sequence of permutations of
 three nodes.
 This is a simplified version of the algorithm; state-of-the-art techniques also allow for larger permutations
@@ -361,7 +361,7 @@ TSP problem.
 All of the techniques that we will cover are based on integer linear programming. It is
 hence useful to provide an integer linear formulation for the problem.
 Many formulations exist, but the one we will focus on is the one proposed by
-Dantzig, Fulkerson and Johnson. % TODO cite https://pubsonline.informs.org/doi/10.1287/opre.2.4.393
+Dantzig, Fulkerson and Johnson~\cite{dantzig1954solution}.
 
 Initally we define an undirected complete graph $G=(V, E)$.
 We will the use $c_e : E \rightarrow \mathbb{R}^+$ to indicate the cost of
@@ -438,7 +438,7 @@ it needs to be done following some precise criteria and at the correct time.
 
 \subsubsection{Patching}
 At the end of the Bender's loop we are guaranteed to obtain a solution to the TSP problem.
-However, if we exit the loop because of the time limit, we'll return a solution containing more than
+However, if we finish the procedure earlier because of the time limit, we'll return a solution containing more than
 one loop. To solve this problem we implemented the so-called ``Patching Heuristic''.
 The idea behind this algorithm is to find a way to merge together all the components returned by the MIP solver
 so that, at each iteration of the Bender's loop, we have a solution composed of only one component.
@@ -545,9 +545,11 @@ Another method is ``heuristic solution posting'', where heuristic solutions are 
 during the optimization process. Every time a new SEC is generated, we also provide CPLEX with
 the corresponding patched solution. If the patched solution improves the current incumbent, CPLEX
 may use it in future iterations.
+% TODO more on the patching
 
 The last method we tried was the generation of violeted cuts on the fractional solution
-(not in the integer one as we explained before). //TODO
+(not in the integer one as we explained before).
+% TODO more on fractional cuts (speaking of concorde)
 
 The effectiveness of these approaches will be discussed in Section \ref{sec:results}.
 \newpage
@@ -557,7 +559,7 @@ In this section we will explore another useful set of techniques that we will ca
 \textit{matheuristics}.
 The core idea behind these techniques is to use heuristics in conjunction with the
 mathematical models that one would normally use to solve the problem optimally.
-One of the advantages of such approach is that they can be applied to different problems,
+One of the advantages of such approaches is that they can be applied to different problems,
 with little to none needed adaptations.
 
 What is important to note here is that matheuristics isn't a new class of techniques
@@ -594,9 +596,11 @@ where
   \tilde{E} \subset E^{H} \coloneq \left\{ e \in E : x_{e}^{H} = 1 \right\}
 \end{equation*}
 meaning that the edges we fix are a subset of the edges that are part of the heuristic solution.
-It is important to note that only the edges with a value of 1 are fixed. This is because fixing
-edges to zero is equivalent to instructing CPLEX to use less optimal edges, which could lead to a suboptimal solution.
-//TODO explain better
+
+It is important to note that only the edges with a value of 1 are fixed. We
+decide to focus on ``positive'' decisions to avoid overly constraining the
+subproblem, thereby maintaining a more flexible and effective search space that
+enhances the chances of finding optimal or near-optimal solutions \cite{maniezzo2021diving}.
 
 What is left now is deciding how many and which edges to fix. The approach that will be explored
 in this report is choosing a number of edges (which will become an hyperparameter of our system)
@@ -673,11 +677,13 @@ For the latter we instead fix a time limit (the maximum time we allow our system
 we seek the system that found the best solution (in our case the smallest one, since the TSP
 is a minimization problem).
 
+It is important to know that we set a timelimit also for the exact method. This
+needs to be done for practical reasons while running the experiment.
+
 Before going through the experiments that were performed, it can be useful to discuss some
 parameters that will be used in this section.
 The instances will be generated randomly and we will refer to them using the seed we
-initialize our number generator with. For reproducibility reasons, they were exported
-and are available here: %TODO insert link with the instances.
+initialize our number generator with.
 The size of the instances will be
 \begin{itemize}
         \item $300$ for the optimal methods
@@ -697,7 +703,7 @@ Performance profiles are graphical representations used to compare the performan
 across multiple problem instances.
 In these plots, each algorithm has one line, where a point (x, y) indicates that \textit{the algorithm achieves a solution within
 a factor of x of the best observed performance for y percentage of the problem set}.
-Let's see an example to clarify what has just been said. //TODO add example
+Let's see an example to clarify what has just been said.
 
 %TODO briefly explain how the performance profile works
 %TODO briefly explain what distance metric we are using
@@ -725,8 +731,8 @@ Specifically, integrating the 2-opt algorithm resulted in a notable improvement 
 \clearpage
 
 \subsubsection{Tabu search}
-On the subject of tabu search, there are a few hyperparameters we need to tune.
-First of all we need to discuss what the size of the tenure will be. In our
+On the subject of tabu search, there are a few hyperparameters we need to tune:
+we need to discuss what the size of the tenure will be. In our
 experiments we will explore two different approaches: the first one will use
 a fixed value of the tenure for the whole experiment. The second approach we
 will cover is to use a sinusoidal value for the tenure.
@@ -754,7 +760,7 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
 \end{figure}
 
 Although all parameters yield very similar performances, the tabu search with $\alpha_0 = 2.2$
-appears slightly superior to the others. Therefore, we will adopt this parameter for the subsequent results.
+appears slightly superior to the others. Therefore, we will adopt this parameter for the subsequent experiments.
 
 \clearpage
 
