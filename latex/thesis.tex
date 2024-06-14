@@ -261,14 +261,17 @@ how much the solution cost would improve (decrease by).
 \end{algorithmic}
 \end{algorithm}
 
-The procedure begins by solving the problem with a greedy approach and the tabu list
-is empty. All the procedure is executed in a while loop with a generic condition. We could
-decide to exit the loop in a large variety of ways. In our experiments we leave the loop
-after a predefined time-limit. Other possibilities can involve a maximum number of iterations, a lack of any improvement in the last iterations or any other kind of stopping criteria.
+The procedure begins by solving the problem with a greedy approach and with an empty tabu list.
 
-At every iteration of the loop, we find the best move that is not in the tabu list. If this move has a positive delta (meaning that its application would lead to an
-improvement in the solution) we apply it and jump to the next iteration. If the best
-move has a negative delta we apply it anyway, adding it to the list of the tabu moves.
+At every iteration of the loop, we find the best move that is not in the tabu
+list. If this move has a positive delta (meaning that its application would
+lead to an improvement in the solution) we apply it and jump to the next
+iteration. If the best move has a negative delta we apply it anyway, adding it
+to the list of the tabu moves.
+
+In our experiments we leave the loop after a predefined time-limit. Other
+possibilities can involve a maximum number of iterations, a lack of any
+improvement in the last iterations or any other kind of stopping criteria.
 
 It is then important to define a way to remove moves from the list. In the pseudo-code we define it with a generic ``removeold'' function, in practice there are many ways the remove tabu entries.
 
