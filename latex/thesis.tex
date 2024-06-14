@@ -71,7 +71,7 @@ We can also define it as finding the shortest Hamiltonian path of a graph.
 The problem was formulated mathematically by the Irish mathematician William Rowan
 Hamilton and by the British mathematician Thomas Kirkman in the 19th century~\cite{biggs1986graph}.
 
-The state of the art for solving the TSP problem nowadays is definitely the Concorde
+The state-of-the-art for solving the TSP problem nowadays is definitely the Concorde
 software. Concorde was created by  D. Applegate, R.E. Bixby, V. Chvátal, and W.J. Cook.
 It employs advanced combinatorial optimization techniques, linear programming, and cutting-plane methods~\cite{applegate1998solution}\cite{tuHu2022analyzing}.
 
@@ -165,7 +165,7 @@ the solution found with the greedy approach. In this case, as discussed in the
 previous section, the greedy procedure is executed for every possible node.
 Then, for each of the solutions, the \textit{2-opt} procedure is applied.
 Another approach, that would use \textit{2-opt} only once instead of $n$ times, would be
-to compute greedy on all the starting nodes first, and then \textit{2-opt} only on the
+to compute the greedy procedure on all the starting nodes first, and then \textit{2-opt} only on the
 best one. This approach won't be covered in this report.
 
 \begin{algorithm}[ht]
@@ -312,8 +312,7 @@ In \textit{Tabu Search} we have seen two different phases:
 With this approach, we may spend a considerable amount of time without achieving any improvement in
 solution quality (Diversification Phase). One potential solution could involve restarting from a random
 point each time we encounter a local minimum (Multistart). However, this approach would significantly
-prolong the Intensification Phase. Moreover, when encountering a local minimum, it is probable
-that the solution obtained is not entirely incorrect but requires adjustment in some aspect.
+prolong the Intensification Phase.
 VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as
 opposed to restarting from a completely different starting point.
 This technique was proposed by Mladenovi{\'c} and Hansen in 1997~\cite{mladenovic1997variable}.
@@ -357,7 +356,7 @@ prolonging the time spent during this phase, while performing
 too few might not sufficiently change the solution, preventing us from visiting several different local minima.
 The tuning of these hyperparameters will be discussed in Section \ref{sec:results}.
 
-In Figure~\ref{fig:vns} it is possible to see an example of the solving procedure
+Figure~\ref{fig:vns} shows an example of the solving procedure
 using VNS. In this plot it is possible to see that, after the solver gets
 stuck in a local minimum, it can escape it after a series of kicks.
 
@@ -373,7 +372,7 @@ stuck in a local minimum, it can escape it after a series of kicks.
 \section{Exact Methods}
 Although, as we will see, a good heuristic can achieve very good results, it is also
 important to consider approaches that lead to an optimal solution of the
-TSP problem.
+TSP.
 
 All of the techniques that we will cover are based on integer linear programming. It is
 hence useful to provide an integer linear formulation for the problem.
@@ -450,7 +449,7 @@ for the last iteration of the loop). That solution is optimal only for the
 current set of subtour elimination constraints.
 
 As we will see in Section~\ref{sec:results}, although this method allows us to
-solve some instances it has a major flow. By using the MIP solver as a black
+solve some instances it has a major flaw. By using the MIP solver as a black
 box, we have to restart all the process every time a new solution (that
 contains subtours) is found. This creates one big problem: the branch-and-bound
 tree will be discarded and the search for the optimal solution will start again.
@@ -459,12 +458,12 @@ it needs to be done following some precise criteria and at the correct time.
 
 \subsubsection{Patching}
 \label{sssec:patching}
-At the end of the Bender's loop we are guaranteed to obtain a solution to the TSP problem.
+At the end of the Benders' loop we are guaranteed to obtain a solution to the TSP problem.
 However, if we finish the procedure earlier because of the time limit, we'll return a solution containing more than
 one loop. To solve this problem we implemented the so-called ``Patching Heuristic''.
 The idea behind this algorithm is to find a way to merge together all the components returned by the MIP solver
-so that, at each iteration of the Bender's loop, we have a solution composed of only one component.
-In this way, if we exit the Bender's loop because of the time limit, we'll always be able to return a
+so that, at each iteration of the Benders' loop, we have a solution composed of only one component.
+In this way, if we exit the Benders' loop because of the time limit, we'll always be able to return a
 correct solution to the problem.
 Figure \ref{fig:patching} shows an example of patching.
 
@@ -521,7 +520,7 @@ An abstract description of the technique is presented in Algorithm~\ref{alg:patc
 \subsection{Opening CPLEX}
 \label{ssec:opening}
 The title of this section refers to the fact that, to improve what we did in the
-previous section, we use and approach where we need to interact with CPLEX and
+previous section, we use an approach where we need to interact with CPLEX and
 control its execution.
 
 The technique that will be presented in this section solves the problem
