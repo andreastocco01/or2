@@ -52,7 +52,7 @@ It asks the following question:
 \textit{Given a list of cities and the distances between each pair of cities, what is the shortest possible route
 that visits each city exactly once and returns to the origin city?}
 TSP is computationally difficult (NP-Hard), but there exist many \textit{heuristics} and \textit{exact methods} to solve it.
-In this report we are going to show and compare the performances of these
+In this report we are going to show and compare the performance of these
 techniques.
 \end{abstract}
 
@@ -115,7 +115,7 @@ the nearest unvisited one. Algorithm~\ref{alg:greedy} shows the pseudocode of th
 \end{algorithmic}
 \end{algorithm}
 If we run this approach on an instance having the cities on a 2d plane and using the
-eucledian distance as the cost of the edges, we will se, with a very high probability, an
+Euclidean distance as the cost of the edges, we will see, with a very high probability, an
 high number of edges crossing.
 It is possible to prove that an optimal solution, in this context, should not contain any crossing
 between edges.
@@ -224,7 +224,7 @@ heuristic. We will prove that simple but very clever ideas (like Tabu Search and
 \subsection{Tabu Search}
 Tabu Search is a metaheuristic that efficiently explores the solution space by intelligently navigating through a neighborhood of solutions while maintaining a short-term memory to avoid revisiting previously visited or less promising solutions. The algorithm is particularly effective for combinatorial optimization problems like the Traveling Salesman Problem (TSP).
 
-This technique was introducted by Fred W. Glover in 1986 and then formalized
+This technique was introduced by Fred W. Glover in 1986 and then formalized
 in 1989~\cite{Glover:TabuSearch}.
 
 By design, this procedure will initially head directly towards a local minimum, thanks to the underlying heuristic. The only purpose of this metaheuristic is then to ``escape'' it and, hopefully, converge to a better minimum.
@@ -235,7 +235,7 @@ heuristic to improve its cost. We will call this ``intensification phase''. Once
 away from it allows us to explore different local minimum, allowing us to get an overall better
 solution.
 
-Algorithm~\ref{alg:tabu} shows a very abstract description of the procedure we use in practice. The first solution is found using a greedy method (the closest neighbor apporach) and then \textit{2-opt} is used for the intensification phase. It is important to notice that $delta$ is
+Algorithm~\ref{alg:tabu} shows a very abstract description of the procedure we use in practice. The first solution is found using a greedy method (the closest neighbor approach) and then \textit{2-opt} is used for the intensification phase. It is important to notice that $delta$ is
 how much the solution cost would improve (decrease by).
 
 \begin{algorithm}[ht]
@@ -278,7 +278,7 @@ from the tabu list all moves that weren't added in the last $100$ iterations.
 This \textit{hyperparameter} is crucial for the effectiveness of the method. In our implementation we experimented with a fixed tenure (dependent on the number of
 nodes of the instance) and with some functions of the number of the current iteration. Some good results were obtained with a sinusoidal function.
 
-This approach using variable values for the tenure can be quite effective compared to a fixed one as we will se in the chapter dedicated to experimental results.
+This approach using variable values for the tenure can be quite effective compared to a fixed one as we will see in the chapter dedicated to experimental results.
 An intuition behind this can be given by the fact that varying the tenure can be beneficial to the search of a new minimum because it tries to solve both the problems of having a tenure that is too big and one that is too small.
 A small tenure can be problematic because we cannot escape the local minimum enough to not get back to it. A big tenure has the disadvantage that we might find ourselves in a situation where the move needed to reach a new local minimum is blocked by the
 tabu list. Having a variable tenure can, sometimes, on the long run, avoid the drawbacks of a fixed approach.
@@ -316,7 +316,7 @@ prolong the Intensification Phase. Moreover, when encountering a local minimum, 
 that the solution obtained is not entirely incorrect but requires adjustment in some aspect.
 VNS is a metaheuristic that employs minimal permutations of the solution to evade local minima, as
 opposed to restarting from a completely different starting point.
-This technique was proposed by Mladenovi{\'c} and Hansen in 1997 \cite{mladenovic1997variable}.
+This technique was proposed by Mladenovi{\'c} and Hansen in 1997~\cite{mladenovic1997variable}.
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching
 a local minimum. Subsequently, we perform a random number of permutations (called ``kicks'' in the following sections)
 involving three nodes (3-opt) to navigate away from the minimum.
@@ -380,11 +380,11 @@ hence useful to provide an integer linear formulation for the problem.
 Many formulations exist, but the one we will focus on is the one proposed by
 Dantzig, Fulkerson and Johnson~\cite{dantzig1954solution}.
 
-Initally we define an undirected complete graph $G=(V, E)$.
+Initially we define an undirected complete graph $G=(V, E)$.
 We will the use $c_e : E \rightarrow \mathbb{R}^+$ to indicate the cost of
 an edge.
 One of the ways to compute this cost function is to place all the points
-on a 2d surface and compute their eucledian distance.
+on a 2d surface and compute their Euclidean distance.
 
 The variables of this model are
 \begin{equation*}
@@ -409,7 +409,7 @@ following
 \end{aligned}
 \end{equation}
 $\delta(h)$, where $h$ is a node, is defined as the set of edges that are
-incident to $h$. $E(S)$, where $S$ is a set of nodes, is the est of all the
+incident to $h$. $E(S)$, where $S$ is a set of nodes, is the set of all
 the edges with both extremities in $S$.
 
 It is important to know that the number of SECs is exponential in the number of
@@ -498,7 +498,7 @@ If we have two loops running in opposite directions, it could be that the
 patched solution is not the optimal one (because of an intersection of the newly added edges).
 To address this issue, after each patching step we apply a 2-opt optimization to refine the solution.
 
-An abstract description of the techinque is presented in Algorithm \ref{alg:patching}.
+An abstract description of the technique is presented in Algorithm~\ref{alg:patching}.
 
 \begin{algorithm}[ht]
 \caption{Bender's loop + Patching Heuristic}
@@ -519,13 +519,14 @@ An abstract description of the techinque is presented in Algorithm \ref{alg:patc
 \end{algorithm}
 
 \subsection{Opening CPLEX}
+\label{ssec:opening}
 The title of this section refers to the fact that, to improve what we did in the
 previous section, we use and approach where we need to interact with CPLEX and
-control its exectuion.
+control its execution.
 
 The technique that will be presented in this section solves the problem
 described in Section~\ref{ssec:benders} by generating the constraints when
-the MIP solver finds a new canditate solution. In order to achieve this,
+the MIP solver finds a new candidate solution. In order to achieve this,
 CPLEX provides us a C interface that we can use to control the execution
 of the branch-and-cut.
 
@@ -534,7 +535,7 @@ ILP model, without the cuts. Whenever the solver finds a candidate solution,
 the execution will be passed to a function that we have defined.
 
 We will need a way to generate valid cuts
-whenever the MIP solver has a new canditate solution. To do this we ``install''
+whenever the MIP solver has a new candidate solution. To do this we ``install''
 a callback. CPLEX allows us to pass a function to it, that will be called when
 a specific condition is met. In our case we will use one\footnote{CPX\_CALLBACKCONTEXT\_CANDIDATE} that is called when CPLEX
 has found a new candidate for an integer-feasible solution.
@@ -572,7 +573,7 @@ of the search space, potentially resulting in a smaller branch-and-cut tree.
 
 The second method is the ``heuristic solution posting'', where heuristic solutions are provided to the solver during the optimization process.
 
-The procedure we developed works as follows: everytime the callback function
+The procedure we developed works as follows: every time the callback function
 is executed, as we have previously seen, CPLEX will have found a solution
 formed by many subtours. After generating the SECs, we can leverage the
 method we have described in Section~\ref{sssec:patching} to ``glue'' the subcycles
@@ -582,7 +583,7 @@ be beneficial to the process.
 
 
 \subsubsection{Fractional cuts}
-The third and last method we tried was the generation of violeted cuts from the relaxed
+The third and last method we tried was the generation of violated cuts from the relaxed
 solutions CPLEX runs into.
 In order to do so, we use a callback\footnote{CPX\_CALLBACKCONTEXT\_RELAXATION} that is
 invoked whenever CPLEX has found a relaxed solution.
@@ -597,7 +598,7 @@ corresponding to the LP relaxation of our TSP problem.
 This procedure involves the function \verb|CCconnect_components|,
 which identifies connected components in the graph, and \verb|CCviolated_cuts|, which generates violated cuts.
 
-By using these functions we can add SECs derived from the fractional solution of the an integer relaxation
+By using these functions we can add SECs derived from the fractional solution of an integer relaxation
 of the problem, rather than from the integer solution.
 
 Generating cuts from these solutions can help the solver to narrow down the size of the search space, eliminating
@@ -749,7 +750,7 @@ The size of the instances will be
         \item $1500$ for heuristics
 \end{itemize}
 
-For what concernes the value of the time limit, we will use $120$ seconds for all the
+For what concerns the value of the time limit, we will use $120$ seconds for all the
 experiments.
 
 To make comparisons a little bit more statistically valid, all the systems will be run on
@@ -771,7 +772,7 @@ a solution within a factor of x of the best observed performance for y percentag
 Therefore, using these plots allows for identifying which algorithm is consistently better across a range
 of problem instances. We will use them widely in the next sections for hyperparameter tuning and
 to determine the best method among different algorithms.
-To determinte the best algorithm we will use two different metrics based on the type of algorithms
+To identify the best algorithm we will use two different metrics based on the type of algorithms
 under study: for heuristics and matheuristics, we use the cost of the solution found as the metric, while
 for the exact methods, we are going to use the time spent to find the optimal solution.
 
@@ -826,7 +827,7 @@ The performance profile for this parameter is presented in Figure~\ref{fig:ht_fi
         \includegraphics[width=340pt]{assets/ht_fixten.pdf}
 \end{figure}
 
-Although all parameters yield very similar performances, the Tabu Search with $\alpha_0 = 2.2$
+Although all parameters yield very similar performance, the Tabu Search with $\alpha_0 = 2.2$
 appears slightly superior to the others. Therefore, we will adopt this parameter for the subsequent experiments.
 
 \clearpage
@@ -883,8 +884,9 @@ The performance profile for this experiment is shown in Figure~\ref{fig:ht_vns}.
         \includegraphics[width=340pt]{assets/ht_vns.pdf}
 \end{figure*}
 
-In this scenario, the performance of all parameters is quiete comparable. For the following results, we decided to use
-VNS with parameter (2;4) as it demonstrates better performance across most cases.
+In this scenario, the performance of the algorithms with the
+different parameters does not vary significantly. For the following results, we decided
+to use VNS with parameter (2;4) as it demonstrates slightly better performance across most cases.
 
 \clearpage
 \subsubsection{Fast-heuristic}
@@ -983,13 +985,17 @@ instances.
 \subsection{Best exact method}
 In this section we will show a comparison between all the exact methods
 we discussed previously.
-The following clarifies the meaning of the curve labels shown in Figure \ref{fig:ht_bec}:
+The following clarifies the meaning of the labels of Figure \ref{fig:ht_bec}:
 \begin{itemize}
-\item base: branch-and-cut
-\item warm: branch-and-cut with warm start
-\item frac: branch-and-cut with fractional cuts
-\item post: branch-and-cut with heuristic solution posting during the execution
-\item bl: Benders' loop
+        \item \textbf{b\&c}: we interact with CPLEX adding the SECs like discussed in Section~\ref{ssec:opening}
+        \item \textbf{bl}: Benders' loop, covered in Section~\ref{ssec:benders}
+\end{itemize}
+For the first approach, we also test the following additional techniques:
+\begin{itemize}
+        \item \textbf{warm}: ``warm start'' is used
+        \item \textbf{frac}: cuts generated from fractional solutions are added
+        \item \textbf{post}: heuristic solutions generated from infeasible solutions
+                are posted
 \end{itemize}
 
 \begin{figure*}[ht]
@@ -1000,8 +1006,8 @@ The following clarifies the meaning of the curve labels shown in Figure \ref{fig
 \end{figure*}
 
 Every branch-and-cut variation have better performance compared to the Benders'
-loop technique. While warm start does not significally improve the performance of the
-branch-and-cut, fractional cuts and heristic solution posting variations show better results.
+loop technique. While warm start does not significantly improve the performance of the
+branch-and-cut, fractional cuts and heuristic solution posting variations show better results.
 The combination of all these techniques proves to be the most effective.
 
 \clearpage
