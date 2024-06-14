@@ -322,9 +322,6 @@ This technique was proposed by Mladenovi{\'c} and Hansen in 1997~\cite{mladenovi
 With this approach, we transition from one solution to a better one using the 2-opt method until reaching
 a local minimum. Subsequently, we perform a random number of permutations (called ``kicks'' in the following sections)
 involving three nodes (3-opt) to navigate away from the minimum.
-This approach also ensures that we never return to a previously visited
-solution in the last 2-opt application, as it cannot be achieved through a sequence of permutations of
-three nodes.
 This is a simplified version of the algorithm; state-of-the-art techniques also allow for larger permutations
 of nodes (e.g., 4-opt, 5-opt, etc.) instead of multiple 3-opt operations.
 Algorithm~\ref{alg:vns} shows a very abstract description of the procedure
