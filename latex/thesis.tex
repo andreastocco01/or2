@@ -1057,20 +1057,20 @@ Among them, the diving methods demonstrate superior performance compared to the 
 \section{Conclusions}
 In this study, we explored various methods for solving the Traveling Salesman Problem.
 Our analysis included the use of heuristics and matheruristics to obtain near-optimal
-solutions for large instances, and advanced technique such as branch-and-cut and
+solutions for large instances, and advanced techniques such as branch-and-cut and
 fractional cuts to find optimal solutions for smaller instances.
 Among the heuristic algorithms, we found that Greedy + 2-opt and Tabu Search with
 sinusoidal tenure achieved very similar performance, both outperforming VNS and Tabu Search
 with fixed tenure.
-The Tabu Search with sinusoidal tenure emerged as the best heuristic, mantaining superior
-performance across nearly all instances, as shown in the performance profiles.
-In our comparison of exact method, we observed that provide the solver with heuristic solutions
-during the optimization process and using fractional cuts through the Concorde interface
+However, Tabu Search with sinusoidal tenure emerged as slightly better overall,
+as shown in the performance profiles.
+In our comparison of exact methods, we observed that providing the solver with heuristic solutions
+during the optimization process and using fractional cuts
 were more effective than using a warm start.
-The best results were achieved by combining all these techniques, as evinced by the
+The best results were achieved by combining all these techniques, as evinced from
 performance profiles.
 We also observed that matheuristics are more effective than a pure Tabu Search approach,
-demonstrating that the combination of heuristic solutions and exact methods can be a winning
+demonstrating that the combination of heuristic and exact methods can be a winning
 strategy when the instance sizes are too large to be solved by exact methods alone.
 The performance profiles have also shown that the Diving algorithm outperformed Local Branching.
 Future research could focus on finding improved methods to tune hyperparamenters,
