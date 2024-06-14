@@ -533,8 +533,7 @@ The process will go as follows: first, we will provide the solver with the
 ILP model, without the cuts. Whenever the solver finds a candidate solution,
 the execution will be passed to a function that we have defined.
 
-We will need a way to generate valid cuts
-whenever the MIP solver has a new candidate solution. To do this we ``install''
+To do this we ``install''
 a callback. CPLEX allows us to pass a function to it, that will be called when
 a specific condition is met. In our case we will use one\footnote{CPX\_CALLBACKCONTEXT\_CANDIDATE} that is called when CPLEX
 has found a new candidate for an integer-feasible solution.
