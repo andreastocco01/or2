@@ -718,7 +718,7 @@ This leaves us with one hyperparameter to tune: the value of $k$ for each iterat
 Our approach in this report will be to decide an initial value of $k$ that we will call
 $k_{0}$. The first iteration of the local branching will use $k_{1} = k_{0}$.
 We will keep running the solver with the same value of $k$ until no improved
-solution can be found. At this point, say iteration $t$, we increment $k$ by a delta:
+solution can be found. At that point, say iteration $t$, we increment $k$ by a delta:
 $k_{t+1} = k_{t} + \Delta k$. This process will continue until we reach the timelimit.
 
 \newpage
@@ -755,7 +755,7 @@ experiments.
 
 To make comparisons a little bit more statistically valid, all the systems will be run on
 $20$ different instances of the same size. We will then take the results for each instance
-and plot the Performance Profile. All our considerations will be based on these plots.
+and plot the Performance Profile~\cite{dolan2002benchmarking}. All our considerations will be based on these plots.
 
 It is also important to discuss how the distance between the points in the 2d
 grid was computed: in our experiments we use the ATT formula from the TSPLIB~\cite{reinelt1991tsplib}.
@@ -766,15 +766,36 @@ and 16GB of RAM. The MIP solver used was IBM ILOG CPLEX 22.1.0~\cite{cplex-docs}
 
 \subsection{Performance profile}
 Performance profiles are graphical representations used to compare the performance of different algorithms
-across multiple problem instances.
-In these plots, each algorithm is represented by a line, where a point (x, y) indicates that: \textit{the algorithm achieves
-a solution within a factor of x of the best observed performance for y percentage of the problem set}.
-Therefore, using these plots allows for identifying which algorithm is consistently better across a range
+across multiple problem instances~\cite{dolan2002benchmarking}.
+A \emph{Performance Profile} is a cumulative distribution function used to compare the performance of a set of solvers on a given set of problems. Given \( n_s \) solvers and \( n_p \) problems, let \( t_{p,s} \) be the computing time required by solver \( s \) to solve problem \( p \). The performance ratio \( r_{p,s} \) is defined as:
+
+\[
+r_{p,s} = \frac{t_{p,s}}{\min\{t_{p,s} : s \in S\}}
+\]
+
+where \( S \) is the set of all solvers. To handle cases where a solver fails
+to solve a problem\footnote{This doesn't happen in the experiments that will
+be presented}, a parameter \( r_M \geq r_{p,s} \) is chosen such that \( r_{p,s}
+= r_M \) if solver \( s \) does not solve problem \( p \).
+
+The performance profile \( \rho_s(\tau) \) for solver \( s \) is defined as the fraction of problems for which the performance ratio \( r_{p,s} \) is within a factor \( \tau \) of the best possible ratio:
+
+\[
+\rho_s(\tau) = \frac{1}{n_p} \left| \left\{ p \in P : r_{p,s} \leq \tau \right\} \right|
+\]
+
+where \( P \) is the set of all problems. The function \( \rho_s \) is a nondecreasing, piecewise constant function, continuous from the right at each breakpoint.
+
+In summary, the performance profile \( \rho_s(\tau) \) represents the probability that the solver \( s \) performs within a factor \( \tau \) of the best possible performance on the given set of problems. A higher value of \( \rho_s(\tau) \) indicates better overall performance of the solver.
+
+It is important to note that, in the case of heuristics, we will use $c_{p,s}$,
+the cost obtained by solver $s$ for problem $p$, instead of $t_{p,s}$, allowing
+us to compare the approaches based on the value of the solution.
+
+Using these plots allows for identifying which algorithm is consistently better across a range
 of problem instances. We will use them widely in the next sections for hyperparameter tuning and
 to determine the best method among different algorithms.
-To identify the best algorithm we will use two different metrics based on the type of algorithms
-under study: for heuristics and matheuristics, we use the cost of the solution found as the metric, while
-for the exact methods, we are going to use the time spent to find the optimal solution.
+
 
 \subsection{Hyperparameters tuning}
 Before comparing the methods with each other, it is useful to discuss some
